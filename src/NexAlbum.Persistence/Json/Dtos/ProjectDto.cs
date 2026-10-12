@@ -197,6 +197,8 @@ internal sealed class TemplateDto
 
     public string? Name { get; set; }
 
+    public string? Description { get; set; }
+
     public string? Category { get; set; }
 
     public List<string>? Tags { get; set; }
@@ -210,6 +212,10 @@ internal sealed class TemplateDto
     public List<TemplateSlotDto>? TextFields { get; set; }
 
     public PageBackgroundDto? Background { get; set; }
+
+    public double? Gutter { get; set; }
+
+    public double? OuterMargin { get; set; }
 
     public TemplateRulesDto? Rules { get; set; }
 
@@ -242,6 +248,20 @@ internal sealed class TemplateSlotDto
     public string? Unit { get; set; }
 
     public string? Placeholder { get; set; }
+
+    public string? CropMode { get; set; }
+
+    public int? Priority { get; set; }
+
+    public List<string>? RecommendedOrientation { get; set; }
+
+    public double? MinAspectRatio { get; set; }
+
+    public double? MaxAspectRatio { get; set; }
+
+    public string? Shape { get; set; }
+
+    public double? CornerRadius { get; set; }
 }
 
 internal sealed class TemplateRulesDto

@@ -4,12 +4,29 @@ using NexAlbum.Core.Projects;
 
 namespace NexAlbum.Core.Templates;
 
-/// <summary>Şablondaki fotoğraf yuvası; yüzde cinsinden.</summary>
+/// <summary>Şablondaki fotoğraf yuvası; yüzde cinsinden (Karar 10 §3.3).</summary>
 public sealed record TemplateSlot
 {
     public required string Id { get; init => field = Guard.NotBlank(value, nameof(Id)); }
 
     public required PercentRect Rect { get; init; }
+
+    /// <summary>Sığdırma modu. "fill" fotoğrafı esnetir; otomatik yerleşim onu kullanmaz (Karar 10 §9.6).</summary>
+    public CropMode CropMode { get; init; } = CropMode.Cover;
+
+    /// <summary>1 = en önemli yuva; öncelikli fotoğraflar önce buraya atanır.</summary>
+    public int Priority { get; init => field = Guard.Positive(value, nameof(Priority)); } = 1;
+
+    /// <summary>Bu yuvaya önerilen fotoğraf yönleri; boşsa yuvanın kendi biçimi esas alınır.</summary>
+    public IReadOnlyList<PageOrientation> RecommendedOrientations { get; init => field = value ?? throw new ArgumentNullException(nameof(RecommendedOrientations)); } = [];
+
+    public double? MinAspectRatio { get; init => field = Guard.PositiveOrNull(value, nameof(MinAspectRatio)); }
+
+    public double? MaxAspectRatio { get; init => field = Guard.PositiveOrNull(value, nameof(MaxAspectRatio)); }
+
+    public SlotShape Shape { get; init; } = SlotShape.Rectangle;
+
+    public double CornerRadiusMm { get; init => field = Guard.NonNegative(value, nameof(CornerRadiusMm)); }
 }
 
 /// <summary>Şablondaki metin alanı; yüzde cinsinden.</summary>
@@ -44,13 +61,15 @@ public sealed record TemplateRules(bool PreserveAspectRatio = true, bool AllowUs
 public sealed record ResolvedSlot(string SlotId, RectMm Bounds);
 
 /// <summary>
-/// Sayfa şablonu (Karar 09 §10). Ölçüler yüzde tabanlıdır; her sayfa ölçüsüne ölçeklenir.
+/// Sayfa şablonu (Karar 09 §10, Karar 10 §3). Ölçüler yüzde tabanlıdır; her sayfa ölçüsüne ölçeklenir.
 /// </summary>
 public sealed record TemplateDefinition
 {
     public required string Id { get; init => field = Guard.NotBlank(value, nameof(Id)); }
 
     public required string Name { get; init => field = Guard.NotBlank(value, nameof(Name)); }
+
+    public string? Description { get; init; }
 
     public TemplateCategory Category { get; init; } = TemplateCategory.Custom;
 
@@ -65,6 +84,12 @@ public sealed record TemplateDefinition
     public IReadOnlyList<TemplateTextField> TextFields { get; init => field = value ?? throw new ArgumentNullException(nameof(TextFields)); } = [];
 
     public BackgroundFill? Background { get; init; }
+
+    /// <summary>Yuvalar arası boşluk; alanın kısa kenarının yüzdesi (Karar 10 §3.5).</summary>
+    public double GutterPercent { get; init => field = Guard.InRange(value, 0, 50, nameof(GutterPercent)); }
+
+    /// <summary>Sayfa kenarı boşluğu; alanın kısa kenarının yüzdesi (Karar 10 §3.5).</summary>
+    public double OuterMarginPercent { get; init => field = Guard.InRange(value, 0, 45, nameof(OuterMarginPercent)); }
 
     public TemplateRules Rules { get; init => field = value ?? throw new ArgumentNullException(nameof(Rules)); } = new();
 
@@ -85,9 +110,31 @@ public sealed record TemplateDefinition
         _ => false,
     };
 
-    /// <summary>Yuvaları verilen alan (genellikle sayfa ya da güvenli alan) içinde milimetreye çözer.</summary>
-    public IReadOnlyList<ResolvedSlot> Resolve(RectMm area) =>
-        [.. Slots.Select(s => new ResolvedSlot(s.Id, s.Rect.Resolve(area)))];
+    /// <summary>
+    /// Yuvaları verilen alan içinde milimetreye çözer. Önce kenar boşluğu uygulanır; sonra komşu yuvalar
+    /// arasına boşluk (gutter) bırakılır. Alan kenarına değen yuva kenarları daraltılmaz.
+    /// </summary>
+    public IReadOnlyList<ResolvedSlot> Resolve(RectMm area)
+    {
+        var unit = Math.Min(area.Width, area.Height) / 100;
+        var inner = area.Deflate(EdgesMm.Uniform(OuterMarginPercent * unit));
+        var half = GutterPercent * unit / 2;
+        return [.. Slots.Select(s => new ResolvedSlot(s.Id, ApplyGutter(s.Rect, s.Rect.Resolve(inner), half)))];
+    }
+
+    private static RectMm ApplyGutter(PercentRect percent, RectMm rect, double half)
+    {
+        if (half <= 0)
+        {
+            return rect;
+        }
+
+        var left = percent.X > Length.Tolerance ? half : 0;
+        var top = percent.Y > Length.Tolerance ? half : 0;
+        var right = percent.X + percent.Width < 100 - Length.Tolerance ? half : 0;
+        var bottom = percent.Y + percent.Height < 100 - Length.Tolerance ? half : 0;
+        return rect.Deflate(new EdgesMm(top, right, bottom, left));
+    }
 
     private static IReadOnlyList<TemplateSlot> ValidateSlots(IReadOnlyList<TemplateSlot>? slots)
     {

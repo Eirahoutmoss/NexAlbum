@@ -118,6 +118,13 @@ public sealed record AlbumProject
         return this with { Pages = list };
     }
 
+    /// <summary>Tüm sayfaları değiştirir (ör. otomatik yerleşim sonucu).</summary>
+    public AlbumProject WithPages(IEnumerable<AlbumPage> pages)
+    {
+        ArgumentNullException.ThrowIfNull(pages);
+        return this with { Pages = [.. pages] };
+    }
+
     public AlbumProject AddAsset(PhotoAsset asset)
     {
         ArgumentNullException.ThrowIfNull(asset);

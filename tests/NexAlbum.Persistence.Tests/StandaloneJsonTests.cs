@@ -1,5 +1,8 @@
 using FluentAssertions;
+using NexAlbum.Core.Geometry;
 using NexAlbum.Core.Profiles;
+using NexAlbum.Core.Projects;
+using NexAlbum.Core.Templates;
 using NexAlbum.Persistence.Format;
 using NexAlbum.Persistence.Json;
 using Xunit;
@@ -94,6 +97,46 @@ public class StandaloneJsonTests
         var json = TemplateJson.Serialize(template);
         json.Should().Contain("\"unit\": \"%\"");
         json.Should().Contain("\"category\": \"grid\"");
+        TemplateJson.Deserialize(json).Should().BeEquivalentTo(template, o => o.ComparingRecordsByMembers());
+    }
+
+    [Fact]
+    public void AllBuiltInTemplatesRoundTrip()
+    {
+        foreach (var template in BuiltInTemplates.All)
+        {
+            TemplateJson.Deserialize(TemplateJson.Serialize(template)).Should().BeEquivalentTo(template, o => o.ComparingRecordsByMembers());
+        }
+    }
+
+    [Fact]
+    public void Decision10SlotFieldsRoundTrip()
+    {
+        var template = Samples.FourGrid() with
+        {
+            Description = "Bir büyük üstte",
+            GutterPercent = 2,
+            OuterMarginPercent = 5,
+            Slots =
+            [
+                new TemplateSlot
+                {
+                    Id = "slot-main",
+                    Rect = new PercentRect(0, 0, 100, 65),
+                    CropMode = CropMode.Contain,
+                    Priority = 1,
+                    RecommendedOrientations = [PageOrientation.Portrait, PageOrientation.Landscape],
+                    MinAspectRatio = 0.5,
+                    MaxAspectRatio = 2,
+                    Shape = SlotShape.Rounded,
+                    CornerRadiusMm = 3,
+                },
+            ],
+        };
+
+        var json = TemplateJson.Serialize(template);
+        json.Should().Contain("\"recommendedOrientation\": [");
+        json.Should().Contain("\"outerMargin\": 5");
         TemplateJson.Deserialize(json).Should().BeEquivalentTo(template, o => o.ComparingRecordsByMembers());
     }
 
