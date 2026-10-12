@@ -29,6 +29,8 @@ Bağımlılık yönü — ihlal etme:
 - Biçim: `dotnet format NexAlbum.slnx --verify-no-changes`
 - CI: `.github/workflows/build.yml` (Windows) ve `test.yml` (Windows + Ubuntu). Bu ortamda dotnet yoksa doğrulama CI sonucuyla yapılır.
 - Test: xUnit + Moq + FluentAssertions; E2E: FlaUI; benchmark: BenchmarkDotNet; örnek dosyalar `samples/tests/`.
+- `tests/NexAlbum.UI.Tests` yalnızca Windows'ta çalışır (Linux'ta derlenir, atlanır). Yeni pencere/XAML → `XamlSmokeTests`'e ekle.
+- Otomatik yerleşim `DeterministicRandom` (SplitMix64) kullanır; `System.Random` kullanma (sürümler arası tohum kararlılığı).
 
 ## Çalışma biçimi
 - Kapsamı önce Glob/Grep ile belirle; ilgisiz dosyayı, aynı dosyayı/çıktıyı tekrar okuma. Uzun çıktıyı `| tail -n 40` veya hata satırlarıyla sınırla.
