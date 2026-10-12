@@ -57,10 +57,16 @@
           </Button>
           <Button Style="{StaticResource ToolButton}" Command="{Binding SaveAsCommand}" ToolTip="Farklı kaydet (Ctrl+Shift+S)" Content="Farklı kaydet" />
           <Rectangle Width="1" Height="26" Fill="{StaticResource BorderBrush}" Margin="8,0" />
-          <Button Style="{StaticResource ToolButton}" Command="{Binding ImportCommand}" ToolTip="Klasörden fotoğraf ekle (alt klasörler dahil)">
+          <Button Style="{StaticResource ToolButton}" Command="{Binding ImportFilesCommand}" ToolTip="Fotoğraf dosyalarını seç (Ctrl/Shift ile birden çok). Gezgin'den sürükleyip bırakmak da olur.">
             <StackPanel Orientation="Horizontal">
               <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE91B;" VerticalAlignment="Center" Margin="0,0,6,0" />
               <TextBlock Text="Fotoğraf ekle" />
+            </StackPanel>
+          </Button>
+          <Button Style="{StaticResource ToolButton}" Command="{Binding ImportCommand}" ToolTip="Bir klasördeki tüm fotoğrafları ekle (alt klasörler dahil)">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE8B7;" VerticalAlignment="Center" Margin="0,0,6,0" />
+              <TextBlock Text="Klasör" />
             </StackPanel>
           </Button>
           <Rectangle Width="1" Height="26" Fill="{StaticResource BorderBrush}" Margin="8,0" />
@@ -117,7 +123,10 @@
         <TextBlock DockPanel.Dock="Top" Text="Galeri" Style="{StaticResource PanelHeader}" />
         <TextBlock DockPanel.Dock="Top" Text="{Binding PhotoSummary}" Style="{StaticResource Caption}" Margin="12,0,12,8" />
         <Grid>
-          <ListBox ItemsSource="{Binding Assets}" BorderThickness="0" Background="Transparent"
+          <ListBox x:Name="Gallery" ItemsSource="{Binding Assets}" BorderThickness="0" Background="Transparent"
+                   AllowDrop="True" DragOver="OnFileDragOver" Drop="OnGalleryDrop"
+                   PreviewMouseLeftButtonDown="OnGalleryMouseDown" PreviewMouseMove="OnGalleryMouseMove" MouseDoubleClick="OnGalleryDoubleClick"
+                   ToolTip="Fotoğrafı tuvaldeki bir yuvaya sürükleyin ya da çift tıklayın (seçili/ilk boş yuvaya gider)"
                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                    VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
             <ListBox.ItemTemplate>
@@ -138,7 +147,7 @@
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>
-          <TextBlock Text="Henüz fotoğraf yok.&#x0a;Üstteki «Fotoğraf ekle» ile bir klasör seçin."
+          <TextBlock Text="Henüz fotoğraf yok.&#x0a;«Fotoğraf ekle» ya da «Klasör» ile seçin&#x0a;veya Gezgin'den buraya sürükleyin." IsHitTestVisible="False"
                      Style="{StaticResource Caption}" TextAlignment="Center" Margin="16"
                      HorizontalAlignment="Center" VerticalAlignment="Center"
                      Visibility="{Binding HasPhotos, Converter={StaticResource InverseBoolToVisibility}}" />
@@ -148,7 +157,9 @@
       <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch" Background="{StaticResource BorderBrush}" />
 
       <!-- ③ Tuval -->
-      <Grid Grid.Column="2" Background="{StaticResource CanvasBackgroundBrush}">
+      <Grid x:Name="CanvasArea" Grid.Column="2" Background="{StaticResource CanvasBackgroundBrush}" AllowDrop="True"
+            PreviewMouseLeftButtonDown="OnCanvasMouseDown" PreviewMouseMove="OnCanvasMouseMove" PreviewMouseLeftButtonUp="OnCanvasMouseUp"
+            PreviewMouseWheel="OnCanvasMouseWheel" DragOver="OnCanvasDragOver" DragLeave="OnCanvasDragLeave" Drop="OnCanvasDrop">
         <Border Margin="32,32,32,64" HorizontalAlignment="Center" VerticalAlignment="Center">
           <Border.Effect>
             <DropShadowEffect BlurRadius="16" ShadowDepth="2" Opacity="0.25" />
@@ -199,6 +210,23 @@
                 <Button Content="{Binding LockButtonText}" Command="{Binding ToggleLockCommand}" HorizontalAlignment="Left"
                         Margin="12,8" Padding="12,4" ToolTip="Kilitli sayfa otomatik oluşturmada değişmez (Ctrl+L)" />
 
+                <StackPanel Visibility="{Binding HasSelectedSlot, Converter={StaticResource BoolToVisibility}}">
+                  <TextBlock Text="Seçili yuva" Style="{StaticResource PanelHeader}" />
+                  <TextBlock Text="{Binding SelectedSlotInfo}" TextWrapping="Wrap" Margin="12,0" FontSize="13" />
+                  <DockPanel Margin="12,8,12,0" IsEnabled="{Binding SelectedSlotHasPhoto}">
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding SlotZoomPercent, StringFormat={}%{0:0}}" Width="44" TextAlignment="Right" VerticalAlignment="Center" />
+                    <TextBlock Text="Yakınlaştır" Width="80" VerticalAlignment="Center" />
+                    <Slider Minimum="100" Maximum="500" Value="{Binding SlotZoomPercent, Delay=150}" SmallChange="5" LargeChange="25" VerticalAlignment="Center" />
+                  </DockPanel>
+                  <WrapPanel Margin="10,6,10,0">
+                    <Button Content="Ortala" Command="{Binding CenterPhotoCommand}" Padding="10,2" Margin="2" ToolTip="Kaydırma ve yakınlaştırmayı sıfırla" />
+                    <Button Content="{Binding FitButtonText}" Command="{Binding ToggleFitCommand}" Padding="10,2" Margin="2" ToolTip="Kapla: yuvayı doldurur (kenarlar kırpılır) · Tamamını göster: kırpmadan sığdırır" />
+                    <Button Content="Fotoğrafı çıkar" Command="{Binding ClearSlotCommand}" Padding="10,2" Margin="2" />
+                  </WrapPanel>
+                  <TextBlock Style="{StaticResource Caption}" Margin="12,6,12,0"
+                             Text="Sürükle: başka yuvaya taşı / yer değiştir · Ctrl + sürükle: yuva içinde kaydır · Tekerlek: yakınlaştır · Galeriden sürükleyerek fotoğraf koyun." />
+                </StackPanel>
+
                 <DockPanel>
                   <Button DockPanel.Dock="Right" Content="Düzenle" Command="{Binding EditProfileCommand}" Margin="0,8,12,0" Padding="10,2" />
                   <TextBlock Text="Profil" Style="{StaticResource PanelHeader}" />
@@ -232,7 +260,8 @@
             <StackPanel Margin="0,0,0,16">
               <TextBlock Text="Uygulama kapsamı" Style="{StaticResource PanelHeader}" />
               <StackPanel Orientation="Horizontal" Margin="12,0">
-                <RadioButton Content="Seçili sayfa" IsChecked="{Binding ApplyToSelectedPage}" Margin="0,0,16,0" GroupName="DesignScope" />
+                <RadioButton Content="Seçili yuva" IsChecked="{Binding ApplyToSelectedSlot}" Margin="0,0,12,0" GroupName="DesignScope" />
+                <RadioButton Content="Seçili sayfa" IsChecked="{Binding ApplyToSelectedPage}" Margin="0,0,12,0" GroupName="DesignScope" />
                 <RadioButton Content="Tüm sayfalar" IsChecked="{Binding ApplyToAllPages}" GroupName="DesignScope" />
               </StackPanel>
               <TextBlock Text="{Binding DesignScopeHint}" Style="{StaticResource Caption}" Margin="12,4,12,0" />
@@ -312,21 +341,24 @@
                 <Button DockPanel.Dock="Right" Content="Fon görseli ekle…" Command="{Binding ImportBackgroundsCommand}" Padding="10,2" />
                 <TextBlock Text="Görsel fonlar" Style="{StaticResource Caption}" VerticalAlignment="Center" />
               </DockPanel>
-              <ItemsControl ItemsSource="{Binding BackgroundImages}" Margin="8,0">
-                <ItemsControl.ItemsPanel>
-                  <ItemsPanelTemplate>
-                    <WrapPanel />
-                  </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                  <DataTemplate>
-                    <Button Style="{StaticResource SwatchButton}" ToolTip="{Binding Name}" CommandParameter="{Binding}"
-                            Command="{Binding DataContext.ApplyBackgroundCommand, RelativeSource={RelativeSource AncestorType=Window}}">
-                      <Border Width="66" Height="48" Background="{Binding Preview}" />
-                    </Button>
-                  </DataTemplate>
-                </ItemsControl.ItemTemplate>
-              </ItemsControl>
+              <Border Background="Transparent" AllowDrop="True" DragOver="OnFileDragOver" Drop="OnBackgroundDrop" MinHeight="40"
+                      ToolTip="Görselleri Gezgin'den buraya sürükleyip fon olarak ekleyebilirsiniz">
+                <ItemsControl ItemsSource="{Binding BackgroundImages}" Margin="8,0">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <WrapPanel />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Button Style="{StaticResource SwatchButton}" ToolTip="{Binding Name}" CommandParameter="{Binding}"
+                              Command="{Binding DataContext.ApplyBackgroundCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                        <Border Width="66" Height="48" Background="{Binding Preview}" />
+                      </Button>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </Border>
               <TextBlock Text="Kendi dokularınızı, kâğıt ve desen görsellerinizi ekleyebilirsiniz; fotoğraf galerisine karışmazlar."
                          Style="{StaticResource Caption}" Margin="12,2,12,0"
                          Visibility="{Binding HasBackgroundImages, Converter={StaticResource InverseBoolToVisibility}}" />

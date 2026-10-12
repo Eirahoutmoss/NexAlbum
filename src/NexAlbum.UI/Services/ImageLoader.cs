@@ -29,6 +29,16 @@ public sealed class ImageLoader
 
     public static ImageLoader Shared { get; } = new();
 
+    /// <summary>Önbellekte varsa görüntüyü hemen döndürür (diske gitmez); yeniden kurulan görünüm modelleri titremesin diye.</summary>
+    public ImageSource? TryGetCached(PhotoAsset asset, int decodeWidth)
+    {
+        ArgumentNullException.ThrowIfNull(asset);
+        lock (gate)
+        {
+            return map.TryGetValue((asset.SourcePath, decodeWidth), out var node) ? node.Value.Image : null;
+        }
+    }
+
     /// <summary>Görüntüyü yükler; başarısızsa null döner. Herhangi bir iş parçacığından çağrılabilir (sonuç dondurulmuştur).</summary>
     public ImageSource? Load(PhotoAsset asset, int decodeWidth)
     {

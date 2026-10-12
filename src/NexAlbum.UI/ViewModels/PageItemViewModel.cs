@@ -5,6 +5,7 @@ using System.Windows.Media.Effects;
 using CommunityToolkit.Mvvm.ComponentModel;
 using NexAlbum.Core.Geometry;
 using NexAlbum.Core.Projects;
+using NexAlbum.Export.Pdf;
 using NexAlbum.UI.Services;
 
 namespace NexAlbum.UI.ViewModels;
@@ -114,6 +115,10 @@ public sealed class SlotItemViewModel : ObservableObject
     private ImageSource? detail;
     private bool loadingThumbnail;
     private int detailVersion;
+    private bool isSelected;
+    private bool isDropTarget;
+    private PhotoPlacement? placement;
+    private RectMm imageRect;
 
     public SlotItemViewModel(Slot slot, RectMm bounds, PhotoAsset? asset, bool sample = false)
     {
@@ -138,6 +143,13 @@ public sealed class SlotItemViewModel : ObservableObject
         ShapeFill = slot.Mat is { } mat ? DesignBrushes.Solid(mat.Color) : sample ? DesignBrushes.SamplePhoto : DesignBrushes.EmptySlot;
         Shadow = slot.Shadow is { } shadow ? DesignBrushes.Shadow(shadow) : null;
 
+        placement = slot.Placement;
+        imageRect = ComputeImageRect(placement);
+        if (asset is not null)
+        {
+            thumbnail = ImageLoader.Shared.TryGetCached(asset, ImageLoader.ThumbnailWidth);
+        }
+
         if (slot.Border is { WidthMm: > 0 } border)
         {
             var half = border.WidthMm / 2;
@@ -148,6 +160,8 @@ public sealed class SlotItemViewModel : ObservableObject
     }
 
     public Slot Slot { get; }
+
+    public string Id => Slot.Id;
 
     public PhotoAsset? Asset { get; }
 
@@ -181,6 +195,33 @@ public sealed class SlotItemViewModel : ObservableObject
 
     public double StrokeThickness { get; }
 
+    /// <summary>Görüntünün (tamamının) fotoğraf alanına göre çizim dikdörtgeni; PDF ile aynı hesap (ImageFit).</summary>
+    public double ImageX => imageRect.X;
+
+    public double ImageY => imageRect.Y;
+
+    public double ImageWidth => imageRect.Width;
+
+    public double ImageHeight => imageRect.Height;
+
+    public double ImageRotation => placement?.Rotation ?? 0;
+
+    /// <summary>Geçerli yerleşim (sürükleme sırasında önizleme yerleşimi).</summary>
+    public PhotoPlacement? Placement => placement;
+
+    public bool IsSelected
+    {
+        get => isSelected;
+        set => SetProperty(ref isSelected, value);
+    }
+
+    /// <summary>Sürüklenen fotoğraf bu yuvanın üzerinde.</summary>
+    public bool IsDropTarget
+    {
+        get => isDropTarget;
+        set => SetProperty(ref isDropTarget, value);
+    }
+
     public bool IsEmpty => Asset is null;
 
     public bool ShowEmptyLabel => IsEmpty && !sample;
@@ -190,8 +231,24 @@ public sealed class SlotItemViewModel : ObservableObject
     /// <summary>Fotoğraf alanının zemini: örnekte "gökyüzü", boş yuvada gri, fotoğraf varsa yok.</summary>
     public Brush? PhotoBackground => sample ? DesignBrushes.SamplePhoto : IsEmpty ? DesignBrushes.EmptySlot : null;
 
-    /// <summary>"cover" kaplar (kırpar), "contain" sığdırır. Otomatik yerleşim asla esnetmez.</summary>
-    public Stretch Stretch => Slot.CropMode == CropMode.Contain ? Stretch.Uniform : Stretch.UniformToFill;
+    /// <summary>Yerleşimi kaydetmeden gösterir (sürükleyerek kaydırma, tekerlekle yakınlaştırma).</summary>
+    public void Preview(PhotoPlacement value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        placement = value;
+        imageRect = ComputeImageRect(value);
+        OnPropertyChanged(nameof(Placement));
+        OnPropertyChanged(nameof(ImageX));
+        OnPropertyChanged(nameof(ImageY));
+        OnPropertyChanged(nameof(ImageWidth));
+        OnPropertyChanged(nameof(ImageHeight));
+        OnPropertyChanged(nameof(ImageRotation));
+    }
+
+    private RectMm ComputeImageRect(PhotoPlacement? value) =>
+        Asset is null || value is null || PhotoWidth <= 0 || PhotoHeight <= 0
+            ? new RectMm(0, 0, Math.Max(0, PhotoWidth), Math.Max(0, PhotoHeight))
+            : ImageFit.FullImageRect(new RectMm(0, 0, PhotoWidth, PhotoHeight), Asset.DisplayAspectRatio, value, Slot.CropMode);
 
     public ImageSource? Image
     {
@@ -228,6 +285,13 @@ public sealed class SlotItemViewModel : ObservableObject
 
         if (Asset is not null && detail is null)
         {
+            if (ImageLoader.Shared.TryGetCached(Asset, ImageLoader.DetailWidth) is { } cached)
+            {
+                detail = cached;
+                OnPropertyChanged(nameof(Image));
+                return;
+            }
+
             _ = LoadAsync(ImageLoader.DetailWidth, image => detail = image, version);
         }
     }

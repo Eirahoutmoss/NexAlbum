@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.IO;
 using CommunityToolkit.Mvvm.Input;
 using NexAlbum.Assets.Import;
 using NexAlbum.Core.Common;
@@ -23,7 +22,7 @@ public sealed partial class MainViewModel
 
     public const double DefaultMarginPercent = 4;
 
-    private bool applyToAllPages;
+    private DesignScope designScope = DesignScope.Page;
     private double backgroundOpacity = 1;
     private string customColor = "#FFFFFF";
     private double gapPercent = DefaultGapPercent;
@@ -58,29 +57,33 @@ public sealed partial class MainViewModel
 
     public RelayCommand<TemplateItemViewModel> ApplyTemplateCommand { get; private set; } = null!;
 
-    /// <summary>false: yalnızca seçili sayfa; true: kilitsiz tüm sayfalar (ve proje varsayılanı).</summary>
+    /// <summary>Kilitsiz tüm sayfalar (ve proje varsayılanı).</summary>
     public bool ApplyToAllPages
     {
-        get => applyToAllPages;
-        set
-        {
-            if (SetProperty(ref applyToAllPages, value))
-            {
-                OnPropertyChanged(nameof(ApplyToSelectedPage));
-                OnPropertyChanged(nameof(DesignScopeHint));
-            }
-        }
+        get => designScope == DesignScope.AllPages;
+        set => SetScope(value, DesignScope.AllPages);
     }
 
+    /// <summary>Yalnızca seçili sayfa (varsayılan).</summary>
     public bool ApplyToSelectedPage
     {
-        get => !applyToAllPages;
-        set => ApplyToAllPages = !value;
+        get => designScope == DesignScope.Page;
+        set => SetScope(value, DesignScope.Page);
     }
 
-    public string DesignScopeHint => ApplyToAllPages
-        ? "Kilitsiz tüm sayfalara uygulanır ve yeni sayfalar için varsayılan olur."
-        : "Yalnızca seçili sayfaya uygulanır.";
+    /// <summary>Yalnızca seçili yuva (çerçeve için; fon her zaman sayfanındır).</summary>
+    public bool ApplyToSelectedSlot
+    {
+        get => designScope == DesignScope.Slot;
+        set => SetScope(value, DesignScope.Slot);
+    }
+
+    public string DesignScopeHint => designScope switch
+    {
+        DesignScope.AllPages => "Kilitsiz tüm sayfalara uygulanır ve yeni sayfalar için varsayılan olur.",
+        DesignScope.Slot => "Çerçeve yalnızca seçili yuvaya uygulanır (tuvalde bir fotoğrafa tıklayın). Fon sayfaya uygulanır.",
+        _ => "Yalnızca seçili sayfaya uygulanır.",
+    };
 
     /// <summary>Fon opaklığı (0–1); görsel fonlarda kâğıt beyazıyla karışır.</summary>
     public double BackgroundOpacity
@@ -150,6 +153,18 @@ public sealed partial class MainViewModel
         }
 
         var now = clock.GetUtcNow();
+        if (designScope == DesignScope.Slot)
+        {
+            if (SelectedSlot is not { } slot)
+            {
+                Status = "Önce tuvalde bir yuvaya tıklayın ya da kapsamı «Seçili sayfa» yapın.";
+                return;
+            }
+
+            EditSelectedPage(p => PageEditor.ApplyFrame(p, slot.Id, item.Frame, now), "Çerçeve «" + item.Name + "» yuvaya uygulandı.");
+            return;
+        }
+
         ApplyDesign(
             "Çerçeve «" + item.Name + "»",
             p => PageDesigner.ApplyFrame(p, item.Frame, now),
@@ -196,31 +211,7 @@ public sealed partial class MainViewModel
             return;
         }
 
-        IsBusy = true;
-        Status = "Fon görselleri okunuyor…";
-        try
-        {
-            var result = await Task.Run(() => new PhotoImporter().ImportFiles(files, current, new ImportOptions { Role = AssetRole.Background })).ConfigureAwait(true);
-            if (result.Imported.Count > 0)
-            {
-                UpdateProject(result.ApplyTo(current));
-            }
-
-            Status = string.Format(
-                CultureInfo.CurrentCulture,
-                "{0} fon görseli eklendi, {1} zaten projedeydi, {2} okunamadı.",
-                result.Imported.Count,
-                result.AlreadyInProject.Count,
-                result.Skipped.Count);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            dialogs.Warn("Görseller okunamadı: " + ex.Message);
-        }
-        finally
-        {
-            IsBusy = false;
-        }
+        await RunImportAsync(c => new PhotoImporter().ImportFiles(files, c, new ImportOptions { Role = AssetRole.Background }), "fon görseli").ConfigureAwait(true);
     }
 
     /// <summary>Boşluk ve kenar payı proje genelidir: kilitsiz tüm sayfalar kendi şablonlarıyla yeniden ölçülendirilir.</summary>
@@ -383,6 +374,20 @@ public sealed partial class MainViewModel
         Status = string.Format(CultureInfo.CurrentCulture, "{0}: sayfa {1} güncellendi.", what, number);
     }
 
+    private void SetScope(bool selected, DesignScope scope)
+    {
+        if (!selected || designScope == scope)
+        {
+            return;
+        }
+
+        designScope = scope;
+        OnPropertyChanged(nameof(ApplyToAllPages));
+        OnPropertyChanged(nameof(ApplyToSelectedPage));
+        OnPropertyChanged(nameof(ApplyToSelectedSlot));
+        OnPropertyChanged(nameof(DesignScopeHint));
+    }
+
     private void SetSpacing(double? gap, double? margin)
     {
         if (project is null)
@@ -398,4 +403,12 @@ public sealed partial class MainViewModel
             ? string.Format(CultureInfo.CurrentCulture, "Şablon boşluklarına dönüldü; {0} sayfa yeniden ölçülendirildi.", changed)
             : string.Format(CultureInfo.CurrentCulture, "Boşluk %{0:0.#}, kenar %{1:0.#}; {2} sayfa yeniden ölçülendirildi.", gap, margin, changed);
     }
+}
+
+/// <summary>Tasarım işlemlerinin kapsamı.</summary>
+public enum DesignScope
+{
+    Slot,
+    Page,
+    AllPages,
 }

@@ -26,6 +26,9 @@ public interface IDialogService
 
     string? AskPhotoFolder();
 
+    /// <summary>Fotoğraf dosyalarını seçtirir (çoklu seçim); iptalde null.</summary>
+    IReadOnlyList<string>? AskPhotoFiles();
+
     /// <summary>Fon olarak kullanılacak görselleri seçtirir (çoklu seçim); iptalde null.</summary>
     IReadOnlyList<string>? AskBackgroundImages();
 

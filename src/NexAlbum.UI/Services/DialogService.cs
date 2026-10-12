@@ -12,6 +12,8 @@ public sealed class DialogService(Window owner) : IDialogService
 {
     private const string ProjectFilter = "NexAlbum projesi (*.albumproj)|*.albumproj";
 
+    private const string ImageFilter = "Görseller|*.jpg;*.jpeg;*.png;*.tif;*.tiff;*.webp;*.bmp;*.gif|Tüm dosyalar|*.*";
+
     public NewProjectChoice? AskNewProject()
     {
         var window = new NewProjectWindow { Owner = owner };
@@ -43,12 +45,23 @@ public sealed class DialogService(Window owner) : IDialogService
         return dialog.ShowDialog(owner) == true ? dialog.FolderName : null;
     }
 
+    public IReadOnlyList<string>? AskPhotoFiles()
+    {
+        var dialog = new OpenFileDialog
+        {
+            Title = "Fotoğraf seçin (Ctrl veya Shift ile birden çok)",
+            Filter = ImageFilter,
+            Multiselect = true,
+        };
+        return dialog.ShowDialog(owner) == true ? dialog.FileNames : null;
+    }
+
     public IReadOnlyList<string>? AskBackgroundImages()
     {
         var dialog = new OpenFileDialog
         {
             Title = "Fon görseli seçin",
-            Filter = "Görseller|*.jpg;*.jpeg;*.png;*.tif;*.tiff;*.bmp;*.webp|Tüm dosyalar|*.*",
+            Filter = ImageFilter,
             Multiselect = true,
         };
         return dialog.ShowDialog(owner) == true ? dialog.FileNames : null;

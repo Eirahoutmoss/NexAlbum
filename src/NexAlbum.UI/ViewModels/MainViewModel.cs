@@ -57,6 +57,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         NextPageCommand = new RelayCommand(() => MovePage(1), () => SelectedPage is not null && SelectedPage.Index < Pages.Count - 1);
         AboutCommand = new RelayCommand(dialogs.ShowAbout);
         InitializeDesign();
+        InitializeEditing();
     }
 
     public IReadOnlyList<LayoutModeOption> LayoutModes { get; } =
@@ -168,6 +169,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                 OnPropertyChanged(nameof(SelectedPageInfo));
                 OnPropertyChanged(nameof(LockButtonText));
                 OnDesignPageChanged(value);
+                RestoreSlotSelection(value);
                 RefreshCommands();
             }
         }
@@ -314,40 +316,16 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     /// <summary>Pencere kapanırken: kaydedilmemiş değişiklik varsa sorar. Kapanabilirse true.</summary>
     public bool CanClose() => ConfirmDiscard();
 
+    /// <summary>Klasörden (alt klasörleriyle) fotoğraf ekler.</summary>
     public async Task ImportAsync()
     {
-        var current = project;
         var folder = dialogs.AskPhotoFolder();
-        if (current is null || folder is null)
+        if (project is null || folder is null)
         {
             return;
         }
 
-        IsBusy = true;
-        Status = "Fotoğraflar okunuyor…";
-        try
-        {
-            var result = await Task.Run(() => new PhotoImporter().ImportFolder(folder, current, new ImportOptions { Recursive = true })).ConfigureAwait(true);
-            if (result.Imported.Count > 0)
-            {
-                UpdateProject(result.ApplyTo(current));
-            }
-
-            Status = string.Format(
-                CultureInfo.CurrentCulture,
-                "{0} fotoğraf eklendi, {1} zaten projedeydi, {2} okunamadı.",
-                result.Imported.Count,
-                result.AlreadyInProject.Count,
-                result.Skipped.Count);
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            dialogs.Warn("Klasör okunamadı: " + ex.Message);
-        }
-        finally
-        {
-            IsBusy = false;
-        }
+        await RunImportAsync(c => new PhotoImporter().ImportFolder(folder, c, new ImportOptions { Recursive = true }), "fotoğraf").ConfigureAwait(true);
     }
 
     public async Task AutoLayoutAsync(bool newSeed)
@@ -595,6 +573,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     {
         var selectedIndex = SelectedPage?.Index;
         SelectedPage = null;
+        var previousProject = project;
         project = value;
         IsDirty = true;
 
@@ -605,10 +584,16 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             Assets.Add(new AssetItemViewModel(asset, used.Contains(asset.Id)));
         }
 
+        // Değişmeyen sayfaların görünüm modelleri (ve yüklenmiş görüntüleri) korunur; düzenlemede titreme olmaz.
+        var reusable = previousProject is not null && ReferenceEquals(previousProject.Assets, value.Assets) && ReferenceEquals(previousProject.Profile, value.Profile)
+            ? Pages.ToDictionary(p => p.Page, ReferenceEqualityComparer.Instance)
+            : null;
         Pages.Clear();
         for (var i = 0; i < value.Pages.Count; i++)
         {
-            Pages.Add(new PageItemViewModel(value.Pages[i], i, value));
+            Pages.Add(reusable is not null && reusable.TryGetValue(value.Pages[i], out var kept) && kept.Index == i
+                ? kept
+                : new PageItemViewModel(value.Pages[i], i, value));
         }
 
         if (selectedIndex is { } index)
@@ -644,6 +629,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         PreviousPageCommand.NotifyCanExecuteChanged();
         NextPageCommand.NotifyCanExecuteChanged();
         RefreshDesignCommands();
+        RefreshEditCommands();
     }
 
     private static IReadOnlyList<TemplateDefinition> UsedTemplates(AlbumProject project)

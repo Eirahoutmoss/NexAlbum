@@ -70,8 +70,15 @@
         <Grid Canvas.Left="{Binding PhotoX}" Canvas.Top="{Binding PhotoY}"
               Width="{Binding PhotoWidth}" Height="{Binding PhotoHeight}"
               Clip="{Binding PhotoClip}" Background="{Binding PhotoBackground}">
-          <Image Source="{Binding Image}" Stretch="{Binding Stretch}"
-                 HorizontalAlignment="Center" VerticalAlignment="Center" />
+          <Canvas>
+            <Image Source="{Binding Image}" Stretch="Fill"
+                   Canvas.Left="{Binding ImageX}" Canvas.Top="{Binding ImageY}"
+                   Width="{Binding ImageWidth}" Height="{Binding ImageHeight}" RenderTransformOrigin="0.5,0.5">
+              <Image.RenderTransform>
+                <RotateTransform Angle="{Binding ImageRotation}" />
+              </Image.RenderTransform>
+            </Image>
+          </Canvas>
           <TextBlock Text="Boş yuva" FontSize="6" Foreground="#9E9E9E"
                      HorizontalAlignment="Center" VerticalAlignment="Center"
                      Visibility="{Binding ShowEmptyLabel, Converter={StaticResource BoolToVisibility}}" />
@@ -80,6 +87,11 @@
                      Visibility="{Binding IsMissing, Converter={StaticResource BoolToVisibility}}" />
         </Grid>
         <Path Data="{Binding StrokeGeometry}" Stroke="{Binding StrokeBrush}" StrokeThickness="{Binding StrokeThickness}" />
+        <!-- Seçim ve bırakma vurgusu (yalnızca ekranda) -->
+        <Path Data="{Binding OuterGeometry}" Stroke="{StaticResource AccentBrush}" StrokeThickness="1.2" StrokeDashArray="3 1.5"
+              IsHitTestVisible="False" Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibility}}" />
+        <Path Data="{Binding OuterGeometry}" Stroke="{StaticResource WarningBrush}" StrokeThickness="2" Fill="#330066CC"
+              IsHitTestVisible="False" Visibility="{Binding IsDropTarget, Converter={StaticResource BoolToVisibility}}" />
       </Canvas>
     </DataTemplate>
 

@@ -29,6 +29,12 @@ public sealed class AssetItemViewModel(PhotoAsset asset, bool used) : Observable
             if (thumbnail is null && !loading)
             {
                 loading = true;
+                thumbnail = ImageLoader.Shared.TryGetCached(Asset, ImageLoader.ThumbnailWidth);
+                if (thumbnail is not null)
+                {
+                    return thumbnail;
+                }
+
                 _ = LoadAsync();
             }
 

@@ -340,6 +340,122 @@ public sealed class MainViewModelTests : IDisposable
         vm.Project.Settings.Design.Background!.ImageAssetId.Should().Be(vm.Project.Backgrounds[0].Id, "sayfa yokken proje varsayılanı olur");
     }
 
+    [Fact]
+    public async Task PhotosCanBePickedOneByOneOrDroppedAsFilesAndFolders()
+    {
+        var a = Path.Combine(dir, "a.png");
+        var b = Path.Combine(dir, "b.png");
+        var sub = Directory.CreateDirectory(Path.Combine(dir, "klasor", "alt")).FullName;
+        var c = Path.Combine(sub, "c.png");
+        foreach (var f in new[] { a, b, c })
+        {
+            File.WriteAllBytes(f, TinyPng);
+        }
+
+        File.WriteAllText(Path.Combine(sub, "not.txt"), "görsel değil");
+        var dialogs = new FakeDialogs { NewProject = new NewProjectChoice("Seçme", BuiltInProfiles.All[0]), PhotoFiles = [a] };
+        using var vm = new MainViewModel(dialogs);
+        vm.NewProject();
+
+        await vm.ImportFilesAsync();
+        vm.Assets.Should().ContainSingle().Which.FileName.Should().Be("a.png");
+
+        await vm.ImportPathsAsync([a, b, Path.Combine(dir, "klasor")]);
+        vm.Assets.Select(x => x.FileName).Should().BeEquivalentTo(new[] { "a.png", "b.png", "c.png" }, "klasörler alt klasörleriyle taranır, görsel olmayan atlanır");
+        vm.Status.Should().Contain("2 fotoğraf eklendi").And.Contain("1 zaten projedeydi");
+
+        await vm.ImportPathsAsync([Path.Combine(sub, "not.txt")]);
+        vm.Status.Should().Contain("desteklenen görsel yok");
+    }
+
+    [Fact]
+    public void PhotosArePlacedSwappedPannedZoomedAndRemoved()
+    {
+        var path = Path.Combine(dir, "duzen.albumproj");
+        var project = SampleProject(4);
+        project = project.WithPages(
+        [
+            new AlbumPage
+            {
+                Id = "p1",
+                Elements =
+                [
+                    new Slot { Id = "s1", Bounds = new RectMm(10, 10, 100, 100), Placement = new PhotoPlacement { AssetId = "asset-0001" } },
+                    new Slot { Id = "s2", Bounds = new RectMm(120, 10, 100, 150), Placement = new PhotoPlacement { AssetId = "asset-0002" } },
+                    new Slot { Id = "s3", Bounds = new RectMm(10, 120, 100, 100) },
+                ],
+            },
+            new AlbumPage { Id = "p2", Elements = [new Slot { Id = "t1", Bounds = new RectMm(10, 10, 100, 100) }] },
+        ]);
+        ProjectPackageWriter.Save(path, project, new SaveOptions());
+        var dialogs = new FakeDialogs();
+        using var vm = new MainViewModel(dialogs);
+        vm.Open(path);
+        var secondPage = vm.Pages[1];
+
+        // Galeride çift tık: seçim yoksa ilk boş yuvaya.
+        vm.PlaceIntoSelection("asset-0003").Should().BeTrue();
+        SlotById(vm, "s3").Placement!.AssetId.Should().Be("asset-0003");
+        vm.SelectedSlot!.Id.Should().Be("s3", "yerleştirilen yuva seçili kalır");
+        vm.Pages[1].Should().BeSameAs(secondPage, "değişmeyen sayfanın görünüm modeli korunur");
+        vm.Assets.Single(x => x.Asset.Id == "asset-0003").IsUsed.Should().BeTrue();
+
+        // Galeriden sürükle-bırak dolu yuvaya: eskisi kullanılmamış olur.
+        vm.PlacePhoto(vm.SelectedPage!.Slots.Single(x => x.Id == "s1"), "asset-0004").Should().BeTrue();
+        SlotById(vm, "s1").Placement!.AssetId.Should().Be("asset-0004");
+        vm.Project!.UnusedAssets().Select(x => x.Id).Should().Equal("asset-0001");
+
+        // Yuvadan yuvaya: yer değiştirir.
+        vm.MoveSlot("s1", vm.SelectedPage!.Slots.Single(x => x.Id == "s2")).Should().BeTrue();
+        SlotById(vm, "s1").Placement!.AssetId.Should().Be("asset-0002");
+        SlotById(vm, "s2").Placement!.AssetId.Should().Be("asset-0004");
+        vm.Status.Should().Contain("yer değiştirdi");
+
+        // Seçili yuvada yakınlaştırma ve kaydırma (sınırlı).
+        vm.SelectSlot(vm.SelectedPage!.Slots.Single(x => x.Id == "s1"));
+        vm.SelectedSlotInfo.Should().Contain("dpi");
+        vm.SlotZoomPercent = 200;
+        SlotById(vm, "s1").Placement!.Scale.Should().Be(2);
+        vm.SlotZoomPercent.Should().Be(200);
+        vm.ZoomSlot(vm.SelectedSlot!, 100);
+        SlotById(vm, "s1").Placement!.Scale.Should().Be(Core.Layout.PageEditor.MaxScale);
+
+        var slot = vm.SelectedSlot!;
+        vm.PreviewPan(slot, slot.Placement!, deltaXMm: 1000, deltaYMm: 0);
+        slot.Placement!.OffsetX.Should().BeGreaterThan(0).And.BeLessThanOrEqualTo(1);
+        SlotById(vm, "s1").Placement!.OffsetX.Should().Be(0, "önizleme kaydedilmez");
+        vm.CommitPlacement(slot);
+        SlotById(vm, "s1").Placement!.OffsetX.Should().BeGreaterThan(0);
+
+        vm.CenterSelectedPhoto();
+        SlotById(vm, "s1").Placement.Should().Be(new PhotoPlacement { AssetId = "asset-0002" });
+
+        vm.FitButtonText.Should().Be("Tamamını göster");
+        vm.ToggleFit();
+        SlotById(vm, "s1").CropMode.Should().Be(CropMode.Contain);
+        vm.FitButtonText.Should().Be("Yuvayı kapla");
+
+        // Tek yuvaya çerçeve.
+        vm.ApplyToSelectedSlot = true;
+        vm.ApplyFrame(vm.Frames.Single(f => f.Id == "polaroid"));
+        SlotById(vm, "s1").StyleId.Should().Be("polaroid");
+        SlotById(vm, "s2").StyleId.Should().BeNull();
+
+        vm.ClearSelectedSlot();
+        SlotById(vm, "s1").Placement.Should().BeNull();
+
+        // Kilitli sayfa düzenlenmez.
+        vm.ToggleLock();
+        vm.PlaceIntoSelection("asset-0001").Should().BeFalse();
+        vm.Status.Should().Contain("kilitli");
+
+        // Başka sayfaya geçince yuva seçimi kalkar.
+        vm.SelectedPage = vm.Pages[1];
+        vm.SelectedSlot.Should().BeNull();
+    }
+
+    private static Slot SlotById(MainViewModel vm, string id) => vm.Project!.Pages.SelectMany(p => p.Slots).Single(s => s.Id == id);
+
     private static readonly byte[] TinyPng = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAABQAAAAeCAIAAACjcKk8AAAAIklEQVR4nGPkWhDFQC5gIlvnqOZRzaOaRzWPah7VPAQ0AwAeUgFAi1B09gAAAABJRU5ErkJggg==");
 
     private static AlbumProject SampleProject(int photos)
@@ -380,6 +496,10 @@ public sealed class MainViewModelTests : IDisposable
         public IReadOnlyList<string>? BackgroundFiles { get; init; }
 
         public IReadOnlyList<string>? AskBackgroundImages() => BackgroundFiles;
+
+        public IReadOnlyList<string>? PhotoFiles { get; init; }
+
+        public IReadOnlyList<string>? AskPhotoFiles() => PhotoFiles;
 
         public AlbumProfile? EditedProfile { get; set; }
 
