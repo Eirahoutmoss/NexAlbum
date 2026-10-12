@@ -46,9 +46,10 @@ public static class PageEditor
             return page;
         }
 
-        return page
+        var swapped = page
             .ReplaceElement(first with { Placement = Reset(second.Placement) })
-            .ReplaceElement(second with { Placement = Reset(first.Placement) }) with { UpdatedAt = now };
+            .ReplaceElement(second with { Placement = Reset(first.Placement) });
+        return swapped with { UpdatedAt = now };
     }
 
     /// <summary>Yuvadaki fotoğrafı çıkarır; fotoğraf "kullanılmamış" olur.</summary>
