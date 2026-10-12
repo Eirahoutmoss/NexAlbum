@@ -12,7 +12,7 @@ internal sealed class TempDir : IDisposable
 
     public string Write(string relative, byte[] content)
     {
-        var full = System.IO.Path.Combine(Path, relative);
+        var full = System.IO.Path.GetFullPath(System.IO.Path.Combine(Path, relative));
         Directory.CreateDirectory(System.IO.Path.GetDirectoryName(full)!);
         File.WriteAllBytes(full, content);
         return full;
