@@ -3,4 +3,7 @@
     <ProjectReference Include="..\NexAlbum.Core\NexAlbum.Core.csproj" />
     <ProjectReference Include="..\NexAlbum.Rendering\NexAlbum.Rendering.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="PDFsharp" />
+  </ItemGroup>
 </Project>

@@ -7,6 +7,8 @@
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <!-- Apache 2.0 (Karar 08 §7.2): EXIF/IPTC/XMP ve görüntü boyutu, pikseller çözülmeden. -->
     <PackageVersion Include="MetadataExtractor" Version="2.8.1" />
+    <!-- MIT (Karar 08, Karar 11 §3.4): baskı PDF'i; JPEG'ler yeniden sıkıştırılmadan gömülür. -->
+    <PackageVersion Include="PDFsharp" Version="6.1.1" />
   </ItemGroup>
   <ItemGroup Label="Test">
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
