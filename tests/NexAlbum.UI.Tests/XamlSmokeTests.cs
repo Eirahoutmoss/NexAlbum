@@ -30,6 +30,10 @@ public class XamlSmokeTests
             var newProject = new NewProjectWindow();
             newProject.Choice.Should().BeNull();
 
+            var editor = new ProfileEditorWindow(Core.Profiles.BuiltInProfiles.All[0]);
+            editor.Result.Should().BeNull();
+            editor.Close();
+
             var page = new PageView();
             page.Should().NotBeNull();
 
