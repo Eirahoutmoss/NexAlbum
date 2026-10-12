@@ -40,16 +40,25 @@ jobs:
           $trx = Get-ChildItem TestResults -Recurse -Filter *.trx
           if (-not $trx) { Write-Output "::error::Test sonucu (.trx) bulunamadı"; exit 1 }
           $t = 0; $p = 0; $f = 0
+          $ErrorActionPreference = 'Stop'
           foreach ($x in $trx) {
-            [xml]$d = Get-Content $x.FullName
-            $c = $d.TestRun.ResultSummary.Counters
-            $t += [int]$c.total; $p += [int]$c.passed; $f += [int]$c.failed
+            try {
+              $d = New-Object System.Xml.XmlDocument
+              $d.Load($x.FullName)
+              $c = $d.TestRun.ResultSummary.Counters
+              $t += [int]$c.total; $p += [int]$c.passed; $f += [int]$c.failed
+            } catch {
+              $msg = ($_.Exception.Message -replace '[\r\n]', ' ')
+              Write-Output "::error title=TRX okunamadi::$($x.Name): $msg"
+              exit 1
+            }
           }
           Write-Output "::notice title=Testler (${{ matrix.os }})::Toplam $t, gecen $p, basarisiz $f"
           # Her paket için en yüksek kapsam (birden çok test projesi aynı derlemeyi raporlayabilir).
           $best = @{}
           foreach ($cov in Get-ChildItem TestResults -Recurse -Filter coverage.cobertura.xml) {
-            [xml]$c = Get-Content $cov.FullName
+            $c = New-Object System.Xml.XmlDocument
+            $c.Load($cov.FullName)
             foreach ($pkg in $c.coverage.packages.package) {
               $line = [double]$pkg.'line-rate'
               if (-not $best.ContainsKey($pkg.name) -or $best[$pkg.name][0] -lt $line) {
