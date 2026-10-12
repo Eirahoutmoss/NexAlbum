@@ -1,5 +1,3 @@
-using NexAlbum.Core.Common;
-
 namespace NexAlbum.Export.Pdf;
 
 /// <summary>PDF çıktı seçenekleri (Karar 11 §3).</summary>
@@ -12,13 +10,13 @@ public sealed record PdfExportSettings
     public bool IncludeCropMarks { get; init; } = true;
 
     /// <summary>İşaretin taşma payından uzaklığı (Karar 11 §3.5 standardı: 3 mm).</summary>
-    public double CropMarkOffsetMm { get; init => field = Guard.NonNegative(value, nameof(CropMarkOffsetMm)); } = 3;
+    public double CropMarkOffsetMm { get; init => field = double.IsFinite(value) && value >= 0 ? value : throw new ArgumentOutOfRangeException(nameof(CropMarkOffsetMm)); } = 3;
 
     /// <summary>İşaret uzunluğu (Karar 11 §3.5 standardı: 5 mm).</summary>
-    public double CropMarkLengthMm { get; init => field = Guard.Positive(value, nameof(CropMarkLengthMm)); } = 5;
+    public double CropMarkLengthMm { get; init => field = double.IsFinite(value) && value > 0 ? value : throw new ArgumentOutOfRangeException(nameof(CropMarkLengthMm)); } = 5;
 
     /// <summary>"all" ya da "1-5,8".</summary>
-    public string Pages { get; init => field = Guard.NotBlank(value, nameof(Pages)); } = "all";
+    public string Pages { get; init => field = string.IsNullOrWhiteSpace(value) ? throw new ArgumentException("Sayfa seçimi boş olamaz.", nameof(Pages)) : value; } = "all";
 
     /// <summary>Her sayfa ayrı dosya (dosya_001.pdf, …).</summary>
     public bool SeparateFiles { get; init; }

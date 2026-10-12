@@ -4,7 +4,6 @@ using NexAlbum.Core.Geometry;
 using NexAlbum.Core.Projects;
 using NexAlbum.Core.Validation;
 using PdfSharp.Drawing;
-using PdfSharp.Fonts;
 using PdfSharp.Pdf;
 
 namespace NexAlbum.Export.Pdf;
@@ -14,6 +13,8 @@ public sealed record PdfExportResult(IReadOnlyList<string> Files, int PageCount,
 
 /// <summary>
 /// Baskı PDF'i (Karar 11 §3). Sayfa = bitmiş ölçü + taşma payı (+ kesim işaretleri); TrimBox ve BleedBox yazılır.
+/// Metin için yazı tipi çözümleyicisi uygulama tarafından <c>GlobalFontSettings.FontResolver</c> ile verilir;
+/// çözülemeyen metin atlanır ve uyarı olarak raporlanır.
 /// JPEG'ler yeniden sıkıştırılmadan, kaynak çözünürlükte gömülür. Değer uydurulmaz: profilde taşma payı yoksa
 /// sıfır kullanılır ve uyarı verilir; ICC profili gömülemiyorsa açıkça bildirilir.
 /// </summary>
@@ -23,14 +24,6 @@ public static class PdfAlbumExporter
 
     /// <summary>Kesim işareti kalınlığı (Karar 11 §3.5: 0,25 pt).</summary>
     private const double MarkThicknessPt = 0.25;
-
-    static PdfAlbumExporter()
-    {
-        if (OperatingSystem.IsWindows())
-        {
-            GlobalFontSettings.UseWindowsFontsUnderWindows = true;
-        }
-    }
 
     public static PdfExportResult Export(
         AlbumProject project,

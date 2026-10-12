@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Threading;
+using NexAlbum.UI.Services;
 
 namespace NexAlbum.UI;
 
@@ -17,6 +18,7 @@ public partial class App : Application
         CultureInfo.DefaultThreadCurrentCulture = turkish;
 
         DispatcherUnhandledException += OnUnhandledException;
+        WpfFontResolver.Register();
         base.OnStartup(e);
     }
 
