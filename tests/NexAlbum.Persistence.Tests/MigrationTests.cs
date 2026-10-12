@@ -1,0 +1,130 @@
+using System.Text.Json.Nodes;
+using FluentAssertions;
+using NexAlbum.Persistence.Format;
+using NexAlbum.Persistence.Migrations;
+using NexAlbum.Persistence.Packaging;
+using Xunit;
+
+namespace NexAlbum.Persistence.Tests;
+
+public class MigrationTests
+{
+    private sealed class Step(int from, Func<JsonNode, JsonNode>? body = null) : IMigration
+    {
+        public int FromVersion => from;
+
+        public int ToVersion => from + 1;
+
+        public JsonNode Migrate(JsonNode project)
+        {
+            var result = body is null ? project : body(project);
+            result["schemaVersion"] = ToVersion;
+            result["log"] = (result["log"]?.GetValue<string>() ?? string.Empty) + $"{from}>";
+            return result;
+        }
+    }
+
+    private sealed class Broken(int from, int to) : IMigration
+    {
+        public int FromVersion => from;
+
+        public int ToVersion => to;
+
+        public JsonNode Migrate(JsonNode project) => project;
+    }
+
+    [Fact]
+    public void ChainRunsStepsInOrder()
+    {
+        var chain = new MigrationChain([new Step(2), new Step(1), new Step(3)]);
+        var result = chain.Run(new JsonObject { ["schemaVersion"] = 1 }, 1, 4);
+        result["schemaVersion"]!.GetValue<int>().Should().Be(4);
+        result["log"]!.GetValue<string>().Should().Be("1>2>3>");
+    }
+
+    [Fact]
+    public void SameVersionIsANoOp()
+    {
+        var node = new JsonObject { ["schemaVersion"] = 1 };
+        MigrationChain.Default.Run(node, 1, 1).Should().BeSameAs(node);
+    }
+
+    [Fact]
+    public void GapsAreReportedAsMigrationFailure()
+    {
+        var chain = new MigrationChain([new Step(1)]);
+        FluentActions.Invoking(() => chain.Run(new JsonObject { ["schemaVersion"] = 1 }, 1, 3))
+            .Should().Throw<ProjectFormatException>().Which.Error.Should().Be(ProjectLoadError.MigrationFailed);
+    }
+
+    [Fact]
+    public void InvalidChainsAreRejected()
+    {
+        FluentActions.Invoking(() => new MigrationChain([new Broken(1, 3)])).Should().Throw<ArgumentException>();
+        FluentActions.Invoking(() => new MigrationChain([new Step(1), new Step(1)])).Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void StepThatForgetsVersionOrThrowsFails()
+    {
+        var forgetful = new MigrationChain([new Broken(1, 2)]);
+        FluentActions.Invoking(() => forgetful.Run(new JsonObject { ["schemaVersion"] = 1 }, 1, 2))
+            .Should().Throw<ProjectFormatException>().WithMessage("*schemaVersion*");
+
+        var throwing = new MigrationChain([new Step(1, _ => throw new InvalidOperationException("boom"))]);
+        FluentActions.Invoking(() => throwing.Run(new JsonObject { ["schemaVersion"] = 1 }, 1, 2))
+            .Should().Throw<ProjectFormatException>().Which.InnerException.Should().BeOfType<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void OldProjectIsMigratedOnLoadAndBackedUp()
+    {
+        using var dir = new TempDir();
+        var path = dir.File("eski.albumproj");
+
+        // v0 → v1: eski sürüm "title" alanını "name" olarak yeniden adlandırır.
+        var old = PackageBuilder.EditJson(PackageBuilder.Valid(), ProjectFormat.ProjectEntry, n =>
+        {
+            n["schemaVersion"] = 0;
+            n["title"] = n["name"]!.GetValue<string>();
+            n.AsObject().Remove("name");
+        });
+        File.WriteAllBytes(path, old);
+
+        var renameTitle = new Step(0, n =>
+        {
+            n["name"] = n["title"]!.GetValue<string>();
+            n.AsObject().Remove("title");
+            return n;
+        });
+
+        var loaded = ProjectPackageReader.Load(path, new LoadOptions { Migrations = new MigrationChain([renameTitle]) });
+
+        loaded.Migrated.Should().BeTrue();
+        loaded.OriginalSchemaVersion.Should().Be(0);
+        loaded.Project.Name.Should().Be("Ahmet & Zeynep Düğün Albümü");
+        loaded.MigrationBackup.Should().Be(path + ".bak-v0");
+        File.ReadAllBytes(loaded.MigrationBackup!).Should().Equal(old, "yedek orijinalin birebir kopyası olmalı");
+        File.ReadAllBytes(path).Should().Equal(old, "açmak dosyayı değiştirmemeli");
+    }
+
+    [Fact]
+    public void MigrationWithoutBackupWhenDisabled()
+    {
+        using var dir = new TempDir();
+        var path = dir.File("eski.albumproj");
+        File.WriteAllBytes(path, PackageBuilder.EditJson(PackageBuilder.Valid(), ProjectFormat.ProjectEntry, n => n["schemaVersion"] = 0));
+
+        var loaded = ProjectPackageReader.Load(path, new LoadOptions { Migrations = new MigrationChain([new Step(0)]), BackupBeforeMigration = false });
+        loaded.Migrated.Should().BeTrue();
+        loaded.MigrationBackup.Should().BeNull();
+        File.Exists(path + ".bak-v0").Should().BeFalse();
+    }
+
+    [Fact]
+    public void OldProjectWithoutMigrationFailsSafely()
+    {
+        var old = PackageBuilder.EditJson(PackageBuilder.Valid(), ProjectFormat.ProjectEntry, n => n["schemaVersion"] = 0);
+        PackageBuilder.LoadFails(old).Error.Should().Be(ProjectLoadError.MigrationFailed);
+    }
+}
