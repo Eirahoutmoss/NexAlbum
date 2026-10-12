@@ -4,7 +4,7 @@
   <!-- Birim: milimetre. Viewbox ekrana ölçekler; koordinatlar taşma payı alanının sol üst köşesine göredir. -->
   <Viewbox Stretch="Uniform">
     <Grid Width="{Binding CanvasWidth}" Height="{Binding CanvasHeight}" Background="{Binding Background}">
-      <ItemsControl ItemsSource="{Binding Slots}" Focusable="False">
+      <ItemsControl ItemsSource="{Binding Slots}" Focusable="False" ItemTemplate="{StaticResource SlotTemplate}">
         <ItemsControl.ItemsPanel>
           <ItemsPanelTemplate>
             <Canvas />
@@ -16,22 +16,6 @@
             <Setter Property="Canvas.Top" Value="{Binding Y}" />
           </Style>
         </ItemsControl.ItemContainerStyle>
-        <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <Border Width="{Binding Width}" Height="{Binding Height}" Background="#E8E8E8" ClipToBounds="True">
-              <Grid>
-                <Image Source="{Binding Image}" Stretch="{Binding Stretch}"
-                       HorizontalAlignment="Center" VerticalAlignment="Center" />
-                <TextBlock Text="Boş yuva" FontSize="6" Foreground="#9E9E9E"
-                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Visibility="{Binding IsEmpty, Converter={StaticResource BoolToVisibility}}" />
-                <TextBlock Text="Dosya bulunamadı" FontSize="6" Foreground="#C62828"
-                           HorizontalAlignment="Center" VerticalAlignment="Center"
-                           Visibility="{Binding IsMissing, Converter={StaticResource BoolToVisibility}}" />
-              </Grid>
-            </Border>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
       </ItemsControl>
 
       <!-- Kesim çizgisi (bitmiş ölçü) ve güvenli alan -->

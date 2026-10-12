@@ -21,7 +21,7 @@ public sealed record LayoutModeOption(LayoutMode Mode, string Name);
 /// <summary>
 /// Ana pencerenin görünüm modeli: proje yaşam döngüsü, içe aktarma, otomatik yerleşim ve ön kontrol.
 /// </summary>
-public sealed class MainViewModel : ObservableObject, IDisposable
+public sealed partial class MainViewModel : ObservableObject, IDisposable
 {
     private readonly IDialogService dialogs;
     private readonly TimeProvider clock;
@@ -56,6 +56,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         PreviousPageCommand = new RelayCommand(() => MovePage(-1), () => SelectedPage is { Index: > 0 });
         NextPageCommand = new RelayCommand(() => MovePage(1), () => SelectedPage is not null && SelectedPage.Index < Pages.Count - 1);
         AboutCommand = new RelayCommand(dialogs.ShowAbout);
+        InitializeDesign();
     }
 
     public IReadOnlyList<LayoutModeOption> LayoutModes { get; } =
@@ -107,7 +108,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public bool HasNoProject => project is null;
 
-    public bool HasPhotos => project is { Assets.Count: > 0 };
+    public bool HasPhotos => project is not null && project.Photos.Count > 0;
 
     public bool IsDirty
     {
@@ -166,6 +167,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 value?.SetDetail(true);
                 OnPropertyChanged(nameof(SelectedPageInfo));
                 OnPropertyChanged(nameof(LockButtonText));
+                OnDesignPageChanged(value);
                 RefreshCommands();
             }
         }
@@ -186,7 +188,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public string PhotoSummary => project is null
         ? string.Empty
-        : string.Format(CultureInfo.CurrentCulture, "{0} fotoğraf · {1} kullanılmamış", project.Assets.Count, project.UnusedAssets().Count);
+        : string.Format(CultureInfo.CurrentCulture, "{0} fotoğraf · {1} kullanılmamış", project.Photos.Count, project.UnusedAssets().Count);
 
     /// <summary>Profil özeti (Karar 03 §10.4).</summary>
     public string ProfileSummary => project is null ? string.Empty : ProfileText.Summary(project.Profile, project.PageSize);
@@ -598,7 +600,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
         var used = value.Pages.SelectMany(p => p.Slots).Select(s => s.Placement?.AssetId).OfType<string>().ToHashSet(StringComparer.Ordinal);
         Assets.Clear();
-        foreach (var asset in value.Assets)
+        foreach (var asset in value.Photos)
         {
             Assets.Add(new AssetItemViewModel(asset, used.Contains(asset.Id)));
         }
@@ -622,6 +624,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(PhotoSummary));
         OnPropertyChanged(nameof(ProfileSummary));
         OnPropertyChanged(nameof(SelectedPageInfo));
+        RefreshDesign(value);
         RefreshCommands();
     }
 
@@ -640,6 +643,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         ToggleLockCommand.NotifyCanExecuteChanged();
         PreviousPageCommand.NotifyCanExecuteChanged();
         NextPageCommand.NotifyCanExecuteChanged();
+        RefreshDesignCommands();
     }
 
     private static IReadOnlyList<TemplateDefinition> UsedTemplates(AlbumProject project)

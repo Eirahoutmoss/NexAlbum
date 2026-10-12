@@ -26,6 +26,9 @@ public interface IDialogService
 
     string? AskPhotoFolder();
 
+    /// <summary>Fon olarak kullanılacak görselleri seçtirir (çoklu seçim); iptalde null.</summary>
+    IReadOnlyList<string>? AskBackgroundImages();
+
     /// <summary>Profil düzenleyiciyi açar; iptalde null.</summary>
     AlbumProfile? EditProfile(AlbumProfile profile);
 

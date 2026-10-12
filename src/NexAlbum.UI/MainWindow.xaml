@@ -109,7 +109,7 @@
         <ColumnDefinition Width="4" />
         <ColumnDefinition Width="*" MinWidth="400" />
         <ColumnDefinition Width="4" />
-        <ColumnDefinition Width="320" MinWidth="240" MaxWidth="500" />
+        <ColumnDefinition Width="340" MinWidth="260" MaxWidth="560" />
       </Grid.ColumnDefinitions>
 
       <!-- ② Galeri -->
@@ -189,40 +189,220 @@
 
       <GridSplitter Grid.Column="3" Width="4" HorizontalAlignment="Stretch" Background="{StaticResource BorderBrush}" />
 
-      <!-- ④ Özellikler -->
-      <ScrollViewer Grid.Column="4" Background="{StaticResource SurfaceBrush}" VerticalScrollBarVisibility="Auto">
-        <StackPanel>
-          <TextBlock Text="Sayfa" Style="{StaticResource PanelHeader}" />
-          <TextBlock Text="{Binding SelectedPageInfo}" TextWrapping="Wrap" Margin="12,0" />
-          <Button Content="{Binding LockButtonText}" Command="{Binding ToggleLockCommand}" HorizontalAlignment="Left"
-                  Margin="12,8" Padding="12,4" ToolTip="Kilitli sayfa otomatik oluşturmada değişmez (Ctrl+L)" />
+      <!-- ④ Özellikler: Sayfa · Tasarım · Şablonlar -->
+      <TabControl Grid.Column="4" Background="{StaticResource SurfaceBrush}" BorderThickness="0" Padding="0">
+        <TabItem Header="Sayfa">
+          <ScrollViewer VerticalScrollBarVisibility="Auto">
+              <StackPanel>
+                <TextBlock Text="Sayfa" Style="{StaticResource PanelHeader}" />
+                <TextBlock Text="{Binding SelectedPageInfo}" TextWrapping="Wrap" Margin="12,0" />
+                <Button Content="{Binding LockButtonText}" Command="{Binding ToggleLockCommand}" HorizontalAlignment="Left"
+                        Margin="12,8" Padding="12,4" ToolTip="Kilitli sayfa otomatik oluşturmada değişmez (Ctrl+L)" />
 
-          <DockPanel>
-            <Button DockPanel.Dock="Right" Content="Düzenle" Command="{Binding EditProfileCommand}" Margin="0,8,12,0" Padding="10,2" />
-            <TextBlock Text="Profil" Style="{StaticResource PanelHeader}" />
-          </DockPanel>
-          <TextBlock Text="{Binding ProfileSummary}" TextWrapping="Wrap" Margin="12,0" FontSize="13" LineHeight="20" />
-
-          <DockPanel Margin="0,8,0,0">
-            <Button DockPanel.Dock="Right" Content="Denetle" Command="{Binding PreflightCommand}" Margin="0,8,12,0" Padding="10,2" />
-            <TextBlock Text="Ön kontrol" Style="{StaticResource PanelHeader}" />
-          </DockPanel>
-          <ItemsControl ItemsSource="{Binding Issues}" Margin="8,0,8,16">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <DockPanel Margin="4,4">
-                  <TextBlock DockPanel.Dock="Left" Text="{Binding Symbol}" Foreground="{Binding SeverityBrush}" Width="18" FontWeight="Bold" />
-                  <StackPanel>
-                    <TextBlock Text="{Binding Message}" TextWrapping="Wrap" FontSize="13" />
-                    <TextBlock Text="{Binding Suggestion}" Style="{StaticResource Caption}"
-                               Visibility="{Binding HasSuggestion, Converter={StaticResource BoolToVisibility}}" />
-                  </StackPanel>
+                <DockPanel>
+                  <Button DockPanel.Dock="Right" Content="Düzenle" Command="{Binding EditProfileCommand}" Margin="0,8,12,0" Padding="10,2" />
+                  <TextBlock Text="Profil" Style="{StaticResource PanelHeader}" />
                 </DockPanel>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </StackPanel>
-      </ScrollViewer>
+                <TextBlock Text="{Binding ProfileSummary}" TextWrapping="Wrap" Margin="12,0" FontSize="13" LineHeight="20" />
+
+                <DockPanel Margin="0,8,0,0">
+                  <Button DockPanel.Dock="Right" Content="Denetle" Command="{Binding PreflightCommand}" Margin="0,8,12,0" Padding="10,2" />
+                  <TextBlock Text="Ön kontrol" Style="{StaticResource PanelHeader}" />
+                </DockPanel>
+                <ItemsControl ItemsSource="{Binding Issues}" Margin="8,0,8,16">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <DockPanel Margin="4,4">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding Symbol}" Foreground="{Binding SeverityBrush}" Width="18" FontWeight="Bold" />
+                        <StackPanel>
+                          <TextBlock Text="{Binding Message}" TextWrapping="Wrap" FontSize="13" />
+                          <TextBlock Text="{Binding Suggestion}" Style="{StaticResource Caption}"
+                                     Visibility="{Binding HasSuggestion, Converter={StaticResource BoolToVisibility}}" />
+                        </StackPanel>
+                      </DockPanel>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+          </ScrollViewer>
+        </TabItem>
+
+        <TabItem Header="Tasarım" IsEnabled="{Binding HasProject}">
+          <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="0,0,0,16">
+              <TextBlock Text="Uygulama kapsamı" Style="{StaticResource PanelHeader}" />
+              <StackPanel Orientation="Horizontal" Margin="12,0">
+                <RadioButton Content="Seçili sayfa" IsChecked="{Binding ApplyToSelectedPage}" Margin="0,0,16,0" GroupName="DesignScope" />
+                <RadioButton Content="Tüm sayfalar" IsChecked="{Binding ApplyToAllPages}" GroupName="DesignScope" />
+              </StackPanel>
+              <TextBlock Text="{Binding DesignScopeHint}" Style="{StaticResource Caption}" Margin="12,4,12,0" />
+
+              <TextBlock Text="Çerçeve" Style="{StaticResource PanelHeader}" />
+              <ItemsControl ItemsSource="{Binding Frames}" Margin="8,0">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Button Style="{StaticResource SwatchButton}" ToolTip="{Binding Name}" CommandParameter="{Binding}"
+                            Command="{Binding DataContext.ApplyFrameCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                      <StackPanel Width="88">
+                        <Viewbox Width="88" Height="66">
+                          <Border Padding="7" Background="#FAFAFA">
+                            <ContentControl Content="{Binding Sample}" ContentTemplate="{StaticResource SlotTemplate}" Focusable="False" />
+                          </Border>
+                        </Viewbox>
+                        <TextBlock Text="{Binding Name}" FontSize="11" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                      </StackPanel>
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <TextBlock Text="Fon" Style="{StaticResource PanelHeader}" />
+              <DockPanel Margin="12,0,12,4">
+                <TextBlock DockPanel.Dock="Right" Text="{Binding BackgroundOpacity, StringFormat={}{0:P0}}" Width="42" TextAlignment="Right" VerticalAlignment="Center" />
+                <TextBlock Text="Opaklık" VerticalAlignment="Center" Margin="0,0,8,0" />
+                <Slider Minimum="0.1" Maximum="1" Value="{Binding BackgroundOpacity}" SmallChange="0.05" LargeChange="0.1"
+                        VerticalAlignment="Center" ToolTip="Fon seçmeden önce ayarlayın; görsel fonlarda kâğıt beyazıyla karışır." />
+              </DockPanel>
+
+              <TextBlock Text="Düz renkler" Style="{StaticResource Caption}" Margin="12,6,12,2" />
+              <ItemsControl ItemsSource="{Binding BackgroundColors}" Margin="8,0">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Button Style="{StaticResource SwatchButton}" ToolTip="{Binding Name}" CommandParameter="{Binding}"
+                            Command="{Binding DataContext.ApplyBackgroundCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                      <Border Width="30" Height="30" Background="{Binding Preview}" />
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <DockPanel Margin="12,4,12,0">
+                <Button DockPanel.Dock="Right" Content="Uygula" Command="{Binding ApplyCustomColorCommand}" Padding="10,2" Margin="6,0,0,0" />
+                <TextBlock Text="Özel renk" VerticalAlignment="Center" Margin="0,0,8,0" />
+                <TextBox Text="{Binding CustomColor, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center" ToolTip="#RRGGBB, ör. #F5EFE6" />
+              </DockPanel>
+
+              <TextBlock Text="Gradyanlar" Style="{StaticResource Caption}" Margin="12,8,12,2" />
+              <ItemsControl ItemsSource="{Binding BackgroundGradients}" Margin="8,0">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Button Style="{StaticResource SwatchButton}" ToolTip="{Binding Name}" CommandParameter="{Binding}"
+                            Command="{Binding DataContext.ApplyBackgroundCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                      <Border Width="54" Height="38" Background="{Binding Preview}" />
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <DockPanel Margin="12,8,12,2">
+                <Button DockPanel.Dock="Right" Content="Fon görseli ekle…" Command="{Binding ImportBackgroundsCommand}" Padding="10,2" />
+                <TextBlock Text="Görsel fonlar" Style="{StaticResource Caption}" VerticalAlignment="Center" />
+              </DockPanel>
+              <ItemsControl ItemsSource="{Binding BackgroundImages}" Margin="8,0">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Button Style="{StaticResource SwatchButton}" ToolTip="{Binding Name}" CommandParameter="{Binding}"
+                            Command="{Binding DataContext.ApplyBackgroundCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                      <Border Width="66" Height="48" Background="{Binding Preview}" />
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <TextBlock Text="Kendi dokularınızı, kâğıt ve desen görsellerinizi ekleyebilirsiniz; fotoğraf galerisine karışmazlar."
+                         Style="{StaticResource Caption}" Margin="12,2,12,0"
+                         Visibility="{Binding HasBackgroundImages, Converter={StaticResource InverseBoolToVisibility}}" />
+
+              <TextBlock Text="Boşluklar" Style="{StaticResource PanelHeader}" />
+              <DockPanel Margin="12,0">
+                <TextBlock DockPanel.Dock="Right" Text="{Binding GapPercent, StringFormat={}%{0:0.#}}" Width="42" TextAlignment="Right" VerticalAlignment="Center" />
+                <TextBlock Text="Fotoğraf arası" Width="96" VerticalAlignment="Center" />
+                <Slider Minimum="0" Maximum="10" Value="{Binding GapPercent}" SmallChange="0.5" LargeChange="1" IsSnapToTickEnabled="True" TickFrequency="0.5" VerticalAlignment="Center" />
+              </DockPanel>
+              <DockPanel Margin="12,4,12,0">
+                <TextBlock DockPanel.Dock="Right" Text="{Binding MarginPercent, StringFormat={}%{0:0.#}}" Width="42" TextAlignment="Right" VerticalAlignment="Center" />
+                <TextBlock Text="Sayfa kenarı" Width="96" VerticalAlignment="Center" />
+                <Slider Minimum="0" Maximum="15" Value="{Binding MarginPercent}" SmallChange="0.5" LargeChange="1" IsSnapToTickEnabled="True" TickFrequency="0.5" VerticalAlignment="Center" />
+              </DockPanel>
+              <StackPanel Orientation="Horizontal" Margin="12,8,12,0">
+                <Button Content="Tüm sayfalara uygula" Command="{Binding ApplySpacingCommand}" Padding="10,2" Margin="0,0,6,0" />
+                <Button Content="Şablon varsayılanı" Command="{Binding ResetSpacingCommand}" Padding="10,2" />
+              </StackPanel>
+              <TextBlock Text="{Binding SpacingSummary}" Style="{StaticResource Caption}" Margin="12,4,12,0" />
+              <TextBlock Text="Yüzdeler sayfanın kısa kenarına göredir. Kilitli sayfalar değişmez." Style="{StaticResource Caption}" Margin="12,2,12,0" />
+            </StackPanel>
+          </ScrollViewer>
+        </TabItem>
+
+        <TabItem Header="Şablonlar" IsEnabled="{Binding HasProject}">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Margin="12,10,12,6">
+              <DockPanel>
+                <ComboBox DockPanel.Dock="Right" Width="120" ItemsSource="{Binding TemplateCounts}" SelectedItem="{Binding SelectedTemplateCount}" DisplayMemberPath="Name" />
+                <TextBlock Text="Fotoğraf sayısı" VerticalAlignment="Center" />
+              </DockPanel>
+              <TextBlock Style="{StaticResource Caption}" Margin="0,6,0,0"
+                         Text="Seçili sayfaya uygulamak için bir şablona tıklayın. Fotoğraflar korunur; sığmayanlar «kullanılmamış» olur." />
+            </StackPanel>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+              <ItemsControl ItemsSource="{Binding Templates}" Margin="8,0,8,12">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Button Style="{StaticResource SwatchButton}" ToolTip="{Binding ToolTip}" CommandParameter="{Binding}"
+                            Command="{Binding DataContext.ApplyTemplateCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                      <Viewbox Width="92" Height="70">
+                        <Grid Width="{Binding Width}" Height="{Binding Height}" Background="White">
+                          <ItemsControl ItemsSource="{Binding Cells}" Focusable="False">
+                            <ItemsControl.ItemsPanel>
+                              <ItemsPanelTemplate>
+                                <Canvas />
+                              </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemContainerStyle>
+                              <Style TargetType="ContentPresenter">
+                                <Setter Property="Canvas.Left" Value="{Binding X}" />
+                                <Setter Property="Canvas.Top" Value="{Binding Y}" />
+                              </Style>
+                            </ItemsControl.ItemContainerStyle>
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate>
+                                <Path Data="{Binding Shape}" Fill="#B0BEC5" />
+                              </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                          </ItemsControl>
+                        </Grid>
+                      </Viewbox>
+                    </Button>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </DockPanel>
+        </TabItem>
+      </TabControl>
     </Grid>
 
     <GridSplitter Grid.Row="2" Height="4" HorizontalAlignment="Stretch" ResizeDirection="Rows" Background="{StaticResource BorderBrush}" />

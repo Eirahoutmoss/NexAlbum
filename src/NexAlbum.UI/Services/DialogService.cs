@@ -43,6 +43,17 @@ public sealed class DialogService(Window owner) : IDialogService
         return dialog.ShowDialog(owner) == true ? dialog.FolderName : null;
     }
 
+    public IReadOnlyList<string>? AskBackgroundImages()
+    {
+        var dialog = new OpenFileDialog
+        {
+            Title = "Fon görseli seçin",
+            Filter = "Görseller|*.jpg;*.jpeg;*.png;*.tif;*.tiff;*.bmp;*.webp|Tüm dosyalar|*.*",
+            Multiselect = true,
+        };
+        return dialog.ShowDialog(owner) == true ? dialog.FileNames : null;
+    }
+
     public AlbumProfile? EditProfile(AlbumProfile profile)
     {
         var window = new ProfileEditorWindow(profile) { Owner = owner };

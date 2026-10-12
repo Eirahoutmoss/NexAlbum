@@ -1,5 +1,6 @@
 using System.IO;
 using FluentAssertions;
+using NexAlbum.Core.Common;
 using NexAlbum.Core.Geometry;
 using NexAlbum.Core.Profiles;
 using NexAlbum.Core.Projects;
@@ -206,6 +207,141 @@ public sealed class MainViewModelTests : IDisposable
         vm.Status.Should().Contain("PDF hazır");
     }
 
+    [Fact]
+    public void FramesAndBackgroundsApplyToSelectedPageOrAllUnlockedPages()
+    {
+        var path = Path.Combine(dir, "tasarim.albumproj");
+        var project = SampleProject(3);
+        project = project.WithPages(project.Assets.Select((a, i) => new AlbumPage
+        {
+            Id = $"p{i}",
+            Elements = [new Slot { Id = "s", Bounds = new RectMm(10, 10, 100, 100), Placement = new PhotoPlacement { AssetId = a.Id } }],
+        }));
+        ProjectPackageWriter.Save(path, project, new SaveOptions());
+        var dialogs = new FakeDialogs();
+        using var vm = new MainViewModel(dialogs);
+        vm.Open(path);
+
+        vm.ApplyToSelectedPage.Should().BeTrue("varsayılan kapsam seçili sayfa");
+        vm.Frames.Should().Contain(f => f.Id == "polaroid");
+        vm.ApplyFrame(vm.Frames.Single(f => f.Id == "mat-white"));
+        vm.Project!.Pages[0].Slots.Single().Mat.Should().NotBeNull();
+        vm.Project.Pages[1].Slots.Single().Mat.Should().BeNull();
+        vm.Project.Settings.Design.FrameStyleId.Should().Be("none", "tek sayfa işlemi proje varsayılanını değiştirmez");
+        vm.SelectedPage!.Number.Should().Be(1, "seçim korunur");
+        vm.SelectedPage.Slots.Single().PhotoWidth.Should().BeLessThan(100, "paspartu fotoğraf alanını daraltır");
+
+        vm.SelectedPage = vm.Pages[1];
+        vm.ToggleLock();
+        vm.ApplyToAllPages = true;
+        vm.BackgroundOpacity = 0.5;
+        vm.ApplyBackground(vm.BackgroundGradients[0]);
+        vm.Project.Pages[0].Background.Mode.Should().Be(BackgroundMode.Gradient);
+        vm.Project.Pages[0].Background.Opacity.Should().Be(0.5);
+        vm.Project.Pages[1].Background.Should().Be(BackgroundFill.White, "kilitli sayfa atlanır");
+        vm.Project.Pages[2].Background.Mode.Should().Be(BackgroundMode.Gradient);
+        vm.Project.Settings.Design.Background!.Mode.Should().Be(BackgroundMode.Gradient);
+        vm.Status.Should().Contain("1 kilitli");
+        vm.Pages[0].Background.Should().BeAssignableTo<System.Windows.Media.LinearGradientBrush>();
+
+        vm.ApplyFrame(vm.Frames.Single(f => f.Id == "polaroid"));
+        vm.Project.Settings.Design.FrameStyleId.Should().Be("polaroid");
+        vm.Project.Pages[2].Slots.Single().StyleId.Should().Be("polaroid");
+
+        vm.CustomColor = "f5efe6";
+        vm.ApplyCustomColor();
+        vm.Project.Pages[0].Background.Color.Should().Be(RgbaColor.Parse("#F5EFE6"));
+        vm.CustomColor = "renk değil";
+        vm.ApplyCustomColor();
+        dialogs.Warnings.Should().ContainSingle().Which.Should().Contain("Renk");
+    }
+
+    [Fact]
+    public async Task TemplateGalleryFiltersByPagePhotoCountAndReplacesTheLayout()
+    {
+        var path = Path.Combine(dir, "sablon.albumproj");
+        ProjectPackageWriter.Save(path, SampleProject(12), new SaveOptions());
+        using var vm = new MainViewModel(new FakeDialogs());
+        vm.Open(path);
+        await vm.AutoLayoutAsync(newSeed: false);
+
+        var page = vm.SelectedPage!;
+        vm.SelectedTemplateCount.Count.Should().Be(page.PhotoCount, "süzgeç seçili sayfanın fotoğraf sayısına geçer");
+        vm.Templates.Should().NotBeEmpty().And.OnlyContain(t => t.Template.PhotoCount.Accepts(page.PhotoCount));
+        vm.Templates.Should().OnlyContain(t => t.Cells.Count == t.Template.Slots.Count);
+
+        var other = vm.Templates.First(t => t.Id != page.TemplateId);
+        vm.ApplyTemplate(other);
+        vm.Project!.Pages[0].TemplateId.Should().Be(other.Id);
+        vm.Project.Pages[0].Slots.Count(s => !s.IsEmpty).Should().Be(page.PhotoCount, "fotoğraflar korunur");
+
+        vm.SelectedTemplateCount = vm.TemplateCounts[0];
+        vm.Templates.Count.Should().BeGreaterThan(50, "tüm şablonlar");
+
+        vm.SelectedTemplateCount = vm.TemplateCounts.Single(c => c.Count == 1);
+        var before = vm.Project.Pages[0].Slots.Count(s => !s.IsEmpty);
+        vm.ApplyTemplate(vm.Templates[0]);
+        vm.Project.Pages[0].Slots.Count(s => !s.IsEmpty).Should().Be(1);
+        if (before > 1)
+        {
+            vm.Status.Should().Contain("çıkarıldı");
+            vm.Project.UnusedAssets().Should().HaveCount(before - 1);
+        }
+
+        vm.ToggleLock();
+        vm.ApplyTemplateCommand.CanExecute(vm.Templates[0]).Should().BeFalse("kilitli sayfanın şablonu değişmez");
+    }
+
+    [Fact]
+    public async Task SpacingRelayoutsUnlockedPagesAndCanBeReset()
+    {
+        var path = Path.Combine(dir, "bosluk.albumproj");
+        ProjectPackageWriter.Save(path, SampleProject(12), new SaveOptions());
+        using var vm = new MainViewModel(new FakeDialogs());
+        vm.Open(path);
+        await vm.AutoLayoutAsync(newSeed: false);
+        vm.SpacingSummary.Should().Contain("kendi");
+        var before = vm.Project!.Pages.SelectMany(p => p.Slots).Select(s => s.Bounds).ToList();
+
+        vm.GapPercent = 6;
+        vm.MarginPercent = 8;
+        vm.ApplySpacing();
+
+        vm.Project!.Settings.Design.GapPercent.Should().Be(6);
+        vm.Project.Settings.Design.MarginPercent.Should().Be(8);
+        vm.Project.Pages.SelectMany(p => p.Slots).Select(s => s.Bounds).Should().NotEqual(before);
+        vm.Project.Pages.SelectMany(p => p.Slots).Should().OnlyContain(s => s.Placement != null, "fotoğraflar korunur");
+        vm.SpacingSummary.Should().Contain("6");
+
+        vm.ResetSpacing();
+        vm.Project.Settings.Design.GapPercent.Should().BeNull();
+        vm.Project.Pages.SelectMany(p => p.Slots).Select(s => s.Bounds).Should().Equal(before);
+        vm.GapPercent.Should().Be(MainViewModel.DefaultGapPercent);
+    }
+
+    [Fact]
+    public async Task BackgroundImagesAreImportedSeparatelyFromPhotos()
+    {
+        var image = Path.Combine(dir, "doku.png");
+        File.WriteAllBytes(image, TinyPng);
+        var dialogs = new FakeDialogs { NewProject = new NewProjectChoice("Fon", BuiltInProfiles.All[0]), BackgroundFiles = [image] };
+        using var vm = new MainViewModel(dialogs);
+        vm.NewProject();
+
+        await vm.ImportBackgroundsAsync();
+
+        vm.BackgroundImages.Should().ContainSingle();
+        vm.HasBackgroundImages.Should().BeTrue();
+        vm.Assets.Should().BeEmpty("fon görselleri fotoğraf galerisine karışmaz");
+        vm.HasPhotos.Should().BeFalse();
+        vm.Project!.Backgrounds.Should().ContainSingle().Which.Role.Should().Be(AssetRole.Background);
+
+        vm.ApplyBackground(vm.BackgroundImages[0]);
+        vm.Project.Settings.Design.Background!.ImageAssetId.Should().Be(vm.Project.Backgrounds[0].Id, "sayfa yokken proje varsayılanı olur");
+    }
+
+    private static readonly byte[] TinyPng = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAABQAAAAeCAIAAACjcKk8AAAAIklEQVR4nGPkWhDFQC5gIlvnqOZRzaOaRzWPah7VPAQ0AwAeUgFAi1B09gAAAABJRU5ErkJggg==");
+
     private static AlbumProject SampleProject(int photos)
     {
         var now = new DateTimeOffset(2026, 10, 12, 10, 0, 0, TimeSpan.Zero);
@@ -240,6 +376,10 @@ public sealed class MainViewModelTests : IDisposable
         public string? AskSaveProjectPath(string suggestedName) => SavePath;
 
         public string? AskPhotoFolder() => null;
+
+        public IReadOnlyList<string>? BackgroundFiles { get; init; }
+
+        public IReadOnlyList<string>? AskBackgroundImages() => BackgroundFiles;
 
         public AlbumProfile? EditedProfile { get; set; }
 
