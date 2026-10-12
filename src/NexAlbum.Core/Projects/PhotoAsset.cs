@@ -31,6 +31,10 @@ public sealed record PhotoAsset
 
     public AssetSourceType SourceType { get; init; } = AssetSourceType.Reference;
 
+    public AssetRole Role { get; init; } = AssetRole.Photo;
+
+    public bool IsPhoto => Role == AssetRole.Photo;
+
     public required string FileName { get; init => field = Guard.NotBlank(value, nameof(FileName)); }
 
     public long? FileSize { get; init => field = value is < 0 ? throw new ArgumentOutOfRangeException(nameof(FileSize)) : value; }

@@ -63,3 +63,13 @@ public enum AssetSourceType
     /// <summary>Fotoğraf proje paketine gömülü (taşınabilir).</summary>
     Embedded,
 }
+
+/// <summary>Varlığın albümdeki rolü.</summary>
+public enum AssetRole
+{
+    /// <summary>Yuvalara yerleşen fotoğraf (varsayılan).</summary>
+    Photo,
+
+    /// <summary>Sayfa fonu olarak kullanılan görsel; otomatik yerleşim onu fotoğraf olarak kullanmaz.</summary>
+    Background,
+}

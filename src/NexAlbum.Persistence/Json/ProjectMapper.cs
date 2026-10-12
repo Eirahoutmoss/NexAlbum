@@ -1,4 +1,5 @@
 using NexAlbum.Core.Common;
+using NexAlbum.Core.Design;
 using NexAlbum.Core.Geometry;
 using NexAlbum.Core.Projects;
 using NexAlbum.Persistence.Format;
@@ -18,6 +19,7 @@ internal static class ProjectMapper
     private static readonly TextEnum<VerticalAlignment> VerticalAlignments = new();
     private static readonly TextEnum<BackgroundMode> BackgroundModes = new();
     private static readonly TextEnum<AssetSourceType> SourceTypes = new();
+    private static readonly TextEnum<AssetRole> Roles = new();
 
     public static ProjectDto ToDto(AlbumProject p) => new()
     {
@@ -38,6 +40,13 @@ internal static class ProjectMapper
             Export = new ExportSettingsDto { JpegQuality = p.Settings.Export.JpegQuality },
             Ui = new UiSettingsDto { Theme = p.Settings.Ui.Theme },
             Save = new SaveSettingsDto { AutosaveIntervalMinutes = p.Settings.Save.AutosaveIntervalMinutes },
+            Design = new DesignSettingsDto
+            {
+                FrameStyle = p.Settings.Design.FrameStyleId,
+                Gap = p.Settings.Design.GapPercent,
+                Margin = p.Settings.Design.MarginPercent,
+                Background = p.Settings.Design.Background is { } bg ? FillToPageDto(bg) : null,
+            },
         },
         History = p.History is { } h ? new HistoryDto { Enabled = h.Enabled, MaxSteps = h.MaxSteps } : null,
     };
@@ -75,7 +84,7 @@ internal static class ProjectMapper
             PageSize = pageSize,
             Pages = [.. (d.Pages ?? []).Select((page, i) => PageFromDto(page, $"pages[{i}]"))],
             Assets = [.. (d.Assets ?? []).Select((asset, i) => AssetFromDto(asset, $"assets[{i}]"))],
-            Settings = SettingsFromDto(d.Settings),
+            Settings = At("settings", () => SettingsFromDto(d.Settings)),
             History = d.History is { } h ? new HistorySettings { Enabled = h.Enabled ?? true, MaxSteps = h.MaxSteps ?? 100 } : null,
         };
     }
@@ -85,6 +94,15 @@ internal static class ProjectMapper
         Export = new ExportSettings { JpegQuality = d?.Export?.JpegQuality ?? 95 },
         Ui = new UiSettings { Theme = d?.Ui?.Theme ?? "light" },
         Save = new SaveSettings { AutosaveIntervalMinutes = d?.Save?.AutosaveIntervalMinutes ?? 5 },
+        Design = d?.Design is { } design
+            ? new DesignSettings
+            {
+                FrameStyleId = design.FrameStyle ?? FramePresets.NoneId,
+                GapPercent = design.Gap,
+                MarginPercent = design.Margin,
+                Background = design.Background is { } bg ? FillFromPageDto(bg, "settings.design.background") : null,
+            }
+            : DesignSettings.Default,
     };
 
     private static PageDto PageToDto(AlbumPage page, int index) => new()
@@ -149,6 +167,8 @@ internal static class ProjectMapper
         CornerRadius = s.CornerRadiusMm,
         Border = s.Border is { } b ? new BorderDto { Width = b.WidthMm, Color = b.Color.ToHex() } : null,
         Shadow = s.Shadow is { } sh ? new ShadowDto { OffsetX = sh.OffsetXMm, OffsetY = sh.OffsetYMm, Blur = sh.BlurMm, Color = sh.Color.ToHex() } : null,
+        Mat = s.Mat is { } m ? new MatDto { Top = m.Edges.Top, Right = m.Edges.Right, Bottom = m.Edges.Bottom, Left = m.Edges.Left, Color = m.Color.ToHex() } : null,
+        StyleId = s.StyleId,
         ZIndex = s.ZIndex,
     };
 
@@ -166,6 +186,12 @@ internal static class ProjectMapper
         Shadow = d.Shadow is { } sh
             ? new ShadowSpec(sh.OffsetX ?? 0, sh.OffsetY ?? 0, sh.Blur ?? 0, Color(sh.Color, path + ".shadow.color") ?? RgbaColor.Black)
             : null,
+        Mat = d.Mat is { } m
+            ? new MatSpec(
+                new EdgesMm(m.Top ?? 0, m.Right ?? 0, m.Bottom ?? 0, m.Left ?? 0),
+                Color(m.Color, path + ".mat.color") ?? RgbaColor.White)
+            : null,
+        StyleId = d.StyleId,
         ZIndex = d.ZIndex ?? 0,
     };
 
@@ -275,6 +301,7 @@ internal static class ProjectMapper
         Id = a.Id,
         SourcePath = a.SourcePath,
         SourceType = SourceTypes.Format(a.SourceType),
+        Role = a.Role == AssetRole.Photo ? null : Roles.Format(a.Role),
         FileName = a.FileName,
         FileSize = a.FileSize,
         FileHash = a.FileHash,
@@ -299,6 +326,7 @@ internal static class ProjectMapper
         Id = Required(d.Id, path + ".id"),
         SourcePath = Required(d.SourcePath, path + ".sourcePath"),
         SourceType = SourceTypes.Parse(d.SourceType, path + ".sourceType", AssetSourceType.Reference),
+        Role = Roles.Parse(d.Role, path + ".role", AssetRole.Photo),
         FileName = d.FileName ?? Path.GetFileName(Required(d.SourcePath, path + ".sourcePath")),
         FileSize = d.FileSize,
         FileHash = d.FileHash,

@@ -17,10 +17,17 @@ public static class PlacementDpi
         ArgumentNullException.ThrowIfNull(slot);
         ArgumentNullException.ThrowIfNull(placement);
 
+        // Paspartu varsa fotoğraf daha küçük bir alanda durur; çözünürlük o alana göre hesaplanır.
+        var area = slot.PhotoArea;
+        if (area.IsEmpty)
+        {
+            return 0;
+        }
+
         var croppedWidthPx = asset.DisplayWidth * placement.Crop.Width;
         var croppedHeightPx = asset.DisplayHeight * placement.Crop.Height;
-        var dpiX = Length.EffectiveDpi(croppedWidthPx, slot.Bounds.Width);
-        var dpiY = Length.EffectiveDpi(croppedHeightPx, slot.Bounds.Height);
+        var dpiX = Length.EffectiveDpi(croppedWidthPx, area.Width);
+        var dpiY = Length.EffectiveDpi(croppedHeightPx, area.Height);
 
         var fitted = slot.CropMode switch
         {

@@ -114,11 +114,16 @@ public sealed record TemplateDefinition
     /// Yuvaları verilen alan içinde milimetreye çözer. Önce kenar boşluğu uygulanır; sonra komşu yuvalar
     /// arasına boşluk (gutter) bırakılır. Alan kenarına değen yuva kenarları daraltılmaz.
     /// </summary>
-    public IReadOnlyList<ResolvedSlot> Resolve(RectMm area)
+    /// <param name="area">Yerleşim alanı.</param>
+    /// <param name="gapPercent">Yuvalar arası boşluk; null ise şablonun kendi değeri.</param>
+    /// <param name="marginPercent">Kenar payı; null ise şablonun kendi değeri. Kenarsız (fullBleed) şablonlarda yok sayılır.</param>
+    public IReadOnlyList<ResolvedSlot> Resolve(RectMm area, double? gapPercent = null, double? marginPercent = null)
     {
         var unit = Math.Min(area.Width, area.Height) / 100;
-        var inner = area.Deflate(EdgesMm.Uniform(OuterMarginPercent * unit));
-        var half = GutterPercent * unit / 2;
+        var margin = Category == TemplateCategory.FullBleed ? OuterMarginPercent : marginPercent ?? OuterMarginPercent;
+        var gap = Slots.Count > 1 ? gapPercent ?? GutterPercent : GutterPercent;
+        var inner = area.Deflate(EdgesMm.Uniform(margin * unit));
+        var half = gap * unit / 2;
         return [.. Slots.Select(s => new ResolvedSlot(s.Id, ApplyGutter(s.Rect, s.Rect.Resolve(inner), half)))];
     }
 

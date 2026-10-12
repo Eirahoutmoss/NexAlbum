@@ -37,12 +37,12 @@ public sealed record LayoutRequest
         ArgumentNullException.ThrowIfNull(project);
         return new LayoutRequest
         {
-            Photos = project.Assets,
+            Photos = project.Photos,
             PageSize = project.PageSize,
             Profile = project.Profile,
             Templates = templates,
             ExistingPages = project.Pages,
-            Options = options,
+            Options = options with { Design = project.Settings.Design },
             DefaultSeed = LayoutSeed.FromProjectId(project.Id),
             Now = now,
         };
@@ -94,7 +94,7 @@ public sealed class AutoLayoutEngine : ILayoutEngine
 
         // Aşama 1 — sınıflandırma (yinelenen girdi ve kilitli sayfadaki fotoğraflar çıkarılır).
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        var ordered = request.Photos.Where(p => !used.Contains(p.Id) && seen.Add(p.Id));
+        var ordered = request.Photos.Where(p => p.IsPhoto && !used.Contains(p.Id) && seen.Add(p.Id));
         if (options.Order == PhotoOrder.CaptureTime)
         {
             ordered = ordered.OrderBy(p => p.CapturedAt ?? DateTimeOffset.MaxValue);
@@ -143,7 +143,7 @@ public sealed class AutoLayoutEngine : ILayoutEngine
 
             var choice = selector.Select(group, groupPhotos);
             var pageId = NextPageId(reservedIds, ref nextId);
-            generated.Add(BuildPage(pageId, choice, request.Now));
+            generated.Add(PageDesigner.Build(pageId, choice.Template, choice.Assignments, options.Design, request.Now));
             explanations.Add(F("Sayfa {0}: {1}", generated.Count, choice.Reason));
         }
 
@@ -158,36 +158,6 @@ public sealed class AutoLayoutEngine : ILayoutEngine
         var assetMap = request.Photos.GroupBy(p => p.Id, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
         var validation = LayoutValidator.Validate(pages, assetMap, bleedRect, options.AllowPhotoReuse);
         return new LayoutResult(pages, new ValidationResult(issues).Merge(validation), seed, explanations);
-    }
-
-    private static AlbumPage BuildPage(string pageId, TemplateChoice choice, DateTimeOffset now)
-    {
-        var elements = new List<PageElement>(choice.Assignments.Count);
-        foreach (var a in choice.Assignments)
-        {
-            var template = a.Slot.Template;
-            elements.Add(new Slot
-            {
-                Id = pageId + "-" + template.Id,
-                Bounds = a.Slot.Bounds,
-
-                // Otomatik yerleşim fotoğrafı asla esnetmez (Karar 10 §9.6): "fill" yuvası kaplama olarak kullanılır.
-                CropMode = template.CropMode == CropMode.Fill ? CropMode.Cover : template.CropMode,
-                Placement = a.Photo is { } photo ? new PhotoPlacement { AssetId = photo.Asset.Id } : null,
-                Shape = template.Shape,
-                CornerRadiusMm = template.CornerRadiusMm,
-            });
-        }
-
-        return new AlbumPage
-        {
-            Id = pageId,
-            TemplateId = choice.Template.Id,
-            Background = choice.Template.Background ?? BackgroundFill.White,
-            Elements = elements,
-            CreatedAt = now,
-            UpdatedAt = now,
-        };
     }
 
     private static string NextPageId(HashSet<string> reserved, ref int next)

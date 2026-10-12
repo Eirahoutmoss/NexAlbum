@@ -170,6 +170,23 @@ internal sealed class SlotDto : ElementDto
     public BorderDto? Border { get; set; }
 
     public ShadowDto? Shadow { get; set; }
+
+    public MatDto? Mat { get; set; }
+
+    public string? StyleId { get; set; }
+}
+
+internal sealed class MatDto
+{
+    public double? Top { get; set; }
+
+    public double? Right { get; set; }
+
+    public double? Bottom { get; set; }
+
+    public double? Left { get; set; }
+
+    public string? Color { get; set; }
 }
 
 internal sealed class TextDto : ElementDto

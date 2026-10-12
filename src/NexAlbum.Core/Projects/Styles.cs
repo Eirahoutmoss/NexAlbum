@@ -2,7 +2,7 @@ using NexAlbum.Core.Common;
 
 namespace NexAlbum.Core.Projects;
 
-/// <summary>Renk geçişi.</summary>
+/// <summary>Renk geçişi. Açı: 0° soldan sağa, 90° yukarıdan aşağıya.</summary>
 public sealed record GradientSpec(RgbaColor From, RgbaColor To, double AngleDegrees = 0);
 
 /// <summary>

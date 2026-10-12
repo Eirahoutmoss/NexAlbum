@@ -1,4 +1,5 @@
 using NexAlbum.Core.Common;
+using NexAlbum.Core.Design;
 
 namespace NexAlbum.Core.Projects;
 
@@ -25,6 +26,9 @@ public sealed record ProjectSettings
     public UiSettings Ui { get; init => field = value ?? throw new ArgumentNullException(nameof(Ui)); } = new();
 
     public SaveSettings Save { get; init => field = value ?? throw new ArgumentNullException(nameof(Save)); } = new();
+
+    /// <summary>Albümün varsayılan tasarımı (çerçeve, boşluk, fon).</summary>
+    public DesignSettings Design { get; init => field = value ?? throw new ArgumentNullException(nameof(Design)); } = DesignSettings.Default;
 
     public static ProjectSettings Default { get; } = new();
 }

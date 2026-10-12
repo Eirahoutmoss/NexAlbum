@@ -69,6 +69,7 @@ internal static class Samples
                 Id = "asset-002",
                 SourcePath = "assets/originals/asset-002.jpg",
                 SourceType = AssetSourceType.Embedded,
+                Role = AssetRole.Background,
                 FileName = "IMG_0002.jpg",
                 PixelWidth = 4000,
                 PixelHeight = 6000,
@@ -110,6 +111,8 @@ internal static class Samples
                     CornerRadiusMm = 4,
                     Border = new BorderSpec(0.5, RgbaColor.Black),
                     Shadow = new ShadowSpec(1, 1.5, 2, RgbaColor.Parse("#00000040")),
+                    Mat = new MatSpec(new EdgesMm(5, 5, 18, 5), RgbaColor.Parse("#F3EAD8")),
+                    StyleId = "polaroid",
                     ZIndex = 1,
                 },
                 new TextElement
@@ -154,6 +157,13 @@ internal static class Samples
                 Export = new ExportSettings { JpegQuality = 90 },
                 Ui = new UiSettings { Theme = "dark" },
                 Save = new SaveSettings { AutosaveIntervalMinutes = 3 },
+                Design = new Core.Design.DesignSettings
+                {
+                    FrameStyleId = "mat-cream",
+                    GapPercent = 3.5,
+                    MarginPercent = 6,
+                    Background = new BackgroundFill { Mode = BackgroundMode.Gradient, Color = null, Gradient = new GradientSpec(RgbaColor.White, RgbaColor.Parse("#E8D8B8"), 90) },
+                },
             },
             History = new HistorySettings { Enabled = true, MaxSteps = 50 },
         };

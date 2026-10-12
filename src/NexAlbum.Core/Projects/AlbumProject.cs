@@ -161,13 +161,19 @@ public sealed record AlbumProject
     public IReadOnlyList<string> PagesUsingAsset(string assetId) =>
         [.. Pages.Where(p => p.UsesAsset(assetId)).Select(p => p.Id)];
 
-    /// <summary>Hiçbir sayfada kullanılmayan varlıklar.</summary>
+    /// <summary>Yuvalara yerleşebilecek fotoğraflar (fon görselleri hariç).</summary>
+    public IReadOnlyList<PhotoAsset> Photos => [.. Assets.Where(a => a.IsPhoto)];
+
+    /// <summary>Fon olarak kullanılabilecek görseller.</summary>
+    public IReadOnlyList<PhotoAsset> Backgrounds => [.. Assets.Where(a => !a.IsPhoto)];
+
+    /// <summary>Hiçbir sayfada kullanılmayan fotoğraflar (fon görselleri sayılmaz).</summary>
     public IReadOnlyList<PhotoAsset> UnusedAssets()
     {
         var used = new HashSet<string>(
             Pages.SelectMany(p => p.Slots).Select(s => s.Placement?.AssetId).OfType<string>(),
             StringComparer.Ordinal);
-        return [.. Assets.Where(a => !used.Contains(a.Id))];
+        return [.. Assets.Where(a => a.IsPhoto && !used.Contains(a.Id))];
     }
 
     /// <summary>Profil kopyasını günceller (Karar 03 §10.3).</summary>

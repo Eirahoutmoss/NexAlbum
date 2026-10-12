@@ -19,6 +19,9 @@ public sealed record ImportOptions
     public bool ComputeHash { get; init; }
 
     public IReadOnlySet<string> Extensions { get; init; } = DefaultExtensions;
+
+    /// <summary>İçe aktarılanların rolü: fotoğraf (varsayılan) ya da sayfa fonu.</summary>
+    public AssetRole Role { get; init; } = AssetRole.Photo;
 }
 
 /// <summary>Atlanan dosya ve nedeni.</summary>
@@ -144,6 +147,7 @@ public sealed class PhotoImporter(IPhotoMetadataReader reader, TimeProvider cloc
             Id = ids.Next(),
             SourcePath = path,
             SourceType = AssetSourceType.Reference,
+            Role = options.Role,
             FileName = Path.GetFileName(path),
             FileSize = size,
             FileHash = hash,

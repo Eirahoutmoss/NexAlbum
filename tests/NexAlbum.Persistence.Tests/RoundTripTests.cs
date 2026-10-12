@@ -90,6 +90,9 @@ public class RoundTripTests
         json.Should().Contain("\"index\": 1");
         json.Should().Contain("\"usedInPages\": [\n        \"page-001\"\n      ]".Replace("\n", Environment.NewLine, StringComparison.Ordinal));
         json.Should().NotContain("\"description\": null", "null alanlar yazılmaz");
+        json.Should().Contain("\"styleId\": \"polaroid\"");
+        json.Should().Contain("\"role\": \"background\"");
+        json.Should().Contain("\"frameStyle\": \"mat-cream\"");
     }
 
     [Fact]

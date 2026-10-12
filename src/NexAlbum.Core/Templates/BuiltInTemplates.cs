@@ -4,13 +4,14 @@ namespace NexAlbum.Core.Templates;
 
 /// <summary>
 /// Uygulamayla gelen şablonlar. Yüzde tabanlıdır; her albüm ölçüsünde çalışır (Karar 09 §10.2).
-/// 1–6 ve 9 fotoğraflı sayfaları kapsar.
+/// Elle tasarlanmış temel şablonlar ve <see cref="CollageGenerator"/> ile 1–12 fotoğraflık yüzlerce düzen.
 /// </summary>
 public static class BuiltInTemplates
 {
     private const double Third = 100.0 / 3;
 
-    public static IReadOnlyList<TemplateDefinition> All { get; } =
+    /// <summary>Elle tasarlanmış temel şablonlar.</summary>
+    public static IReadOnlyList<TemplateDefinition> Handcrafted { get; } =
     [
         Create("single-1", "Tek Fotoğraf", TemplateCategory.Single, 8, 0, [S("s1", 0, 0, 100, 100)]),
         Create("fullbleed-1", "Kenardan Kenara", TemplateCategory.FullBleed, 0, 0, [S("s1", 0, 0, 100, 100)]),
@@ -44,7 +45,19 @@ public static class BuiltInTemplates
         Create("grid-9", "9'lu Izgara", TemplateCategory.Grid, 5, 1.5, Grid(3, 3)),
     ];
 
+    /// <summary>
+    /// Tüm şablonlar: elle tasarlananlar + kolaj üreticisinin düzenleri (aynı geometrideki kopyalar hariç).
+    /// Not: <see cref="Handcrafted"/>'tan sonra tanımlanmalı (statik başlatma sırası).
+    /// </summary>
+    public static IReadOnlyList<TemplateDefinition> All { get; } = Combine();
+
     public static TemplateDefinition? Find(string id) => All.FirstOrDefault(t => t.Id == id);
+
+    private static List<TemplateDefinition> Combine()
+    {
+        var handcrafted = Handcrafted.Select(CollageGenerator.Geometry).ToHashSet(StringComparer.Ordinal);
+        return [.. Handcrafted, .. CollageGenerator.Generate().Where(t => !handcrafted.Contains(CollageGenerator.Geometry(t)))];
+    }
 
     private static TemplateDefinition Create(string id, string name, TemplateCategory category, double margin, double gutter, TemplateSlot[] slots) => new()
     {

@@ -122,7 +122,7 @@ public sealed class TemplateSelector
     private TemplateChoice Evaluate(TemplateDefinition template, PageGroup group, IReadOnlyList<ClassifiedPhoto> photos)
     {
         var area = areaFor(template);
-        var slots = template.Resolve(area)
+        var slots = template.Resolve(area, options.Design.GapPercent, options.Design.MarginPercent)
             .Zip(template.Slots, (resolved, slot) => new LayoutSlot(slot, resolved.Bounds))
             .Take(group.SlotCount)
             .ToList();

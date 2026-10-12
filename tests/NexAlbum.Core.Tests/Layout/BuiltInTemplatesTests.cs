@@ -13,7 +13,8 @@ public class BuiltInTemplatesTests
     public void LibraryCoversCommonPageDensities()
     {
         BuiltInTemplates.All.Select(t => t.Id).Should().OnlyHaveUniqueItems();
-        BuiltInTemplates.All.Select(t => t.Slots.Count).Distinct().Order().Should().Equal(1, 2, 3, 4, 5, 6, 9);
+        BuiltInTemplates.All.Select(t => t.Slots.Count).Distinct().Order().Should().Equal(Enumerable.Range(1, 12));
+        BuiltInTemplates.All.Should().HaveCountGreaterThan(200, "kolaj üreticisi geniş bir kütüphane sağlar");
         BuiltInTemplates.All.Should().OnlyContain(t => t.PhotoCount.Min == t.Slots.Count && t.PhotoCount.Max == t.Slots.Count);
         BuiltInTemplates.Find("grid-4")!.Category.Should().Be(TemplateCategory.Grid);
         BuiltInTemplates.Find("yok").Should().BeNull();
@@ -26,7 +27,9 @@ public class BuiltInTemplatesTests
         var page = RectMm.FromSize(new SizeMm(width, height));
         foreach (var template in BuiltInTemplates.All)
         {
-            var slots = template.Resolve(page);
+            var slots = template.Resolve(page, gapPercent: 3, marginPercent: 4);
+            slots.Should().OnlyContain(s => page.Contains(s.Bounds) && !s.Bounds.IsEmpty, template.Id);
+            slots = template.Resolve(page);
             slots.Should().OnlyContain(s => page.Contains(s.Bounds) && !s.Bounds.IsEmpty, template.Id);
             for (var i = 0; i < slots.Count; i++)
             {

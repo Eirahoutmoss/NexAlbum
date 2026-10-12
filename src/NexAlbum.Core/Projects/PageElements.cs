@@ -36,6 +36,9 @@ public sealed record PhotoPlacement
     public ImageAdjustments Adjustments { get; init => field = value ?? throw new ArgumentNullException(nameof(Adjustments)); } = ImageAdjustments.None;
 }
 
+/// <summary>Paspartu: yuva kenarı ile fotoğraf arasındaki renkli iç pay (mm).</summary>
+public sealed record MatSpec(EdgesMm Edges, RgbaColor Color);
+
 /// <summary>Fotoğraf yuvası (Karar 09 §6).</summary>
 public sealed record Slot : PageElement
 {
@@ -57,7 +60,16 @@ public sealed record Slot : PageElement
 
     public ShadowSpec? Shadow { get; init; }
 
+    /// <summary>Paspartu; varsa fotoğraf yuvanın içinde bu pay kadar daraltılmış alanda durur.</summary>
+    public MatSpec? Mat { get; init; }
+
+    /// <summary>Uygulanan çerçeve stilinin kimliği (yeniden uygulama ve arayüz için).</summary>
+    public string? StyleId { get; init; }
+
     public bool IsEmpty => Placement is null;
+
+    /// <summary>Fotoğrafın göründüğü alan: yuva eksi paspartu.</summary>
+    public RectMm PhotoArea => Mat is { } m ? Bounds.Deflate(m.Edges) : Bounds;
 }
 
 /// <summary>Metin öğesi (Karar 09 §8).</summary>

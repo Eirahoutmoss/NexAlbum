@@ -201,7 +201,7 @@ public class AutoLayoutEngineTests
         var options = new LayoutOptions { Mode = LayoutMode.Controlled, FixedPhotosPerPage = 4, PreferredCategories = [TemplateCategory.Grid], Seed = 1 };
         var result = Engine.Layout(Request(Photos(16), options));
         result.Pages.Should().HaveCount(4);
-        result.Pages.Should().OnlyContain(p => p.TemplateId == "grid-4", "tek uygun ızgara; tekrar kuralı gevşetilir");
+        result.Pages.Should().OnlyContain(p => BuiltInTemplates.Find(p.TemplateId!)!.Category == TemplateCategory.Grid && p.Slots.Count() == 4);
     }
 
     [Fact]

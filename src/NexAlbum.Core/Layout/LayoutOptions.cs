@@ -1,4 +1,5 @@
 using NexAlbum.Core.Common;
+using NexAlbum.Core.Design;
 using NexAlbum.Core.Templates;
 
 namespace NexAlbum.Core.Layout;
@@ -54,6 +55,9 @@ public sealed record LayoutOptions
 
     /// <summary>Tercih edilen kategoriler (puanlamada bonus; kontrollü modda filtre).</summary>
     public IReadOnlyList<TemplateCategory> PreferredCategories { get; init => field = value ?? throw new ArgumentNullException(nameof(PreferredCategories)); } = [];
+
+    /// <summary>Çerçeve, boşluk ve fon (proje tasarım ayarlarından gelir).</summary>
+    public DesignSettings Design { get; init => field = value ?? throw new ArgumentNullException(nameof(Design)); } = DesignSettings.Default;
 
     /// <summary>Yalnızca bu şablonlar kullanılsın (boşsa hepsi).</summary>
     public IReadOnlyList<string> AllowedTemplateIds { get; init => field = value ?? throw new ArgumentNullException(nameof(AllowedTemplateIds)); } = [];

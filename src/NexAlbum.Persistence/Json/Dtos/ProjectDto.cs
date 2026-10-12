@@ -66,6 +66,8 @@ internal sealed class AssetDto
 
     public string? SourceType { get; set; }
 
+    public string? Role { get; set; }
+
     public string? FileName { get; set; }
 
     public long? FileSize { get; set; }
@@ -118,6 +120,19 @@ internal sealed class SettingsDto
     public UiSettingsDto? Ui { get; set; }
 
     public SaveSettingsDto? Save { get; set; }
+
+    public DesignSettingsDto? Design { get; set; }
+}
+
+internal sealed class DesignSettingsDto
+{
+    public string? FrameStyle { get; set; }
+
+    public double? Gap { get; set; }
+
+    public double? Margin { get; set; }
+
+    public PageBackgroundDto? Background { get; set; }
 }
 
 internal sealed class ExportSettingsDto
