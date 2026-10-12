@@ -170,12 +170,81 @@ public sealed class PdfExportTests : IDisposable
     }
 
     [Fact]
-    public void BackgroundImagesAreReported()
+    public void BackgroundImagesAreEmbedded()
     {
         var project = Project();
-        project = project.ReplacePage(project.Pages[0] with { Background = new BackgroundFill { Mode = BackgroundMode.Image, ImageAssetId = "jpg" } });
-        PdfAlbumExporter.Export(project, Path.Combine(dir, "a.pdf"), new PdfExportSettings { Pages = "1" })
-            .Issues.Contains("export.background-image.unsupported").Should().BeTrue();
+        var fon = Write("fon.jpg", Fixtures.Jpeg);
+        project = project.AddAsset(new PhotoAsset
+        {
+            Id = "fon",
+            SourcePath = fon,
+            FileName = "fon.jpg",
+            PixelWidth = 60,
+            PixelHeight = 40,
+            ExifOrientation = 6,
+            Role = AssetRole.Background,
+            ImportedAt = Now,
+        });
+        var page = new AlbumPage { Id = "fonlu", Background = new BackgroundFill { Mode = BackgroundMode.Image, ImageAssetId = "fon", Opacity = 0.6 } };
+        project = project.WithPages([page]);
+
+        var path = Path.Combine(dir, "fon.pdf");
+        var result = PdfAlbumExporter.Export(project, path);
+        result.Issues.Issues.Should().BeEmpty();
+        IndexOf(File.ReadAllBytes(path), Fixtures.Jpeg[^200..]).Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public void UnknownBackgroundImageIsAnError()
+    {
+        var project = Project();
+        project = project.WithPages([new AlbumPage { Id = "x", Background = new BackgroundFill { Mode = BackgroundMode.Image, ImageAssetId = "yok-boyle" } }]);
+        PdfAlbumExporter.Export(project, Path.Combine(dir, "a.pdf")).Issues.Errors.Should().ContainSingle(i => i.Code == "export.photo.unknown");
+    }
+
+    [Fact]
+    public void EveryFrameStyleRendersOnEveryShape()
+    {
+        var project = Project();
+        var pages = Core.Design.FramePresets.All.Select((frame, i) => new AlbumPage
+        {
+            Id = "f" + i.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            Background = Core.Design.BackgroundPresets.Gradients[i % Core.Design.BackgroundPresets.Gradients.Count].Fill,
+            Elements =
+            [
+                frame.ApplyTo(new Slot { Id = "a", Bounds = new RectMm(20, 20, 120, 160), Placement = new PhotoPlacement { AssetId = "jpg" } }),
+                frame.ApplyTo(new Slot { Id = "b", Bounds = new RectMm(160, 20, 120, 120), Placement = new PhotoPlacement { AssetId = "png" }, CropMode = CropMode.Contain }),
+                frame.ApplyTo(new Slot { Id = "c", Bounds = new RectMm(160, 160, 120, 2), Placement = new PhotoPlacement { AssetId = "png" } }),
+            ],
+        }).ToList();
+        project = project.WithPages(pages);
+
+        var path = Path.Combine(dir, "cerceveler.pdf");
+        var result = PdfAlbumExporter.Export(project, path);
+        result.Issues.HasErrors.Should().BeFalse(string.Join("; ", result.Issues.Errors.Select(e => e.Message)));
+        using var pdf = PdfReader.Open(path, PdfDocumentOpenMode.Import);
+        pdf.PageCount.Should().Be(Core.Design.FramePresets.All.Count);
+    }
+
+    [Theory]
+    [InlineData(0, 0, 50, 100, 50)]
+    [InlineData(90, 50, 0, 50, 100)]
+    [InlineData(180, 100, 50, 0, 50)]
+    public void GradientLineFollowsAngle(double angle, double x1, double y1, double x2, double y2)
+    {
+        var line = GradientGeometry.Line(new RectMm(0, 0, 100, 100), angle);
+        line.X1.Should().BeApproximately(x1, 1e-9);
+        line.Y1.Should().BeApproximately(y1, 1e-9);
+        line.X2.Should().BeApproximately(x2, 1e-9);
+        line.Y2.Should().BeApproximately(y2, 1e-9);
+    }
+
+    [Fact]
+    public void DiagonalGradientCoversTheCorners()
+    {
+        var line = GradientGeometry.Line(new RectMm(0, 0, 100, 50), 45);
+        line.X1.Should().BeLessThan(0.01 + 0);
+        line.Y2.Should().BeGreaterThan(49.99 - 0.01);
     }
 
     [Fact]

@@ -152,17 +152,17 @@ public static class PdfAlbumExporter
         gfx.ScaleTransform(PointsPerMm);
 
         var bleedArea = new RectMm(geometry.Bleed.X - geometry.Trim.X, geometry.Bleed.Y - geometry.Trim.Y, geometry.Bleed.Width, geometry.Bleed.Height);
-        Fill(gfx, albumPage.Background, bleedArea, albumPage, number, issues);
+        Fill(gfx, albumPage.Background, bleedArea, assets, images, albumPage, number, issues);
 
         foreach (var element in albumPage.ElementsInDrawOrder)
         {
             switch (element)
             {
                 case BackgroundElement background:
-                    Fill(gfx, background.Fill, bleedArea, albumPage, number, issues);
+                    Fill(gfx, background.Fill, bleedArea, assets, images, albumPage, number, issues);
                     break;
                 case Slot slot when slot.Placement is { } placement:
-                    DrawPhoto(gfx, slot, placement, assets, images, albumPage, number, issues);
+                    DrawSlot(gfx, slot, placement, assets, images, albumPage, number, issues);
                     break;
                 case TextElement text:
                     DrawText(gfx, text, albumPage, number, issues);
@@ -180,7 +180,15 @@ public static class PdfAlbumExporter
         }
     }
 
-    private static void Fill(XGraphics gfx, BackgroundFill fill, RectMm area, AlbumPage page, int number, List<ValidationIssue> issues)
+    private static void Fill(
+        XGraphics gfx,
+        BackgroundFill fill,
+        RectMm area,
+        Dictionary<string, PhotoAsset> assets,
+        ImageCache images,
+        AlbumPage page,
+        int number,
+        List<ValidationIssue> issues)
     {
         switch (fill.Mode)
         {
@@ -188,21 +196,42 @@ public static class PdfAlbumExporter
                 gfx.DrawRectangle(new XSolidBrush(ToXColor(c, fill.Opacity)), area.X, area.Y, area.Width, area.Height);
                 break;
             case BackgroundMode.Gradient when fill.Gradient is { } g:
+                var line = GradientGeometry.Line(area, g.AngleDegrees);
                 var brush = new XLinearGradientBrush(
-                    new XPoint(area.X, area.Y),
-                    new XPoint(area.Right, area.Bottom),
+                    new XPoint(line.X1, line.Y1),
+                    new XPoint(line.X2, line.Y2),
                     ToXColor(g.From, fill.Opacity),
                     ToXColor(g.To, fill.Opacity));
                 gfx.DrawRectangle(brush, area.X, area.Y, area.Width, area.Height);
                 break;
-            case BackgroundMode.Image:
-                issues.Add(new("export.background-image.unsupported", ValidationSeverity.Warning,
-                    Format("Sayfa {0}: fotoğraflı arka plan bu sürümde PDF'e yazılmıyor.", number), page.Id));
+            case BackgroundMode.Image when fill.ImageAssetId is { } id:
+                var asset = Resolve(id, assets, images, out var image, page, number, null, issues);
+                if (asset is null || image is null)
+                {
+                    break;
+                }
+
+                var state = gfx.Save();
+                gfx.IntersectClip(new XRect(area.X, area.Y, area.Width, area.Height));
+                DrawImage(gfx, image, asset, area, new PhotoPlacement { AssetId = id }, CropMode.Cover);
+                gfx.Restore(state);
+
+                // Saydamlık: PDF görüntüsü yarı saydam çizilemediğinden fon, sayfa beyazıyla soluklaştırılır.
+                if (fill.Opacity < 1)
+                {
+                    var veil = XColor.FromArgb((int)Math.Round((1 - fill.Opacity) * 255), 255, 255, 255);
+                    gfx.DrawRectangle(new XSolidBrush(veil), area.X, area.Y, area.Width, area.Height);
+                }
+
                 break;
         }
     }
 
-    private static void DrawPhoto(
+    /// <summary>
+    /// Yuva: gölge → paspartu → (biçime kırpılmış) fotoğraf → kontur. Kontur yuva sınırının içine çizilir;
+    /// böylece komşu fotoğrafa ya da taşma payına taşmaz.
+    /// </summary>
+    private static void DrawSlot(
         XGraphics gfx,
         Slot slot,
         PhotoPlacement placement,
@@ -212,25 +241,78 @@ public static class PdfAlbumExporter
         int number,
         List<ValidationIssue> issues)
     {
-        if (!assets.TryGetValue(placement.AssetId, out var asset))
+        var asset = Resolve(placement.AssetId, assets, images, out var image, page, number, slot.Id, issues);
+        if (asset is null || image is null)
         {
-            issues.Add(new("export.photo.unknown", ValidationSeverity.Error, Format("Sayfa {0}: yuva projede olmayan bir fotoğrafa bağlı.", number), page.Id, slot.Id));
             return;
         }
 
-        var image = images.Get(asset, out var problem);
+        var bounds = slot.Bounds;
+        if (slot.Shadow is { } shadow)
+        {
+            DrawShadow(gfx, slot, shadow);
+        }
+
+        if (slot.Mat is { } mat)
+        {
+            gfx.DrawPath(new XSolidBrush(ToXColor(mat.Color, 1)), ShapePath(bounds, slot.Shape, slot.CornerRadiusMm));
+        }
+
+        var area = slot.PhotoArea;
+        if (!area.IsEmpty)
+        {
+            var innerRadius = Math.Max(0, slot.CornerRadiusMm - (slot.Mat?.Edges.Min ?? 0));
+            var state = gfx.Save();
+            gfx.IntersectClip(ShapePath(area, slot.Shape, innerRadius));
+            DrawImage(gfx, image, asset, area, placement, slot.CropMode);
+            gfx.Restore(state);
+        }
+
+        if (slot.Border is { WidthMm: > 0 } border)
+        {
+            var half = border.WidthMm / 2;
+            var inset = bounds.Deflate(EdgesMm.Uniform(half));
+            if (!inset.IsEmpty)
+            {
+                gfx.DrawPath(new XPen(ToXColor(border.Color, 1), border.WidthMm), ShapePath(inset, slot.Shape, Math.Max(0, slot.CornerRadiusMm - half)));
+            }
+        }
+    }
+
+    private static PhotoAsset? Resolve(
+        string assetId,
+        Dictionary<string, PhotoAsset> assets,
+        ImageCache images,
+        out XImage? image,
+        AlbumPage page,
+        int number,
+        string? elementId,
+        List<ValidationIssue> issues)
+    {
+        image = null;
+        if (!assets.TryGetValue(assetId, out var asset))
+        {
+            issues.Add(new("export.photo.unknown", ValidationSeverity.Error, Format("Sayfa {0}: projede olmayan bir görsele bağlı öğe.", number), page.Id, elementId ?? assetId));
+            return null;
+        }
+
+        image = images.Get(asset, out var problem);
         if (image is null)
         {
             issues.Add(new("export.photo.unreadable", ValidationSeverity.Error,
-                Format("Sayfa {0}: {1} PDF'e eklenemedi: {2}", number, asset.FileName, problem ?? "bilinmeyen hata"), page.Id, slot.Id));
-            return;
+                Format("Sayfa {0}: {1} PDF'e eklenemedi: {2}", number, asset.FileName, problem ?? "bilinmeyen hata"), page.Id, elementId ?? assetId));
         }
 
+        return asset;
+    }
+
+    /// <summary>Görüntüyü EXIF yönü, kırpma, ölçek ve döndürmeyle verilen alana çizer (kırpma çağıranın işidir).</summary>
+    private static void DrawImage(XGraphics gfx, XImage image, PhotoAsset asset, RectMm area, PhotoPlacement placement, CropMode mode)
+    {
         var orientation = OrientationTransform.FromExif(asset.ExifOrientation);
-        var rect = ImageFit.FullImageRect(slot.Bounds, asset.DisplayAspectRatio, placement, slot.CropMode);
+        var rect = ImageFit.FullImageRect(area, asset.DisplayAspectRatio, placement, mode);
 
         var state = gfx.Save();
-        gfx.IntersectClip(new XRect(slot.Bounds.X, slot.Bounds.Y, slot.Bounds.Width, slot.Bounds.Height));
         gfx.TranslateTransform(rect.X + (rect.Width / 2), rect.Y + (rect.Height / 2));
         if (placement.Rotation != 0)
         {
@@ -246,6 +328,48 @@ public static class PdfAlbumExporter
         var (w, h) = orientation.SwapsAxes ? (rect.Height, rect.Width) : (rect.Width, rect.Height);
         gfx.DrawImage(image, -w / 2, -h / 2, w, h);
         gfx.Restore(state);
+    }
+
+    /// <summary>
+    /// Yumuşak gölge. PDF'te bulanıklık filtresi olmadığından, büyüyen yarı saydam katmanlar üst üste çizilir;
+    /// merkezde toplam saydamlık gölgenin rengine eşit olur, kenarlara doğru azalır.
+    /// </summary>
+    private static void DrawShadow(XGraphics gfx, Slot slot, ShadowSpec shadow)
+    {
+        const int layers = 6;
+        var b = slot.Bounds;
+        var shifted = new RectMm(b.X + shadow.OffsetXMm, b.Y + shadow.OffsetYMm, b.Width, b.Height);
+        var targetAlpha = shadow.Color.A / 255.0;
+        var layerAlpha = 1 - Math.Pow(1 - targetAlpha, 1.0 / layers);
+        var color = XColor.FromArgb(Math.Max(1, (int)Math.Round(layerAlpha * 255)), shadow.Color.R, shadow.Color.G, shadow.Color.B);
+        var brush = new XSolidBrush(color);
+        for (var i = 0; i < layers; i++)
+        {
+            var spread = shadow.BlurMm * (layers - i) / (2.0 * layers);
+            gfx.DrawPath(brush, ShapePath(shifted.Inflate(EdgesMm.Uniform(spread)), slot.Shape, slot.CornerRadiusMm + spread));
+        }
+    }
+
+    /// <summary>Dikdörtgen, yuvarlak köşeli dikdörtgen ya da elips yol.</summary>
+    private static XGraphicsPath ShapePath(RectMm r, SlotShape shape, double radius)
+    {
+        var path = new XGraphicsPath();
+        var rect = new XRect(r.X, r.Y, r.Width, r.Height);
+        if (shape == SlotShape.Circle)
+        {
+            path.AddEllipse(rect);
+        }
+        else if (radius > 0)
+        {
+            var d = Math.Min(2 * radius, Math.Min(r.Width, r.Height));
+            path.AddRoundedRectangle(rect, new XSize(d, d));
+        }
+        else
+        {
+            path.AddRectangle(rect);
+        }
+
+        return path;
     }
 
     /// <summary>Windows'ta PDFsharp sistem fontlarını çözer; diğer sistemlerde çözümleyici verilmiş olmalı.</summary>
