@@ -59,7 +59,7 @@ public static class CollageGenerator
     }
 
     /// <summary>Satır dağılımları: en çok 3 satır (9+ fotoğrafta 4), satır başı en çok 4, komşu satır farkı en çok 2.</summary>
-    internal static IEnumerable<int[]> Compositions(int n)
+    public static IEnumerable<int[]> Compositions(int n)
     {
         var maxLines = n <= 8 ? 3 : 4;
         var output = new List<int[]>();
