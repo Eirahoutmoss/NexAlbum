@@ -1,0 +1,25 @@
+<Window x:Class="NexAlbum.UI.Views.NewProjectWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Yeni proje" Width="520" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False"
+        FontFamily="Inter, Segoe UI" FontSize="14" Background="{StaticResource BackgroundBrush}">
+  <StackPanel Margin="20">
+    <TextBlock Text="Yeni albüm projesi" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,16" />
+
+    <TextBlock Text="Proje adı" Margin="0,0,0,4" />
+    <TextBox x:Name="NameBox" Padding="6,4" Text="Yeni Albüm" />
+
+    <TextBlock Text="Baskı profili" Margin="0,16,0,4" />
+    <DockPanel>
+      <Button DockPanel.Dock="Right" Content="Dosyadan…" Padding="10,4" Margin="8,0,0,0" Click="OnLoadProfile" />
+      <ComboBox x:Name="ProfileBox" DisplayMemberPath="Name" Padding="6,4" SelectionChanged="OnProfileChanged" />
+    </DockPanel>
+    <TextBlock x:Name="ProfileNote" Style="{StaticResource Caption}" Margin="0,8,0,0" />
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
+      <Button Content="İptal" IsCancel="True" Padding="16,6" Margin="0,0,8,0" />
+      <Button Content="Oluştur" IsDefault="True" Padding="16,6" Click="OnCreate" Style="{StaticResource AccentButton}" />
+    </StackPanel>
+  </StackPanel>
+</Window>

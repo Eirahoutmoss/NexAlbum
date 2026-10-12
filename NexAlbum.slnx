@@ -12,6 +12,7 @@
     <Project Path="tests/NexAlbum.Assets.Tests/NexAlbum.Assets.Tests.csproj" />
     <Project Path="tests/NexAlbum.Core.Tests/NexAlbum.Core.Tests.csproj" />
     <Project Path="tests/NexAlbum.Persistence.Tests/NexAlbum.Persistence.Tests.csproj" />
+    <Project Path="tests/NexAlbum.UI.Tests/NexAlbum.UI.Tests.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />

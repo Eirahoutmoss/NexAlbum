@@ -1,25 +1,562 @@
+using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Reflection;
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using NexAlbum.Assets.Import;
+using NexAlbum.Core.Layout;
+using NexAlbum.Core.Projects;
+using NexAlbum.Core.Templates;
+using NexAlbum.Core.Validation;
+using NexAlbum.Persistence.Format;
+using NexAlbum.Persistence.Packaging;
+using NexAlbum.UI.Services;
 
 namespace NexAlbum.UI.ViewModels;
 
-/// <summary>
-/// Ana pencerenin görünüm modeli.
-/// </summary>
-public sealed class MainViewModel : ObservableObject
-{
-    public MainViewModel()
-    {
-        var version = Assembly.GetExecutingAssembly()
-            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "0.0.0";
+/// <summary>Otomatik oluşturma modu seçeneği.</summary>
+public sealed record LayoutModeOption(LayoutMode Mode, string Name);
 
-        // "+commit" son ekini göstermeyelim.
-        var plus = version.IndexOf('+', StringComparison.Ordinal);
-        VersionText = string.Format(CultureInfo.CurrentCulture, "Sürüm {0}", plus >= 0 ? version[..plus] : version);
+/// <summary>
+/// Ana pencerenin görünüm modeli: proje yaşam döngüsü, içe aktarma, otomatik yerleşim ve ön kontrol.
+/// </summary>
+public sealed class MainViewModel : ObservableObject, IDisposable
+{
+    private readonly IDialogService dialogs;
+    private readonly TimeProvider clock;
+    private readonly AutoLayoutEngine engine = new();
+    private AlbumProject? project;
+    private string? filePath;
+    private bool isDirty;
+    private bool isBusy;
+    private string status = "Hazır";
+    private PageItemViewModel? selectedPage;
+    private LayoutModeOption selectedMode;
+    private ulong? seed;
+    private ProjectLock? projectLock;
+
+    public MainViewModel(IDialogService dialogs, TimeProvider? clock = null)
+    {
+        this.dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
+        this.clock = clock ?? TimeProvider.System;
+        selectedMode = LayoutModes[1];
+
+        NewCommand = new RelayCommand(NewProject, () => !IsBusy);
+        OpenCommand = new RelayCommand(OpenProject, () => !IsBusy);
+        SaveCommand = new RelayCommand(() => Save(saveAs: false), () => HasProject && !IsBusy);
+        SaveAsCommand = new RelayCommand(() => Save(saveAs: true), () => HasProject && !IsBusy);
+        ImportCommand = new AsyncRelayCommand(ImportAsync, () => HasProject && !IsBusy);
+        AutoLayoutCommand = new AsyncRelayCommand(() => AutoLayoutAsync(newSeed: false), () => HasPhotos && !IsBusy);
+        ShuffleCommand = new AsyncRelayCommand(() => AutoLayoutAsync(newSeed: true), () => HasPhotos && !IsBusy);
+        PreflightCommand = new RelayCommand(RunPreflight, () => HasProject);
+        ToggleLockCommand = new RelayCommand(ToggleLock, () => SelectedPage is not null);
+        PreviousPageCommand = new RelayCommand(() => MovePage(-1), () => SelectedPage is { Index: > 0 });
+        NextPageCommand = new RelayCommand(() => MovePage(1), () => SelectedPage is not null && SelectedPage.Index < Pages.Count - 1);
+        AboutCommand = new RelayCommand(dialogs.ShowAbout);
     }
 
-    public string Title { get; } = "NexAlbum";
+    public IReadOnlyList<LayoutModeOption> LayoutModes { get; } =
+    [
+        new(LayoutMode.Quick, "Hızlı"),
+        new(LayoutMode.Balanced, "Dengeli"),
+        new(LayoutMode.Controlled, "Kontrollü"),
+    ];
 
-    public string VersionText { get; }
+    public RelayCommand NewCommand { get; }
+
+    public RelayCommand OpenCommand { get; }
+
+    public RelayCommand SaveCommand { get; }
+
+    public RelayCommand SaveAsCommand { get; }
+
+    public AsyncRelayCommand ImportCommand { get; }
+
+    public AsyncRelayCommand AutoLayoutCommand { get; }
+
+    public AsyncRelayCommand ShuffleCommand { get; }
+
+    public RelayCommand PreflightCommand { get; }
+
+    public RelayCommand ToggleLockCommand { get; }
+
+    public RelayCommand PreviousPageCommand { get; }
+
+    public RelayCommand NextPageCommand { get; }
+
+    public RelayCommand AboutCommand { get; }
+
+    public ObservableCollection<AssetItemViewModel> Assets { get; } = [];
+
+    public ObservableCollection<PageItemViewModel> Pages { get; } = [];
+
+    public ObservableCollection<IssueItemViewModel> Issues { get; } = [];
+
+    public AlbumProject? Project => project;
+
+    public string? FilePath => filePath;
+
+    public bool HasProject => project is not null;
+
+    public bool HasNoProject => project is null;
+
+    public bool HasPhotos => project is { Assets.Count: > 0 };
+
+    public bool IsDirty
+    {
+        get => isDirty;
+        private set
+        {
+            if (SetProperty(ref isDirty, value))
+            {
+                OnPropertyChanged(nameof(Title));
+                OnPropertyChanged(nameof(SaveState));
+            }
+        }
+    }
+
+    public bool IsBusy
+    {
+        get => isBusy;
+        private set
+        {
+            if (SetProperty(ref isBusy, value))
+            {
+                RefreshCommands();
+            }
+        }
+    }
+
+    public string Status
+    {
+        get => status;
+        private set => SetProperty(ref status, value);
+    }
+
+    public string Title => project is null
+        ? AppInfo.Name
+        : $"{project.Name}{(IsDirty ? " ●" : string.Empty)} — {AppInfo.Name}";
+
+    public string SaveState => project is null ? string.Empty : IsDirty ? "Kaydedilmedi ●" : "Kaydedildi";
+
+    public string Version => "v" + AppInfo.Version;
+
+    public LayoutModeOption SelectedMode
+    {
+        get => selectedMode;
+        set => SetProperty(ref selectedMode, value ?? LayoutModes[1]);
+    }
+
+    public PageItemViewModel? SelectedPage
+    {
+        get => selectedPage;
+        set
+        {
+            var previous = selectedPage;
+            if (SetProperty(ref selectedPage, value))
+            {
+                previous?.SetDetail(false);
+                value?.SetDetail(true);
+                OnPropertyChanged(nameof(SelectedPageInfo));
+                OnPropertyChanged(nameof(LockButtonText));
+                RefreshCommands();
+            }
+        }
+    }
+
+    public string SelectedPageInfo => SelectedPage is null
+        ? "Sayfa seçilmedi."
+        : string.Format(
+            CultureInfo.CurrentCulture,
+            "{0} / {1} · {2} · {3} fotoğraf{4}",
+            SelectedPage.Number,
+            Pages.Count,
+            TemplateName(SelectedPage.TemplateId),
+            SelectedPage.Slots.Count(s => !s.IsEmpty),
+            SelectedPage.IsLocked ? " · Kilitli" : string.Empty);
+
+    public string LockButtonText => SelectedPage?.IsLocked == true ? "Kilidi aç" : "Kilitle";
+
+    public string PhotoSummary => project is null
+        ? string.Empty
+        : string.Format(CultureInfo.CurrentCulture, "{0} fotoğraf · {1} kullanılmamış", project.Assets.Count, project.UnusedAssets().Count);
+
+    /// <summary>Profil özeti (Karar 03 §10.4).</summary>
+    public string ProfileSummary => project is null ? string.Empty : ProfileText.Summary(project.Profile, project.PageSize);
+
+    public void NewProject()
+    {
+        if (!ConfirmDiscard())
+        {
+            return;
+        }
+
+        var choice = dialogs.AskNewProject();
+        if (choice is null)
+        {
+            return;
+        }
+
+        ReleaseLock();
+        SetProject(AlbumProject.Create(choice.Name, choice.Profile, clock.GetUtcNow(), AppInfo.Version), path: null, dirty: true);
+        Status = "Yeni proje oluşturuldu. Fotoğraf ekleyerek başlayın.";
+    }
+
+    public void OpenProject()
+    {
+        if (!ConfirmDiscard())
+        {
+            return;
+        }
+
+        var path = dialogs.AskOpenProjectPath();
+        if (path is not null)
+        {
+            Open(path);
+        }
+    }
+
+    public void Open(string path)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        LoadedProject loaded;
+        try
+        {
+            loaded = ProjectPackageReader.Load(path);
+        }
+        catch (ProjectFormatException ex)
+        {
+            dialogs.Warn(ex.Message);
+            return;
+        }
+
+        if (!AcquireLock(path))
+        {
+            return;
+        }
+
+        if (loaded.ChecksumMismatches.Count > 0
+            && !dialogs.Confirm("Proje dosyasındaki bazı bölümler kaydedildikten sonra değişmiş görünüyor (bütünlük denetimi).\n\nYine de açılsın mı?"))
+        {
+            ReleaseLock();
+            return;
+        }
+
+        var refreshed = AssetFiles.RefreshMissing(loaded.Project);
+        SetProject(refreshed, path, dirty: loaded.Migrated || !ReferenceEquals(refreshed, loaded.Project));
+        var missing = AssetFiles.Missing(refreshed).Count;
+        Status = missing > 0
+            ? string.Format(CultureInfo.CurrentCulture, "Proje açıldı. {0} fotoğraf bulunamadı; ön kontrolde listelenir.", missing)
+            : "Proje açıldı.";
+        if (loaded.Migrated)
+        {
+            dialogs.Info("Proje eski bir sürümle kaydedilmişti ve güncellendi. Orijinal dosyanın yedeği alındı.");
+        }
+    }
+
+    /// <summary>Kaydeder; başarılıysa true.</summary>
+    public bool Save(bool saveAs)
+    {
+        if (project is null)
+        {
+            return false;
+        }
+
+        var path = filePath;
+        if (saveAs || path is null)
+        {
+            path = dialogs.AskSaveProjectPath(project.Name + ProjectFormat.FileExtension);
+            if (path is null)
+            {
+                return false;
+            }
+        }
+
+        try
+        {
+            var saved = project.Touch(clock.GetUtcNow());
+            ProjectPackageWriter.Save(path, saved, new SaveOptions
+            {
+                AppVersion = AppInfo.Version,
+                Templates = UsedTemplates(saved),
+                Clock = clock,
+            });
+            project = saved;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ProjectFormatException)
+        {
+            dialogs.Warn("Proje kaydedilemedi: " + ex.Message);
+            return false;
+        }
+
+        if (!string.Equals(path, filePath, StringComparison.OrdinalIgnoreCase))
+        {
+            ReleaseLock();
+            filePath = path;
+            AcquireLock(path);
+            OnPropertyChanged(nameof(FilePath));
+        }
+
+        IsDirty = false;
+        Status = "Kaydedildi: " + Path.GetFileName(path);
+        return true;
+    }
+
+    /// <summary>Pencere kapanırken: kaydedilmemiş değişiklik varsa sorar. Kapanabilirse true.</summary>
+    public bool CanClose() => ConfirmDiscard();
+
+    public async Task ImportAsync()
+    {
+        var current = project;
+        var folder = dialogs.AskPhotoFolder();
+        if (current is null || folder is null)
+        {
+            return;
+        }
+
+        IsBusy = true;
+        Status = "Fotoğraflar okunuyor…";
+        try
+        {
+            var result = await Task.Run(() => new PhotoImporter().ImportFolder(folder, current, new ImportOptions { Recursive = true })).ConfigureAwait(true);
+            if (result.Imported.Count > 0)
+            {
+                UpdateProject(result.ApplyTo(current));
+            }
+
+            Status = string.Format(
+                CultureInfo.CurrentCulture,
+                "{0} fotoğraf eklendi, {1} zaten projedeydi, {2} okunamadı.",
+                result.Imported.Count,
+                result.AlreadyInProject.Count,
+                result.Skipped.Count);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            dialogs.Warn("Klasör okunamadı: " + ex.Message);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public async Task AutoLayoutAsync(bool newSeed)
+    {
+        var current = project;
+        if (current is null)
+        {
+            return;
+        }
+
+        if (current.Pages.Any(p => !p.Locked)
+            && !dialogs.Confirm("Kilitli olmayan sayfalar yeniden oluşturulacak. Devam edilsin mi?"))
+        {
+            return;
+        }
+
+        if (newSeed)
+        {
+            seed = (seed ?? LayoutSeed.FromProjectId(current.Id)) + 1;
+        }
+
+        IsBusy = true;
+        Status = "Albüm oluşturuluyor…";
+        try
+        {
+            var options = new LayoutOptions { Mode = SelectedMode.Mode, Seed = seed };
+            var request = LayoutRequest.ForProject(current, BuiltInTemplates.All, options, clock.GetUtcNow());
+            var result = await Task.Run(() => engine.Layout(request)).ConfigureAwait(true);
+            UpdateProject(current.WithPages(result.Pages));
+            SelectedPage = Pages.FirstOrDefault();
+            ShowIssues(result.Issues);
+            Status = string.Format(CultureInfo.CurrentCulture, "{0} sayfa oluşturuldu ({1} mod).", result.Pages.Count, SelectedMode.Name);
+        }
+        catch (InvalidOperationException ex)
+        {
+            dialogs.Warn("Albüm oluşturulamadı: " + ex.Message);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public void RunPreflight()
+    {
+        if (project is null)
+        {
+            return;
+        }
+
+        var result = ProjectPreflight.Check(project, new PreflightEnvironment { FontAvailable = FontCatalog.IsInstalled });
+        ShowIssues(result);
+        Status = result.HasErrors
+            ? string.Format(CultureInfo.CurrentCulture, "Ön kontrol: {0} hata, {1} uyarı.", result.Errors.Count(), result.Warnings.Count())
+            : string.Format(CultureInfo.CurrentCulture, "Ön kontrol: hata yok, {0} uyarı.", result.Warnings.Count());
+    }
+
+    public void ToggleLock()
+    {
+        if (project is null || SelectedPage is null)
+        {
+            return;
+        }
+
+        var index = SelectedPage.Index;
+        var page = SelectedPage.Page;
+        UpdateProject(project.ReplacePage(page with { Locked = !page.Locked, UpdatedAt = clock.GetUtcNow() }));
+        SelectedPage = Pages.ElementAtOrDefault(index);
+    }
+
+    public void Dispose() => ReleaseLock();
+
+    private void MovePage(int delta)
+    {
+        if (SelectedPage is null)
+        {
+            return;
+        }
+
+        var target = SelectedPage.Index + delta;
+        if (target >= 0 && target < Pages.Count)
+        {
+            SelectedPage = Pages[target];
+        }
+    }
+
+    private void ShowIssues(ValidationResult result)
+    {
+        Issues.Clear();
+        var pageNumbers = new Dictionary<string, int>(StringComparer.Ordinal);
+        if (project is not null)
+        {
+            for (var i = 0; i < project.Pages.Count; i++)
+            {
+                pageNumbers[project.Pages[i].Id] = i + 1;
+            }
+        }
+
+        foreach (var issue in result.Issues.OrderByDescending(i => i.Severity))
+        {
+            Issues.Add(new IssueItemViewModel(issue, issue.PageId is { } id && pageNumbers.TryGetValue(id, out var n) ? n : null));
+        }
+    }
+
+    private bool ConfirmDiscard()
+    {
+        if (project is null || !IsDirty)
+        {
+            return true;
+        }
+
+        return dialogs.AskSaveChanges(project.Name) switch
+        {
+            SaveDecision.Save => Save(saveAs: false),
+            SaveDecision.Discard => true,
+            _ => false,
+        };
+    }
+
+    private bool AcquireLock(string path)
+    {
+        if (ProjectLock.TryAcquire(path, clock, out var acquired, out var holder))
+        {
+            projectLock = acquired;
+            return true;
+        }
+
+        var who = holder is null
+            ? "başka bir uygulama"
+            : string.Format(CultureInfo.CurrentCulture, "{0} ({1}, {2:g})", holder.User, holder.Machine, holder.AcquiredAt.ToLocalTime());
+        if (!dialogs.Confirm($"Bu proje {who} tarafından kullanılıyor görünüyor.\n\nÖnceki bir çökmeden kalmış olabilir. Kilit kaldırılıp devam edilsin mi?"))
+        {
+            return false;
+        }
+
+        ProjectLock.ForceRelease(path);
+        if (ProjectLock.TryAcquire(path, clock, out acquired, out _))
+        {
+            projectLock = acquired;
+        }
+
+        return true;
+    }
+
+    private void ReleaseLock()
+    {
+        projectLock?.Dispose();
+        projectLock = null;
+    }
+
+    private void SetProject(AlbumProject value, string? path, bool dirty)
+    {
+        filePath = path;
+        seed = null;
+        Issues.Clear();
+        UpdateProject(value);
+        IsDirty = dirty;
+        SelectedPage = Pages.FirstOrDefault();
+        OnPropertyChanged(nameof(FilePath));
+        OnPropertyChanged(nameof(HasNoProject));
+    }
+
+    private void UpdateProject(AlbumProject value)
+    {
+        var selectedIndex = SelectedPage?.Index;
+        SelectedPage = null;
+        project = value;
+        IsDirty = true;
+
+        var used = value.Pages.SelectMany(p => p.Slots).Select(s => s.Placement?.AssetId).OfType<string>().ToHashSet(StringComparer.Ordinal);
+        Assets.Clear();
+        foreach (var asset in value.Assets)
+        {
+            Assets.Add(new AssetItemViewModel(asset, used.Contains(asset.Id)));
+        }
+
+        Pages.Clear();
+        for (var i = 0; i < value.Pages.Count; i++)
+        {
+            Pages.Add(new PageItemViewModel(value.Pages[i], i, value));
+        }
+
+        if (selectedIndex is { } index)
+        {
+            SelectedPage = Pages.ElementAtOrDefault(Math.Min(index, Pages.Count - 1));
+        }
+
+        OnPropertyChanged(nameof(Project));
+        OnPropertyChanged(nameof(HasProject));
+        OnPropertyChanged(nameof(HasNoProject));
+        OnPropertyChanged(nameof(HasPhotos));
+        OnPropertyChanged(nameof(Title));
+        OnPropertyChanged(nameof(PhotoSummary));
+        OnPropertyChanged(nameof(ProfileSummary));
+        OnPropertyChanged(nameof(SelectedPageInfo));
+        RefreshCommands();
+    }
+
+    private void RefreshCommands()
+    {
+        NewCommand.NotifyCanExecuteChanged();
+        OpenCommand.NotifyCanExecuteChanged();
+        SaveCommand.NotifyCanExecuteChanged();
+        SaveAsCommand.NotifyCanExecuteChanged();
+        ImportCommand.NotifyCanExecuteChanged();
+        AutoLayoutCommand.NotifyCanExecuteChanged();
+        ShuffleCommand.NotifyCanExecuteChanged();
+        PreflightCommand.NotifyCanExecuteChanged();
+        ToggleLockCommand.NotifyCanExecuteChanged();
+        PreviousPageCommand.NotifyCanExecuteChanged();
+        NextPageCommand.NotifyCanExecuteChanged();
+    }
+
+    private static IReadOnlyList<TemplateDefinition> UsedTemplates(AlbumProject project)
+    {
+        var ids = project.Pages.Select(p => p.TemplateId).OfType<string>().ToHashSet(StringComparer.Ordinal);
+        return [.. BuiltInTemplates.All.Where(t => ids.Contains(t.Id))];
+    }
+
+    private static string TemplateName(string? id) => id is null ? "Şablonsuz" : BuiltInTemplates.Find(id)?.Name ?? id;
 }

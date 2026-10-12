@@ -1,0 +1,53 @@
+<Window x:Class="NexAlbum.UI.Views.AboutWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="NexAlbum hakkında" Width="520" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False"
+        FontFamily="Inter, Segoe UI" FontSize="14" Background="{StaticResource BackgroundBrush}">
+  <StackPanel Margin="24">
+    <StackPanel Orientation="Horizontal">
+      <Border Width="56" Height="56" CornerRadius="8" Background="{StaticResource AccentBrush}">
+        <TextBlock Text="NA" Foreground="White" FontSize="24" FontWeight="Bold"
+                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+      </Border>
+      <StackPanel Margin="16,0,0,0" VerticalAlignment="Center">
+        <TextBlock Text="NexAlbum" FontSize="22" FontWeight="SemiBold" />
+        <TextBlock x:Name="VersionText" Style="{StaticResource Caption}" />
+      </StackPanel>
+    </StackPanel>
+
+    <TextBlock Margin="0,18,0,0" TextWrapping="Wrap"
+               Text="Fotoğrafçılar için ücretsiz ve açık kaynak albüm tasarım stüdyosu. Yüzlerce fotoğrafı dakikalar içinde doğru ölçüde, baskıya hazır bir albüme dönüştürür." />
+
+    <TextBlock Margin="0,12,0,0" TextWrapping="Wrap" Foreground="{StaticResource SecondaryTextBrush}"
+               Text="Hesap, bulut, abonelik ve reklam yoktur. Verileriniz bilgisayarınızda kalır. Ölçü, taşma payı ve renk değerleri asla uydurulmaz." />
+
+    <Border Margin="0,18,0,0" Padding="12" Background="{StaticResource SurfaceBrush}" CornerRadius="8">
+      <StackPanel>
+        <TextBlock Text="Geliştirici" Style="{StaticResource Caption}" />
+        <TextBlock x:Name="AuthorText" FontWeight="SemiBold" Margin="0,2,0,0" />
+        <TextBlock Margin="0,2,0,0">
+          <Hyperlink x:Name="AuthorLink" RequestNavigate="OnNavigate">
+            <Run x:Name="AuthorLinkText" />
+          </Hyperlink>
+        </TextBlock>
+        <TextBlock Margin="0,8,0,0" Style="{StaticResource Caption}"
+                   Text="NexAlbum, Nex uygulama ailesinin bir parçasıdır." />
+      </StackPanel>
+    </Border>
+
+    <TextBlock Margin="0,18,0,0" Text="Lisans" Style="{StaticResource Caption}" />
+    <TextBlock TextWrapping="Wrap" Margin="0,2,0,0">
+      <Run Text="GNU Genel Kamu Lisansı v3 veya sonrası (GPL-3.0-or-later). Kaynak kodu:" />
+      <Hyperlink x:Name="RepoLink" RequestNavigate="OnNavigate">
+        <Run x:Name="RepoLinkText" />
+      </Hyperlink>
+    </TextBlock>
+
+    <TextBlock Margin="0,14,0,0" Text="Üçüncü taraf bileşenler" Style="{StaticResource Caption}" />
+    <TextBlock TextWrapping="Wrap" Margin="0,2,0,0" FontSize="12"
+               Text=".NET (MIT) · CommunityToolkit.Mvvm (MIT) · MetadataExtractor (Apache 2.0)" />
+
+    <Button Content="Kapat" IsCancel="True" IsDefault="True" HorizontalAlignment="Right" Padding="16,6" Margin="0,20,0,0" />
+  </StackPanel>
+</Window>
