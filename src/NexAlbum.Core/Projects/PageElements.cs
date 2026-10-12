@@ -1,0 +1,90 @@
+using NexAlbum.Core.Common;
+using NexAlbum.Core.Geometry;
+
+namespace NexAlbum.Core.Projects;
+
+/// <summary>
+/// Sayfadaki öğelerin ortak tabanı (Karar 09 §5: Slot, TextElement, BackgroundElement).
+/// </summary>
+public abstract record PageElement
+{
+    public required string Id { get; init => field = Guard.NotBlank(value, nameof(Id)); }
+
+    /// <summary>Katman sırası; büyük olan üstte çizilir.</summary>
+    public int ZIndex { get; init; }
+}
+
+/// <summary>Fotoğrafın bir yuvaya tahribatsız yerleşimi (Karar 09 §6.3). Orijinal dosyaya dokunulmaz.</summary>
+public sealed record PhotoPlacement
+{
+    public required string AssetId { get; init => field = Guard.NotBlank(value, nameof(AssetId)); }
+
+    /// <summary>Yatay kaydırma, yuva genişliğine göre normalize (-1..1).</summary>
+    public double OffsetX { get; init => field = Guard.InRange(value, -1, 1, nameof(OffsetX)); }
+
+    /// <summary>Dikey kaydırma, yuva yüksekliğine göre normalize (-1..1).</summary>
+    public double OffsetY { get; init => field = Guard.InRange(value, -1, 1, nameof(OffsetY)); }
+
+    /// <summary>Ölçek; 1 = kırpma moduna göre tam sığdır.</summary>
+    public double Scale { get; init => field = Guard.Positive(value, nameof(Scale)); } = 1;
+
+    /// <summary>Döndürme (derece).</summary>
+    public double Rotation { get; init => field = Guard.Finite(value, nameof(Rotation)); }
+
+    public NormalizedRect Crop { get; init; } = NormalizedRect.Full;
+
+    public ImageAdjustments Adjustments { get; init => field = value ?? throw new ArgumentNullException(nameof(Adjustments)); } = ImageAdjustments.None;
+}
+
+/// <summary>Fotoğraf yuvası (Karar 09 §6).</summary>
+public sealed record Slot : PageElement
+{
+    public required RectMm Bounds { get; init => field = value.IsEmpty ? throw new ArgumentException("Yuva boyutu sıfır olamaz.", nameof(Bounds)) : value; }
+
+    public CropMode CropMode { get; init; } = CropMode.Cover;
+
+    public int? MinDpi { get; init => field = Guard.PositiveOrNull(value, nameof(MinDpi)); }
+
+    public int? TargetDpi { get; init => field = Guard.PositiveOrNull(value, nameof(TargetDpi)); }
+
+    public PhotoPlacement? Placement { get; init; }
+
+    public SlotShape Shape { get; init; } = SlotShape.Rectangle;
+
+    public double CornerRadiusMm { get; init => field = Guard.NonNegative(value, nameof(CornerRadiusMm)); }
+
+    public BorderSpec? Border { get; init; }
+
+    public ShadowSpec? Shadow { get; init; }
+
+    public bool IsEmpty => Placement is null;
+}
+
+/// <summary>Metin öğesi (Karar 09 §8).</summary>
+public sealed record TextElement : PageElement
+{
+    public required RectMm Bounds { get; init => field = value.IsEmpty ? throw new ArgumentException("Metin alanı boyutu sıfır olamaz.", nameof(Bounds)) : value; }
+
+    public required string Content { get; init => field = value ?? throw new ArgumentNullException(nameof(Content)); }
+
+    public required FontSpec Font { get; init => field = value ?? throw new ArgumentNullException(nameof(Font)); }
+
+    public TextAlignment Alignment { get; init; } = TextAlignment.Left;
+
+    public VerticalAlignment VerticalAlignment { get; init; } = VerticalAlignment.Top;
+
+    public double? LineHeight { get; init => field = Guard.PositiveOrNull(value, nameof(LineHeight)); }
+
+    public double LetterSpacing { get; init => field = Guard.Finite(value, nameof(LetterSpacing)); }
+}
+
+/// <summary>Tüm sayfayı kaplayan arka plan katmanı (Karar 09 §9).</summary>
+public sealed record BackgroundElement : PageElement
+{
+    public BackgroundElement()
+    {
+        ZIndex = -100;
+    }
+
+    public BackgroundFill Fill { get; init => field = value ?? throw new ArgumentNullException(nameof(Fill)); } = BackgroundFill.White;
+}
