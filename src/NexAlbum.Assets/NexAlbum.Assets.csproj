@@ -2,4 +2,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NexAlbum.Core\NexAlbum.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MetadataExtractor" />
+  </ItemGroup>
 </Project>

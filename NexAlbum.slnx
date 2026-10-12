@@ -9,6 +9,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/NexAlbum.Architecture.Tests/NexAlbum.Architecture.Tests.csproj" />
+    <Project Path="tests/NexAlbum.Assets.Tests/NexAlbum.Assets.Tests.csproj" />
     <Project Path="tests/NexAlbum.Core.Tests/NexAlbum.Core.Tests.csproj" />
     <Project Path="tests/NexAlbum.Persistence.Tests/NexAlbum.Persistence.Tests.csproj" />
   </Folder>
