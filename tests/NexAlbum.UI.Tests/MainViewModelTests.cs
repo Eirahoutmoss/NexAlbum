@@ -155,6 +155,57 @@ public sealed class MainViewModelTests : IDisposable
         text.Should().Contain("3 mm (her kenar)").And.Contain("sağ 6").And.Contain("Gutter: girilmedi").And.Contain("CMYK / Fogra39.icc").And.Contain("Kullanıcı doğruladı");
     }
 
+    [Fact]
+    public async Task ExportIsBlockedWhilePreflightHasErrors()
+    {
+        var path = Path.Combine(dir, "eksik.albumproj");
+        var project = SampleProject(2);
+        project = project.WithPages([new AlbumPage { Id = "p1", Elements = [new Slot { Id = "s", Bounds = new RectMm(20, 20, 100, 100) }] }]);
+        ProjectPackageWriter.Save(path, project, new SaveOptions());
+
+        var dialogs = new FakeDialogs { PdfPath = Path.Combine(dir, "album.pdf") };
+        using var vm = new MainViewModel(dialogs);
+        vm.Open(path);
+        vm.ExportPdfCommand.CanExecute(null).Should().BeTrue();
+
+        await vm.ExportPdfAsync();
+
+        dialogs.Warnings.Should().ContainSingle().Which.Should().Contain("hata");
+        File.Exists(dialogs.PdfPath).Should().BeFalse("örnek profilde taşma payı yok: Karar 03 §7.2 çıktıyı engeller");
+        vm.Issues.Should().Contain(i => i.Issue.Code == "profile.bleed.missing");
+    }
+
+    [Fact]
+    public async Task EditingTheProfileUnblocksExport()
+    {
+        var path = Path.Combine(dir, "tam.albumproj");
+        var project = SampleProject(0).WithPages([new AlbumPage { Id = "p1", Elements = [new Slot { Id = "s", Bounds = new RectMm(20, 20, 100, 100) }] }]);
+        ProjectPackageWriter.Save(path, project, new SaveOptions());
+
+        var complete = project.Profile with
+        {
+            Bleed = new EdgeSpec(EdgesMm.Uniform(3)),
+            SafeArea = new EdgeSpec(EdgesMm.Uniform(5)),
+            Resolution = new ResolutionSpec(300),
+            Color = new ColorSpec(ColorMode.Cmyk),
+            Verified = true,
+        };
+        var dialogs = new FakeDialogs { EditedProfile = complete, PdfPath = Path.Combine(dir, "album.pdf") };
+        using var vm = new MainViewModel(dialogs);
+        vm.Open(path);
+
+        vm.EditProfile();
+        vm.Project!.Profile.Bleed.Value.Should().Be(EdgesMm.Uniform(3));
+        vm.ProfileSummary.Should().Contain("3 mm (her kenar)");
+
+        await vm.ExportPdfAsync();
+
+        dialogs.Confirmations.Should().BeGreaterThan(0, "boş yuva ve ICC uyarıları onaylanır");
+        File.Exists(dialogs.PdfPath).Should().BeTrue();
+        dialogs.Revealed.Should().Be(Path.GetFullPath(dialogs.PdfPath!));
+        vm.Status.Should().Contain("PDF hazır");
+    }
+
     private static AlbumProject SampleProject(int photos)
     {
         var now = new DateTimeOffset(2026, 10, 12, 10, 0, 0, TimeSpan.Zero);
@@ -189,6 +240,18 @@ public sealed class MainViewModelTests : IDisposable
         public string? AskSaveProjectPath(string suggestedName) => SavePath;
 
         public string? AskPhotoFolder() => null;
+
+        public AlbumProfile? EditedProfile { get; set; }
+
+        public string? PdfPath { get; set; }
+
+        public string? Revealed { get; private set; }
+
+        public AlbumProfile? EditProfile(AlbumProfile profile) => EditedProfile;
+
+        public string? AskPdfPath(string suggestedName) => PdfPath;
+
+        public void Reveal(string path) => Revealed = path;
 
         public void ShowAbout()
         {

@@ -15,6 +15,7 @@
     <KeyBinding Key="S" Modifiers="Control+Shift" Command="{Binding SaveAsCommand}" />
     <KeyBinding Key="G" Modifiers="Control" Command="{Binding AutoLayoutCommand}" />
     <KeyBinding Key="L" Modifiers="Control" Command="{Binding ToggleLockCommand}" />
+    <KeyBinding Key="E" Modifiers="Control" Command="{Binding ExportPdfCommand}" />
     <KeyBinding Key="PageUp" Command="{Binding PreviousPageCommand}" />
     <KeyBinding Key="PageDown" Command="{Binding NextPageCommand}" />
     <KeyBinding Key="F1" Command="{Binding AboutCommand}" />
@@ -73,10 +74,22 @@
           </Button>
           <Button Style="{StaticResource ToolButton}" Command="{Binding ShuffleCommand}" ToolTip="Aynı fotoğraflarla farklı bir düzen dene" Content="Farklı sonuç" />
           <Rectangle Width="1" Height="26" Fill="{StaticResource BorderBrush}" Margin="8,0" />
+          <Button Style="{StaticResource ToolButton}" Command="{Binding EditProfileCommand}" ToolTip="Baskı profilini düzenle (taşma payı, güvenli alan, DPI…)">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE713;" VerticalAlignment="Center" Margin="0,0,6,0" />
+              <TextBlock Text="Profil" />
+            </StackPanel>
+          </Button>
           <Button Style="{StaticResource ToolButton}" Command="{Binding PreflightCommand}" ToolTip="Baskı öncesi kontrol">
             <StackPanel Orientation="Horizontal">
               <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE930;" VerticalAlignment="Center" Margin="0,0,6,0" />
               <TextBlock Text="Ön kontrol" />
+            </StackPanel>
+          </Button>
+          <Button Style="{StaticResource ToolButton}" Command="{Binding ExportPdfCommand}" ToolTip="Baskı PDF'i (Ctrl+E)">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock FontFamily="{StaticResource IconFont}" Text="&#xE749;" VerticalAlignment="Center" Margin="0,0,6,0" />
+              <TextBlock Text="PDF Çıktı" />
             </StackPanel>
           </Button>
         </StackPanel>
@@ -184,7 +197,10 @@
           <Button Content="{Binding LockButtonText}" Command="{Binding ToggleLockCommand}" HorizontalAlignment="Left"
                   Margin="12,8" Padding="12,4" ToolTip="Kilitli sayfa otomatik oluşturmada değişmez (Ctrl+L)" />
 
-          <TextBlock Text="Profil" Style="{StaticResource PanelHeader}" />
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Content="Düzenle" Command="{Binding EditProfileCommand}" Margin="0,8,12,0" Padding="10,2" />
+            <TextBlock Text="Profil" Style="{StaticResource PanelHeader}" />
+          </DockPanel>
           <TextBlock Text="{Binding ProfileSummary}" TextWrapping="Wrap" Margin="12,0" FontSize="13" LineHeight="20" />
 
           <DockPanel Margin="0,8,0,0">

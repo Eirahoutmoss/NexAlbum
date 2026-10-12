@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Windows;
 using Microsoft.Win32;
+using NexAlbum.Core.Profiles;
 using NexAlbum.Persistence.Format;
 using NexAlbum.UI.Views;
 
@@ -40,6 +42,28 @@ public sealed class DialogService(Window owner) : IDialogService
         var dialog = new OpenFolderDialog { Title = "Fotoğraf klasörü seçin" };
         return dialog.ShowDialog(owner) == true ? dialog.FolderName : null;
     }
+
+    public AlbumProfile? EditProfile(AlbumProfile profile)
+    {
+        var window = new ProfileEditorWindow(profile) { Owner = owner };
+        return window.ShowDialog() == true ? window.Result : null;
+    }
+
+    public string? AskPdfPath(string suggestedName)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Filter = "PDF (*.pdf)|*.pdf",
+            Title = "Baskı PDF'i",
+            FileName = suggestedName,
+            DefaultExt = ".pdf",
+            AddExtension = true,
+        };
+        return dialog.ShowDialog(owner) == true ? dialog.FileName : null;
+    }
+
+    public void Reveal(string path) =>
+        Process.Start(new ProcessStartInfo("explorer.exe", "/select,\"" + path + "\"") { UseShellExecute = true })?.Dispose();
 
     public void ShowAbout() => new AboutWindow { Owner = owner }.ShowDialog();
 

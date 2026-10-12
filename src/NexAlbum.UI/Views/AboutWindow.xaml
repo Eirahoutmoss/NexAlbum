@@ -46,7 +46,7 @@
 
     <TextBlock Margin="0,14,0,0" Text="Üçüncü taraf bileşenler" Style="{StaticResource Caption}" />
     <TextBlock TextWrapping="Wrap" Margin="0,2,0,0" FontSize="12"
-               Text=".NET (MIT) · CommunityToolkit.Mvvm (MIT) · MetadataExtractor (Apache 2.0)" />
+               Text=".NET (MIT) · CommunityToolkit.Mvvm (MIT) · MetadataExtractor (Apache 2.0) · PDFsharp (MIT)" />
 
     <Button Content="Kapat" IsCancel="True" IsDefault="True" HorizontalAlignment="Right" Padding="16,6" Margin="0,20,0,0" />
   </StackPanel>

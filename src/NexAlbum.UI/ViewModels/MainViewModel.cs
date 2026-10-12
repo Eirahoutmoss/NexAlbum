@@ -8,6 +8,7 @@ using NexAlbum.Core.Layout;
 using NexAlbum.Core.Projects;
 using NexAlbum.Core.Templates;
 using NexAlbum.Core.Validation;
+using NexAlbum.Export.Pdf;
 using NexAlbum.Persistence.Format;
 using NexAlbum.Persistence.Packaging;
 using NexAlbum.UI.Services;
@@ -49,6 +50,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         AutoLayoutCommand = new AsyncRelayCommand(() => AutoLayoutAsync(newSeed: false), () => HasPhotos && !IsBusy);
         ShuffleCommand = new AsyncRelayCommand(() => AutoLayoutAsync(newSeed: true), () => HasPhotos && !IsBusy);
         PreflightCommand = new RelayCommand(RunPreflight, () => HasProject);
+        EditProfileCommand = new RelayCommand(EditProfile, () => HasProject && !IsBusy);
+        ExportPdfCommand = new AsyncRelayCommand(ExportPdfAsync, () => HasProject && Pages.Count > 0 && !IsBusy);
         ToggleLockCommand = new RelayCommand(ToggleLock, () => SelectedPage is not null);
         PreviousPageCommand = new RelayCommand(() => MovePage(-1), () => SelectedPage is { Index: > 0 });
         NextPageCommand = new RelayCommand(() => MovePage(1), () => SelectedPage is not null && SelectedPage.Index < Pages.Count - 1);
@@ -77,6 +80,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public AsyncRelayCommand ShuffleCommand { get; }
 
     public RelayCommand PreflightCommand { get; }
+
+    public RelayCommand EditProfileCommand { get; }
+
+    public AsyncRelayCommand ExportPdfCommand { get; }
 
     public RelayCommand ToggleLockCommand { get; }
 
@@ -396,6 +403,89 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             : string.Format(CultureInfo.CurrentCulture, "Ön kontrol: hata yok, {0} uyarı.", result.Warnings.Count());
     }
 
+    public void EditProfile()
+    {
+        if (project is null)
+        {
+            return;
+        }
+
+        var edited = dialogs.EditProfile(project.Profile);
+        if (edited is null)
+        {
+            return;
+        }
+
+        UpdateProject(project.WithProfile(edited));
+        RunPreflight();
+        Status = "Profil güncellendi; ön kontrol yenilendi.";
+    }
+
+    /// <summary>
+    /// Baskı PDF'i (Karar 11 §3). Önce ön kontrol: hata varsa çıktı alınmaz, uyarı varsa onay istenir (Karar 03 §7.2).
+    /// </summary>
+    public async Task ExportPdfAsync()
+    {
+        var current = project;
+        if (current is null)
+        {
+            return;
+        }
+
+        var preflight = ProjectPreflight.Check(current, new PreflightEnvironment { FontAvailable = FontCatalog.IsInstalled });
+        ShowIssues(preflight);
+        if (preflight.HasErrors)
+        {
+            dialogs.Warn(string.Format(
+                CultureInfo.CurrentCulture,
+                "Ön kontrolde {0} hata var; düzeltilmeden PDF alınamaz. Ayrıntılar sağ panelde.
+
+İlk hata: {1}",
+                preflight.Errors.Count(),
+                preflight.Errors.First().Message));
+            return;
+        }
+
+        var warnings = preflight.Warnings.Count();
+        if (warnings > 0
+            && !dialogs.Confirm(string.Format(CultureInfo.CurrentCulture, "Ön kontrolde {0} uyarı var (sağ panelde). Yine de PDF oluşturulsun mu?", warnings)))
+        {
+            return;
+        }
+
+        var path = dialogs.AskPdfPath(current.Name + ".pdf");
+        if (path is null)
+        {
+            return;
+        }
+
+        IsBusy = true;
+        Status = "PDF oluşturuluyor…";
+        try
+        {
+            var settings = PdfExportSettings.FromProfile(current.Profile) with { Creator = AppInfo.Name + " " + AppInfo.Version };
+            var result = await Task.Run(() => PdfAlbumExporter.Export(current, path, settings)).ConfigureAwait(true);
+            ShowIssues(preflight.Merge(result.Issues));
+            Status = string.Format(CultureInfo.CurrentCulture, "PDF hazır: {0} sayfa → {1}", result.PageCount, Path.GetFileName(path));
+            if (result.Issues.HasErrors)
+            {
+                dialogs.Warn("PDF oluşturuldu ancak bazı öğeler eklenemedi. Ayrıntılar sağ panelde.");
+            }
+            else if (result.Files.Count > 0)
+            {
+                dialogs.Reveal(result.Files[0]);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or FormatException or InvalidOperationException)
+        {
+            dialogs.Warn("PDF oluşturulamadı: " + ex.Message);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
     public void ToggleLock()
     {
         if (project is null || SelectedPage is null)
@@ -547,6 +637,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         AutoLayoutCommand.NotifyCanExecuteChanged();
         ShuffleCommand.NotifyCanExecuteChanged();
         PreflightCommand.NotifyCanExecuteChanged();
+        EditProfileCommand.NotifyCanExecuteChanged();
+        ExportPdfCommand.NotifyCanExecuteChanged();
         ToggleLockCommand.NotifyCanExecuteChanged();
         PreviousPageCommand.NotifyCanExecuteChanged();
         NextPageCommand.NotifyCanExecuteChanged();

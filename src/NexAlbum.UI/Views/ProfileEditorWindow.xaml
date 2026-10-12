@@ -1,0 +1,91 @@
+<Window x:Class="NexAlbum.UI.Views.ProfileEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Baskı profili" Width="560" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False"
+        FontFamily="Inter, Segoe UI" FontSize="14" Background="{StaticResource BackgroundBrush}">
+  <Window.Resources>
+    <Style TargetType="TextBox">
+      <Setter Property="Padding" Value="4,2" />
+      <Setter Property="Margin" Value="0,0,6,0" />
+      <Setter Property="Width" Value="64" />
+    </Style>
+    <Style x:Key="Label" TargetType="TextBlock">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="0,6,12,6" />
+    </Style>
+  </Window.Resources>
+  <StackPanel Margin="20">
+    <TextBlock Text="Baskı profili" FontSize="18" FontWeight="SemiBold" />
+    <TextBlock Style="{StaticResource Caption}" Margin="0,4,0,12"
+               Text="Değerleri baskı evinizden alın. Boş bırakılan alan «bilinmiyor» sayılır ve ön kontrolde bildirilir; uygulama hiçbir değeri tahmin etmez. Ölçüler mm." />
+
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="140" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+        <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+      </Grid.RowDefinitions>
+
+      <TextBlock Grid.Row="0" Text="Profil adı" Style="{StaticResource Label}" />
+      <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="Auto" />
+
+      <TextBlock Grid.Row="1" Text="Sayfa ölçüsü" Style="{StaticResource Label}" />
+      <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding PageSize}" VerticalAlignment="Center" />
+
+      <TextBlock Grid.Row="2" Text="Taşma payı" Style="{StaticResource Label}" />
+      <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+        <TextBox Text="{Binding BleedTop, UpdateSourceTrigger=PropertyChanged}" ToolTip="Üst" />
+        <TextBox Text="{Binding BleedRight, UpdateSourceTrigger=PropertyChanged}" ToolTip="Sağ" />
+        <TextBox Text="{Binding BleedBottom, UpdateSourceTrigger=PropertyChanged}" ToolTip="Alt" />
+        <TextBox Text="{Binding BleedLeft, UpdateSourceTrigger=PropertyChanged}" ToolTip="Sol" />
+        <TextBlock Text="üst · sağ · alt · sol" Style="{StaticResource Caption}" VerticalAlignment="Center" />
+      </StackPanel>
+
+      <TextBlock Grid.Row="3" Text="Güvenli alan" Style="{StaticResource Label}" />
+      <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+        <TextBox Text="{Binding SafeTop, UpdateSourceTrigger=PropertyChanged}" ToolTip="Üst" />
+        <TextBox Text="{Binding SafeRight, UpdateSourceTrigger=PropertyChanged}" ToolTip="Sağ" />
+        <TextBox Text="{Binding SafeBottom, UpdateSourceTrigger=PropertyChanged}" ToolTip="Alt" />
+        <TextBox Text="{Binding SafeLeft, UpdateSourceTrigger=PropertyChanged}" ToolTip="Sol" />
+      </StackPanel>
+
+      <TextBlock Grid.Row="4" Text="Çift sayfa" Style="{StaticResource Label}" />
+      <CheckBox Grid.Row="4" Grid.Column="1" IsChecked="{Binding Spread}" Content="Açık çift sayfa (layflat vb.)" VerticalAlignment="Center" />
+
+      <TextBlock Grid.Row="5" Text="Cilt payı (gutter)" Style="{StaticResource Label}" />
+      <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Gutter, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Left" />
+
+      <TextBlock Grid.Row="6" Text="DPI (hedef / en düşük)" Style="{StaticResource Label}" />
+      <StackPanel Grid.Row="6" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+        <TextBox Text="{Binding TargetDpi, UpdateSourceTrigger=PropertyChanged}" />
+        <TextBox Text="{Binding MinDpi, UpdateSourceTrigger=PropertyChanged}" />
+      </StackPanel>
+
+      <TextBlock Grid.Row="7" Text="Renk" Style="{StaticResource Label}" />
+      <StackPanel Grid.Row="7" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+        <ComboBox x:Name="ColorBox" DisplayMemberPath="Name" SelectedItem="{Binding ColorMode}" Width="120" Margin="0,0,6,0" />
+        <TextBox Text="{Binding IccProfile, UpdateSourceTrigger=PropertyChanged}" Width="200" ToolTip="ICC dosya adı, ör. CoatedFOGRA39.icc" />
+      </StackPanel>
+
+      <TextBlock Grid.Row="8" Text="Kesim işaretleri" Style="{StaticResource Label}" />
+      <CheckBox Grid.Row="8" Grid.Column="1" IsChecked="{Binding CropMarks}" Content="PDF'e kesim işaretleri ekle" VerticalAlignment="Center" />
+
+      <TextBlock Grid.Row="9" Text="Doğrulama" Style="{StaticResource Label}" />
+      <CheckBox Grid.Row="9" Grid.Column="1" IsChecked="{Binding Verified}" Content="Bu değerleri baskı evimden aldım" VerticalAlignment="Center" />
+    </Grid>
+
+    <TextBlock x:Name="Messages" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource ErrorBrush}" />
+
+    <DockPanel Margin="0,20,0,0">
+      <Button DockPanel.Dock="Left" Content="Dosyaya kaydet…" Padding="12,6" Click="OnExport" ToolTip="Profili başka projelerde kullanmak için JSON dosyası olarak kaydet" />
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+        <Button Content="İptal" IsCancel="True" Padding="16,6" Margin="0,0,8,0" />
+        <Button Content="Uygula" IsDefault="True" Padding="16,6" Click="OnApply" Style="{StaticResource AccentButton}" />
+      </StackPanel>
+    </DockPanel>
+  </StackPanel>
+</Window>

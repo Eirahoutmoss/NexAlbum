@@ -26,6 +26,14 @@ public interface IDialogService
 
     string? AskPhotoFolder();
 
+    /// <summary>Profil düzenleyiciyi açar; iptalde null.</summary>
+    AlbumProfile? EditProfile(AlbumProfile profile);
+
+    string? AskPdfPath(string suggestedName);
+
+    /// <summary>Çıktı klasörünü dosya gezgininde gösterir.</summary>
+    void Reveal(string path);
+
     void ShowAbout();
 
     void Info(string message);
