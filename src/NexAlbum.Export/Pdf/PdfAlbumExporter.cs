@@ -362,7 +362,7 @@ public static class PdfAlbumExporter
         else if (radius > 0)
         {
             var d = Math.Min(2 * radius, Math.Min(r.Width, r.Height));
-            path.AddRoundedRectangle(rect, new XSize(d, d));
+            path.AddRoundedRectangle(r.X, r.Y, r.Width, r.Height, d, d);
         }
         else
         {
