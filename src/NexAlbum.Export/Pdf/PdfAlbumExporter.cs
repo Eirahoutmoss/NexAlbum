@@ -4,6 +4,7 @@ using NexAlbum.Core.Geometry;
 using NexAlbum.Core.Projects;
 using NexAlbum.Core.Validation;
 using PdfSharp.Drawing;
+using PdfSharp.Fonts;
 using PdfSharp.Pdf;
 
 namespace NexAlbum.Export.Pdf;
@@ -247,8 +248,18 @@ public static class PdfAlbumExporter
         gfx.Restore(state);
     }
 
+    /// <summary>Windows'ta PDFsharp sistem fontlarını çözer; diğer sistemlerde çözümleyici verilmiş olmalı.</summary>
+    private static bool CanRenderText => OperatingSystem.IsWindows() || GlobalFontSettings.FontResolver is not null;
+
     private static void DrawText(XGraphics gfx, TextElement text, AlbumPage page, int number, List<ValidationIssue> issues)
     {
+        if (!CanRenderText)
+        {
+            issues.Add(new("export.text.font-unavailable", ValidationSeverity.Warning,
+                Format("Sayfa {0}: bu sistemde yazı tipi çözümleyici yok; metin yazılamadı.", number), page.Id, text.Id));
+            return;
+        }
+
         try
         {
             var style = (text.Font.Weight >= 600, text.Font.Italic) switch
