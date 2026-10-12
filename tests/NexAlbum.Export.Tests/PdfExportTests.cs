@@ -242,9 +242,17 @@ public sealed class PdfExportTests : IDisposable
     [Fact]
     public void DiagonalGradientCoversTheCorners()
     {
-        var line = GradientGeometry.Line(new RectMm(0, 0, 100, 50), 45);
-        line.X1.Should().BeLessThan(0.01 + 0);
-        line.Y2.Should().BeGreaterThan(49.99 - 0.01);
+        // Köşelerin gradyan yönüne iz düşümü çizginin uçlarına denk gelmeli: geçiş tam köşede başlar ve biter.
+        var area = new RectMm(0, 0, 100, 50);
+        var line = GradientGeometry.Line(area, 45);
+        var (dx, dy) = (line.X2 - line.X1, line.Y2 - line.Y1);
+        var length2 = (dx * dx) + (dy * dy);
+        double T(double x, double y) => (((x - line.X1) * dx) + ((y - line.Y1) * dy)) / length2;
+
+        T(area.X, area.Y).Should().BeApproximately(0, 1e-9);
+        T(area.Right, area.Bottom).Should().BeApproximately(1, 1e-9);
+        T(area.Right, area.Y).Should().BeInRange(0, 1);
+        T(area.X, area.Bottom).Should().BeInRange(0, 1);
     }
 
     [Fact]
