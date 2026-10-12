@@ -1,0 +1,21 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+coverage*/
+*.coverage
+BenchmarkDotNet.Artifacts/
+publish/
+*.nupkg
+
+# Claude Code (kişisel ayarlar)
+.claude/settings.local.json
+CLAUDE.local.md
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
