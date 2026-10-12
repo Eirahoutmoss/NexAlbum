@@ -202,7 +202,7 @@ public partial class MainWindow
     {
         root = null;
         SlotItemViewModel? slot = null;
-        for (var current = source; current is not null; current = Parent(current))
+        for (var current = source; current is not null; current = ParentOf(current))
         {
             if (current is FrameworkElement { DataContext: SlotItemViewModel s } fe)
             {
@@ -218,13 +218,13 @@ public partial class MainWindow
         return slot;
     }
 
-    private static DependencyObject? Parent(DependencyObject child) =>
+    private static DependencyObject? ParentOf(DependencyObject child) =>
         child is Visual or System.Windows.Media.Media3D.Visual3D ? VisualTreeHelper.GetParent(child) : LogicalTreeHelper.GetParent(child);
 
     /// <summary>Boş tuvale ya da sayfa fonuna tıklanınca seçim kalkar; düğmelere tıklamak seçimi korur.</summary>
     private static bool IsPageBackground(DependencyObject? source)
     {
-        for (var current = source; current is not null; current = Parent(current))
+        for (var current = source; current is not null; current = ParentOf(current))
         {
             if (current is ButtonBase or TextBoxBase)
             {

@@ -586,7 +586,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
         // Değişmeyen sayfaların görünüm modelleri (ve yüklenmiş görüntüleri) korunur; düzenlemede titreme olmaz.
         var reusable = previousProject is not null && ReferenceEquals(previousProject.Assets, value.Assets) && ReferenceEquals(previousProject.Profile, value.Profile)
-            ? Pages.ToDictionary(p => p.Page, ReferenceEqualityComparer.Instance)
+            ? Pages.ToDictionary(p => p.Page, (IEqualityComparer<AlbumPage>)ReferenceEqualityComparer.Instance)
             : null;
         Pages.Clear();
         for (var i = 0; i < value.Pages.Count; i++)
