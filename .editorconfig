@@ -1,0 +1,40 @@
+# Karar 13 §11.2
+root = true
+
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{csproj,props,targets,xml,xaml,slnx,json,yml}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.cs]
+indent_style = space
+indent_size = 4
+end_of_line = crlf
+
+dotnet_sort_system_directives_first = true
+csharp_new_line_before_open_brace = all
+csharp_prefer_braces = true
+csharp_style_namespace_declarations = file_scoped
+
+# Kod stili (derlemede uygulanır)
+dotnet_diagnostic.IDE0011.severity = warning   # süslü parantez zorunlu
+dotnet_diagnostic.IDE0161.severity = warning   # file-scoped namespace
+
+# Kültür güvenliği: Türkçe "I/ı/İ/i" hatalarını önler. Dosya formatı, JSON, sayı → InvariantCulture.
+dotnet_diagnostic.CA1304.severity = error
+dotnet_diagnostic.CA1305.severity = error
+dotnet_diagnostic.CA1309.severity = error
+dotnet_diagnostic.CA1310.severity = error
+dotnet_diagnostic.CA1311.severity = error
+
+# Güvenlik ve doğruluk
+dotnet_diagnostic.CA2100.severity = error
+dotnet_diagnostic.CA5350.severity = error
+dotnet_diagnostic.CA5351.severity = error

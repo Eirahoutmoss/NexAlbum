@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\NexAlbum.Core\NexAlbum.Core.csproj" />
+  </ItemGroup>
+</Project>

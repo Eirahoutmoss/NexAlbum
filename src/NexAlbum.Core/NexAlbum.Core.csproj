@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Saf domain: hiçbir NexAlbum projesine, UI'a, SkiaSharp'a veya PDF kütüphanesine bağımlı olamaz (Karar 08 §13.2). -->
+</Project>

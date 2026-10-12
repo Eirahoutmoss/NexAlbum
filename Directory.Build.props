@@ -1,0 +1,26 @@
+<Project>
+  <!-- Tüm projeler için ortak ayarlar (Karar 08 Rev. 1, Karar 13 §11). -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <Deterministic>true</Deterministic>
+    <SatelliteResourceLanguages>tr;en</SatelliteResourceLanguages>
+
+    <Product>NexAlbum</Product>
+    <Authors>Hasan Güler</Authors>
+    <Copyright>Copyright © 2026 Hasan Güler ve NexAlbum katkıcıları</Copyright>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/Eirahoutmoss/NexAlbum</RepositoryUrl>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <NeutralLanguage>tr-TR</NeutralLanguage>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+</Project>

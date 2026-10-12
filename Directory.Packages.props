@@ -1,0 +1,17 @@
+<Project>
+  <!-- Merkezi paket sürümleri. Yeni paket: yalnızca GPL-3.0 uyumlu lisans; Karar 08 lisans tablosuna ekle. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup Label="Uygulama">
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+  </ItemGroup>
+  <ItemGroup Label="Test">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.2" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <!-- 7.x'te kalınmalı: 8.0+ Apache 2.0 değil, ticari lisans (Karar 08 Rev. 1). -->
+    <PackageVersion Include="FluentAssertions" Version="7.2.0" />
+  </ItemGroup>
+</Project>

@@ -6,12 +6,18 @@ Durum: Kesinleşti
 Tarih: (doldurulacak)
 İlgili kararlar: 01 (Ücretsiz), 02 (Açık Kaynak), 03 (Kullanıcı Profilleri), 04 (Tek Kişi), 05 (Zaman), 06 (Bütçe), 07 (Rakip Özellikleri)
 
+Revizyon 1 — 12/10/2026
+Değişiklik: .NET 8 → .NET 10 (LTS); C# 12 → C# 14. Bu belgede geçen ".NET 8" ve "C# 12" ifadeleri .NET 10 / C# 14 olarak okunur.
+Gerekçe: .NET 8 desteği 10 Kasım 2026'da sona eriyor; MVP (4-7 ay) desteksiz bir platformda yayımlanmamalı. .NET 10 LTS desteği Kasım 2028'e kadar sürer. Bu geçiş, §18 risk tablosunda zaten öngörülmüştü ("sonra .NET 10 LTS").
+Ek: FluentAssertions 7.x sürümüne sabitlenir; 8.0 ve sonrası Apache 2.0 değil, ticari lisanslıdır (GPL uyumu için, Karar 02).
+Değişmeyenler: WPF, SkiaSharp, PDFsharp, SQLite, Serilog, MVVM + Clean Architecture ve katman yapısı.
+
 1. Karar Özeti
 NexAlbum'in teknoloji yığını, Windows öncelikli, ücretsiz, açık kaynak (GPL uyumlu), tek geliştirici tarafından sürdürülebilir ve yüksek performanslı olacak şekilde seçilmiştir.
 
 Katman	Seçim	Lisans
-Dil	C# 12+ / .NET 8	MIT
-UI Framework	WPF (.NET 8)	MIT
+Dil	C# 14 / .NET 10 (LTS) — Revizyon 1	MIT
+UI Framework	WPF (.NET 10)	MIT
 Tuval/Render	SkiaSharp	MIT
 PDF Üretimi	PDFsharp	MIT
 Görüntü İşleme	SkiaSharp + MetadataExtractor	MIT / Apache 2.0
@@ -367,7 +373,7 @@ Arama geçmişi.
 
 Otomatik kayıt/kurtarma.
 
-Not: Proje verisi (albüm, sayfa, yerleşim) SQLite'ta değil; .albumproj ZIP içinde JSON olarak saklanır (Karar 03).
+Not: Proje verisi (albüm, sayfa, yerleşim) SQLite'ta değil; .albumproj ZIP içinde JSON olarak saklanır (Karar 09).
 
 8.2 Alternatifler
 Alternatif	Neden reddedildi

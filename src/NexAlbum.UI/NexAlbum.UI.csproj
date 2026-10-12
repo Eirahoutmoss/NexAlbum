@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>NexAlbum</AssemblyName>
+    <RootNamespace>NexAlbum.UI</RootNamespace>
+    <!-- Linux/CI üzerinde derlenebilsin; çalıştırma yalnızca Windows'ta. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NexAlbum.Core\NexAlbum.Core.csproj" />
+    <ProjectReference Include="..\NexAlbum.Rendering\NexAlbum.Rendering.csproj" />
+    <ProjectReference Include="..\NexAlbum.Export\NexAlbum.Export.csproj" />
+    <ProjectReference Include="..\NexAlbum.Assets\NexAlbum.Assets.csproj" />
+    <ProjectReference Include="..\NexAlbum.Persistence\NexAlbum.Persistence.csproj" />
+  </ItemGroup>
+</Project>

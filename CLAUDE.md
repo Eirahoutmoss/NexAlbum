@@ -4,7 +4,7 @@ Windows öncelikli, yerel, ücretsiz, açık kaynak (GPL-3.0-or-later) Türkçe 
 Kullanıcıyla Türkçe yaz. Karar belgeleri bağlayıcıdır: `docs/kararlar/` — hangi göreve hangi belge, bkz. `docs/kararlar/INDEKS.md`. Tamamını okuma; yalnızca ilgili bölümü oku.
 
 ## Mimari (Karar 08 §13)
-C# 12 / .NET 8 / WPF / SkiaSharp / PDFsharp / SQLite / Serilog / CommunityToolkit.Mvvm. MVVM + Clean Architecture.
+C# 14 / .NET 10 LTS (Karar 08 Rev. 1; belgelerdeki ".NET 8" = .NET 10) / WPF / SkiaSharp / PDFsharp / SQLite / Serilog / CommunityToolkit.Mvvm. MVVM + Clean Architecture.
 Bağımlılık yönü — ihlal etme:
 - `NexAlbum.Core` → hiçbir şey (saf domain; WPF, Skia, IO yok)
 - `Rendering` → Core · `Export` → Core, Rendering · `Assets` → Core · `Persistence` → Core
@@ -17,13 +17,17 @@ Bağımlılık yönü — ihlal etme:
 - Otomatik yerleşim deterministik: aynı girdi + tohum → aynı çıktı; `Random` yalnızca tohumla (Karar 10 §15).
 - Yeni bağımlılık yalnızca GPL-3.0 uyumlu lisansla; Karar 08 lisans tablosuna ekle.
 - Nullable açık, analyzer uyarısı yok, `.editorconfig` stili (Karar 13 §11).
+- Kültür: dosya formatı, JSON, sayı/tarih ayrıştırma → `CultureInfo.InvariantCulture`; string karşılaştırma → `StringComparison.Ordinal`. Türkçe "I/ı" hatası CA1304/1305/1309/1310/1311 ile derlemeyi kırar.
+- Paket sürümleri yalnızca `Directory.Packages.props`'ta; csproj'da `Version` yazılmaz. FluentAssertions 7.x'te kalır (8+ ticari lisans).
+- Katman kuralı `tests/NexAlbum.Architecture.Tests` ile otomatik denetlenir; yeni katman → önce `LayerRules` + Karar 08.
 - Kararla çelişen bir değişiklik gerekiyorsa kodu değiştirme; önce kullanıcıya sor. Karar belgesi silinmez, "Geçersiz" işaretlenir.
 
 ## Komutlar
-- Derleme: `dotnet build NexAlbum.sln -warnaserror`
-- Test (dar → geniş): `dotnet test tests/<Proje> --filter "FullyQualifiedName~<Sınıf>"` → `dotnet test NexAlbum.sln`
+- Derleme: `dotnet build NexAlbum.slnx` (uyarılar zaten hata: `Directory.Build.props`)
+- Test (dar → geniş): `dotnet test tests/<Proje> --filter "FullyQualifiedName~<Sınıf>"` → `dotnet test NexAlbum.slnx`
 - Kapsam: `dotnet test --collect:"XPlat Code Coverage"` (hedef: kritik yol ≥%80, Domain ≥%85, genel ≥%70)
-- Biçim: `dotnet format --verify-no-changes`
+- Biçim: `dotnet format NexAlbum.slnx --verify-no-changes`
+- CI: `.github/workflows/build.yml` (Windows) ve `test.yml` (Windows + Ubuntu). Bu ortamda dotnet yoksa doğrulama CI sonucuyla yapılır.
 - Test: xUnit + Moq + FluentAssertions; E2E: FlaUI; benchmark: BenchmarkDotNet; örnek dosyalar `samples/tests/`.
 
 ## Çalışma biçimi

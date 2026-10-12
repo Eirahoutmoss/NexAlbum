@@ -136,7 +136,7 @@ Aşağıda tüm karar dokümanları listelenmiştir. Her biri bağımsız okunab
 07	Rakip Özellikleri	En iyilerini sentezle; kötülerini reddet	07_rakip_ozellikleri_sentezi_karari.md
 6.2 Teknik Kararlar
 #	Karar	Özet	Dosya
-08	Teknoloji Yığını	C# 12 / .NET 8 / WPF / SkiaSharp / PDFsharp / SQLite	08_teknoloji_yigini_karari.md
+08	Teknoloji Yığını	C# 14 / .NET 10 (Rev. 1) / WPF / SkiaSharp / PDFsharp / SQLite	08_teknoloji_yigini_karari.md
 09	Veri Modeli ve Proje Formatı	.albumproj (ZIP + JSON); şema sürümlü	09_veri_modeli_ve_proje_dosyasi_karari.md
 10	Şablon Motoru ve Otomatik Yerleşim	7 aşamalı algoritma; yüzde tabanlı şablonlar; deterministik	10_sablon_motoru_ve_otomatik_yerlesim_karari.md
 11	Çıktı Formatları ve PSD	PDF/JPG/SVG; PSD/CDR ileride	11_cikti_formatlari_ve_psd_karari.md
@@ -167,7 +167,7 @@ Windows öncelikli — Cross-platform ileride.
 Kullanıcı tanımlı profil — Baskı evi entegrasyonu yok.
 
 7.2 Teknik Kararlar
-.NET 8 + WPF — Windows'ta en iyi performans.
+.NET 10 LTS + WPF — Windows'ta en iyi performans.
 
 SkiaSharp — Hızlı görüntü işleme.
 
