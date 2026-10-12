@@ -46,4 +46,19 @@ jobs:
             $t += [int]$c.total; $p += [int]$c.passed; $f += [int]$c.failed
           }
           Write-Output "::notice title=Testler (${{ matrix.os }})::Toplam $t, gecen $p, basarisiz $f"
+          # Her paket için en yüksek kapsam (birden çok test projesi aynı derlemeyi raporlayabilir).
+          $best = @{}
+          foreach ($cov in Get-ChildItem TestResults -Recurse -Filter coverage.cobertura.xml) {
+            [xml]$c = Get-Content $cov.FullName
+            foreach ($pkg in $c.coverage.packages.package) {
+              $line = [double]$pkg.'line-rate'
+              if (-not $best.ContainsKey($pkg.name) -or $best[$pkg.name][0] -lt $line) {
+                $best[$pkg.name] = @($line, [double]$pkg.'branch-rate')
+              }
+            }
+          }
+          foreach ($name in ($best.Keys | Sort-Object)) {
+            $l = [math]::Round($best[$name][0] * 100, 1); $b = [math]::Round($best[$name][1] * 100, 1)
+            Write-Output "::notice title=Kapsam $name (${{ matrix.os }})::satir yuzde $l, dal yuzde $b"
+          }
           if ($t -eq 0) { Write-Output "::error::Hic test calismadi"; exit 1 }
