@@ -47,6 +47,11 @@ jobs:
               $d.Load($x.FullName)
               $c = $d.TestRun.ResultSummary.Counters
               $t += [int]$c.total; $p += [int]$c.passed; $f += [int]$c.failed
+              foreach ($r in $d.TestRun.Results.UnitTestResult | Where-Object { $_.outcome -eq 'Failed' } | Select-Object -First 10) {
+                $m = ($r.Output.ErrorInfo.Message -replace '[\r\n]+', ' ')
+                if ($m.Length -gt 400) { $m = $m.Substring(0, 400) }
+                Write-Output "::error title=Basarisiz test::$($r.testName) :: $m"
+              }
             } catch {
               $msg = ($_.Exception.Message -replace '[\r\n]', ' ')
               Write-Output "::error title=TRX okunamadi::$($x.Name): $msg"
