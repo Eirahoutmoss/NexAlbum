@@ -438,9 +438,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             dialogs.Warn(string.Format(
                 CultureInfo.CurrentCulture,
-                "Ön kontrolde {0} hata var; düzeltilmeden PDF alınamaz. Ayrıntılar sağ panelde.
-
-İlk hata: {1}",
+                "Ön kontrolde {0} hata var; düzeltilmeden PDF alınamaz. Ayrıntılar sağ panelde.\n\nİlk hata: {1}",
                 preflight.Errors.Count(),
                 preflight.Errors.First().Message));
             return;
