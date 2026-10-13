@@ -18,6 +18,33 @@
         </ItemsControl.ItemContainerStyle>
       </ItemsControl>
 
+      <!-- Metinler: yuvaların üstünde; sabit satır yüksekliği (PDF ile aynı kural) -->
+      <ItemsControl ItemsSource="{Binding Texts}" Focusable="False">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <Canvas />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemContainerStyle>
+          <Style TargetType="ContentPresenter">
+            <Setter Property="Canvas.Left" Value="{Binding X}" />
+            <Setter Property="Canvas.Top" Value="{Binding Y}" />
+          </Style>
+        </ItemsControl.ItemContainerStyle>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Grid Width="{Binding Width}" Height="{Binding Height}" Background="Transparent" Cursor="SizeAll">
+              <TextBlock Text="{Binding Content}" FontFamily="{Binding FontFamily}" FontSize="{Binding FontSize}" FontWeight="{Binding FontWeight}"
+                         FontStyle="{Binding FontStyle}" Foreground="{Binding Foreground}" TextAlignment="{Binding Alignment}"
+                         VerticalAlignment="{Binding VerticalAlignment}" TextWrapping="Wrap"
+                         LineHeight="{Binding LineHeight}" LineStackingStrategy="BlockLineHeight" />
+              <Rectangle x:Name="Outline" Stroke="#D4A853" StrokeThickness="0.5" StrokeDashArray="3 2" Margin="-1" IsHitTestVisible="False"
+                         Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibility}}" />
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
       <!-- Kesim çizgisi (bitmiş ölçü) ve güvenli alan -->
       <Canvas IsHitTestVisible="False">
         <Rectangle Canvas.Left="{Binding PageArea.X}" Canvas.Top="{Binding PageArea.Y}"

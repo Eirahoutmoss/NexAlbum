@@ -1,6 +1,7 @@
 using System.Globalization;
 using NexAlbum.Core.Common;
 using NexAlbum.Core.Geometry;
+using NexAlbum.Core.Layout;
 using NexAlbum.Core.Projects;
 using NexAlbum.Core.Validation;
 using PdfSharp.Drawing;
@@ -424,8 +425,20 @@ public static class PdfAlbumExporter
                 _ => XFontStyleEx.Regular,
             };
 
-            // Punto → mm (çizim birimi mm).
-            var font = new XFont(text.Font.Family, text.Font.Size * 25.4 / 72, style);
+            // Punto → mm (çizim birimi mm). Satırlar kutu genişliğine göre kaydırılır; satır aralığı ve dikey hizalama ekrandaki
+            // kuralla aynıdır (satır yüksekliği = punto × satır aralığı, satırlar bloğu kutu içinde hizalanır).
+            var sizeMm = text.Font.Size * 25.4 / 72;
+            var font = new XFont(text.Font.Family, sizeMm, style);
+            var b = text.Bounds;
+            var lines = TextLines.Wrap(text.Content, b.Width, s => gfx.MeasureString(s, font).Width);
+            var step = sizeMm * (text.LineHeight ?? TextLines.DefaultLineHeight);
+            var total = lines.Count * step;
+            var top = text.VerticalAlignment switch
+            {
+                VerticalAlignment.Middle => b.Y + ((b.Height - total) / 2),
+                VerticalAlignment.Bottom => b.Bottom - total,
+                _ => b.Y,
+            };
             var format = new XStringFormat
             {
                 Alignment = text.Alignment switch
@@ -434,15 +447,16 @@ public static class PdfAlbumExporter
                     TextAlignment.Right => XStringAlignment.Far,
                     _ => XStringAlignment.Near,
                 },
-                LineAlignment = text.VerticalAlignment switch
-                {
-                    VerticalAlignment.Middle => XLineAlignment.Center,
-                    VerticalAlignment.Bottom => XLineAlignment.Far,
-                    _ => XLineAlignment.Near,
-                },
+                LineAlignment = XLineAlignment.Center,
             };
-            var b = text.Bounds;
-            gfx.DrawString(text.Content, font, new XSolidBrush(ToXColor(text.Font.Color, 1)), new XRect(b.X, b.Y, b.Width, b.Height), format);
+            var brush = new XSolidBrush(ToXColor(text.Font.Color, 1));
+            for (var i = 0; i < lines.Count; i++)
+            {
+                if (lines[i].Length > 0)
+                {
+                    gfx.DrawString(lines[i], font, brush, new XRect(b.X, top + (i * step), b.Width, step), format);
+                }
+            }
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or NotSupportedException)
         {

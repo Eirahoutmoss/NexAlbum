@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:NexAlbum.UI.Views"
         xmlns:ui="clr-namespace:NexAlbum.UI.Controls"
+        xmlns:vm="clr-namespace:NexAlbum.UI.ViewModels"
         Title="{Binding Title}"
         Width="1440" Height="900" MinWidth="1100" MinHeight="700"
         WindowStartupLocation="CenterScreen"
@@ -41,6 +42,8 @@
     <KeyBinding Key="Z" Modifiers="Control+Shift" Command="{Binding RedoCommand}" />
     <KeyBinding Key="D" Modifiers="Control" Command="{Binding DuplicatePageCommand}" />
     <KeyBinding Key="F5" Command="{Binding PresentCommand}" />
+    <KeyBinding Key="Delete" Command="{Binding DeleteTextCommand}" />
+    <KeyBinding Key="T" Modifiers="Control" Command="{Binding AddTextCommand}" CommandParameter="{x:Static vm:MainViewModel.DefaultTextPreset}" />
   </Window.InputBindings>
 
   <Window.Resources>
@@ -449,7 +452,7 @@
         <GridSplitter Grid.Column="3" Margin="-3,0" HorizontalAlignment="Stretch" Background="Transparent" ResizeBehavior="PreviousAndNext" />
 
         <!-- ⑤ Özellikler: Sayfa · Tasarım · Şablonlar -->
-        <TabControl Grid.Column="4" Style="{StaticResource PanelTabs}">
+        <TabControl Grid.Column="4" Style="{StaticResource PanelTabs}" SelectedIndex="{Binding PanelTabIndex}">
           <TabItem Header="Sayfa" ui:Ui.Icon="{StaticResource Icon.Page}">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
               <StackPanel Margin="0,0,0,20">
@@ -799,6 +802,127 @@
                 </ItemsControl>
               </ScrollViewer>
             </DockPanel>
+          </TabItem>
+          <TabItem Header="Metin" ui:Ui.Icon="{StaticResource Icon.Type}" IsEnabled="{Binding HasProject}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+              <StackPanel Margin="0,0,0,20">
+                <TextBlock Text="HAZIR STİLLER" Style="{StaticResource PanelHeader}" />
+                <TextBlock Text="Seçili sayfaya eklenir; sayfada sürükleyerek taşıyın, çift tıklayıp yazın." Style="{StaticResource Caption}" Margin="16,-2,16,6" />
+                <ItemsControl ItemsSource="{Binding TextPresetList}" Margin="12,0">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <UniformGrid Columns="2" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Button Style="{StaticResource SwatchButton}" ToolTip="{Binding Name}" CommandParameter="{Binding Preset}" HorizontalContentAlignment="Stretch"
+                              Command="{Binding DataContext.AddTextCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                        <StackPanel>
+                          <Border CornerRadius="4" Background="#F7F4EE" Height="54" Padding="6,0">
+                            <Viewbox StretchDirection="DownOnly" VerticalAlignment="Center">
+                              <TextBlock Text="{Binding Sample}" Foreground="{Binding Foreground}" FontSize="20"
+                                         FontFamily="{Binding Family}" FontStyle="{Binding Style}" />
+                            </Viewbox>
+                          </Border>
+                          <TextBlock Text="{Binding Name}" FontSize="11" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,4,0,1" />
+                        </StackPanel>
+                      </Button>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Text="SEÇİLİ METİN" Style="{StaticResource PanelHeader}" />
+                <Border Style="{StaticResource Card}" Margin="16,0,16,0" Padding="14,12"
+                        Visibility="{Binding HasSelectedText, Converter={StaticResource InverseBoolToVisibility}}">
+                  <StackPanel>
+                    <ui:NexIcon Data="{StaticResource Icon.Type}" Width="22" Height="22" Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Left" />
+                    <TextBlock Text="Bir metin seçin ya da yukarıdan bir stil ekleyin." TextWrapping="Wrap" Margin="0,8,0,0" />
+                    <TextBlock Text="Ctrl+T serbest metin ekler · Del seçili metni siler" Style="{StaticResource Caption}" Margin="0,4,0,0" />
+                  </StackPanel>
+                </Border>
+                <StackPanel Visibility="{Binding HasSelectedText, Converter={StaticResource BoolToVisibility}}">
+                  <TextBox x:Name="TextContentBox" Margin="16,0,16,8" MinHeight="64" MaxHeight="160" AcceptsReturn="True" TextWrapping="Wrap"
+                           VerticalScrollBarVisibility="Auto" AutomationProperties.Name="Metin içeriği"
+                           Text="{Binding TextContent, UpdateSourceTrigger=PropertyChanged, Delay=250}" />
+
+                  <DockPanel Margin="16,0,16,8">
+                    <TextBlock Text="Yazı tipi" VerticalAlignment="Center" Width="86" />
+                    <ComboBox ItemsSource="{Binding FontOptions}" SelectedItem="{Binding TextFont}" AutomationProperties.Name="Yazı tipi">
+                      <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                          <DockPanel>
+                            <TextBlock DockPanel.Dock="Right" Text="{Binding Kind}" FontSize="10" Margin="8,0,0,0" VerticalAlignment="Center"
+                                       Foreground="{DynamicResource SecondaryTextBrush}" />
+                            <TextBlock Text="{Binding Family}" FontFamily="{Binding Preview}" FontSize="15" VerticalAlignment="Center" />
+                          </DockPanel>
+                        </DataTemplate>
+                      </ComboBox.ItemTemplate>
+                    </ComboBox>
+                  </DockPanel>
+
+                  <DockPanel Margin="16,0,16,6">
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding TextSize, StringFormat={}{0:0} pt}" Width="42" TextAlignment="Right" VerticalAlignment="Center"
+                               Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBlock Text="Boyut" VerticalAlignment="Center" Width="86" />
+                    <Slider Minimum="6" Maximum="144" Value="{Binding TextSize, Delay=120}" SmallChange="1" LargeChange="4" IsSnapToTickEnabled="True" TickFrequency="1"
+                            VerticalAlignment="Center" AutomationProperties.Name="Yazı boyutu" />
+                  </DockPanel>
+                  <DockPanel Margin="16,0,16,6">
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding TextLineHeight, StringFormat={}{0:0.00}}" Width="42" TextAlignment="Right" VerticalAlignment="Center"
+                               Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBlock Text="Satır aralığı" VerticalAlignment="Center" Width="86" />
+                    <Slider Minimum="0.8" Maximum="2.5" Value="{Binding TextLineHeight, Delay=120}" SmallChange="0.05" LargeChange="0.25" IsSnapToTickEnabled="True" TickFrequency="0.05"
+                            VerticalAlignment="Center" AutomationProperties.Name="Satır aralığı" />
+                  </DockPanel>
+                  <DockPanel Margin="16,0,16,8">
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding TextWidthPercent, StringFormat={}%{0:0}}" Width="42" TextAlignment="Right" VerticalAlignment="Center"
+                               Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBlock Text="Kutu genişliği" VerticalAlignment="Center" Width="86" />
+                    <Slider Minimum="10" Maximum="100" Value="{Binding TextWidthPercent, Delay=120}" SmallChange="1" LargeChange="5" IsSnapToTickEnabled="True" TickFrequency="1"
+                            VerticalAlignment="Center" AutomationProperties.Name="Kutu genişliği" />
+                  </DockPanel>
+
+                  <StackPanel Orientation="Horizontal" Margin="16,0,16,8">
+                    <ToggleButton Style="{StaticResource IconToggle}" ui:Ui.Icon="{StaticResource Icon.Bold}" IsChecked="{Binding TextBold}" ToolTip="Kalın" AutomationProperties.Name="Kalın" />
+                    <ToggleButton Style="{StaticResource IconToggle}" ui:Ui.Icon="{StaticResource Icon.Italic}" IsChecked="{Binding TextItalic}" ToolTip="Eğik" AutomationProperties.Name="Eğik" Margin="0,0,14,0" />
+                    <RadioButton Style="{StaticResource IconToggle}" ui:Ui.Icon="{StaticResource Icon.AlignLeft}" IsChecked="{Binding IsTextLeft}" GroupName="TextAlign" ToolTip="Sola yasla" AutomationProperties.Name="Sola yasla" />
+                    <RadioButton Style="{StaticResource IconToggle}" ui:Ui.Icon="{StaticResource Icon.AlignCenter}" IsChecked="{Binding IsTextCenter}" GroupName="TextAlign" ToolTip="Ortala" AutomationProperties.Name="Ortala" />
+                    <RadioButton Style="{StaticResource IconToggle}" ui:Ui.Icon="{StaticResource Icon.AlignRight}" IsChecked="{Binding IsTextRight}" GroupName="TextAlign" ToolTip="Sağa yasla" AutomationProperties.Name="Sağa yasla" />
+                  </StackPanel>
+
+                  <TextBlock Text="Renk" Style="{StaticResource Caption}" Margin="16,4,16,4" />
+                  <ItemsControl ItemsSource="{Binding TextColors}" Margin="12,0">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <WrapPanel />
+                      </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Button Style="{StaticResource SwatchButton}" ToolTip="{Binding Name}" CommandParameter="{Binding}" Padding="2"
+                                Command="{Binding DataContext.ApplyTextColorCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                          <Border Width="24" Height="24" CornerRadius="12" Background="{Binding Preview}" BorderThickness="1" BorderBrush="#33000000" />
+                        </Button>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <DockPanel Margin="16,8,16,0">
+                    <TextBlock Text="Özel renk" VerticalAlignment="Center" Width="86" />
+                    <TextBox Text="{Binding TextColorHex, UpdateSourceTrigger=LostFocus}" ToolTip="#RRGGBB, ör. #A9843F" FontFamily="Consolas, Cascadia Mono"
+                             AutomationProperties.Name="Özel metin rengi" />
+                  </DockPanel>
+
+                  <Button Margin="16,14,16,0" HorizontalAlignment="Left" Style="{StaticResource ToolButton}" Command="{Binding DeleteTextCommand}" ToolTip="Seçili metni sil (Del)">
+                    <StackPanel Orientation="Horizontal">
+                      <ui:NexIcon Data="{StaticResource Icon.Trash}" Width="15" Height="15" Margin="0,0,6,0" />
+                      <TextBlock Text="Metni sil" />
+                    </StackPanel>
+                  </Button>
+                  <TextBlock Text="Metinler yuvaların üstünde durur ve PDF'e gömülü yazı tipiyle aynen çıkar." Style="{StaticResource Caption}" Margin="16,10,16,0" TextWrapping="Wrap" />
+                </StackPanel>
+              </StackPanel>
+            </ScrollViewer>
           </TabItem>
         </TabControl>
       </Grid>

@@ -7,6 +7,21 @@ NexAlbum GPL-3.0-or-later ile lisanslanmıştır. Aşağıdaki bileşenler uygul
 
 Dosyalar: `src/NexAlbum.UI/Assets/Fonts/Inter-*.ttf` · Kaynak: https://rsms.me/inter · Lisans metni: `src/NexAlbum.UI/Assets/Fonts/OFL.txt`
 
+## Albüm yazı tipleri — SIL Open Font License 1.1
+
+Sayfa metinleri için gömülüdür; ekran ve PDF aynı dosyayı kullanır (Karar 17 §11).
+Dosyalar: `src/NexAlbum.UI/Assets/AlbumFonts/*.ttf` · Kaynak: Google Fonts · Lisans metni ve telif satırları: `src/NexAlbum.UI/Assets/AlbumFonts/OFL.txt`
+
+| Yazı tipi | Telif |
+|---|---|
+| Great Vibes | Copyright 2010 The Great Vibes Pro Project Authors |
+| Pinyon Script | Copyright 2022 The PinyonScript Project Authors |
+| Parisienne | Copyright (c) 2012 Brian J. Bonislawsky DBA Astigmatic (AOETI), Reserved Font Name "Parisienne" |
+| Allura | Copyright 2010 The Allura Project Authors |
+| Cormorant Garamond | Copyright 2015 The Cormorant Project Authors |
+| Playfair Display | Copyright 2017 The Playfair Display Project Authors, Reserved Font Name "Playfair Display" |
+| Montserrat | Copyright 2011 The Montserrat Project Authors |
+
 ## Lucide ikonları — ISC (Feather kökenli ikonlar: MIT)
 
 Dosya: `src/NexAlbum.UI/Themes/Icons.xaml` (SVG'lerden üretilmiş geometri) · Kaynak: https://lucide.dev

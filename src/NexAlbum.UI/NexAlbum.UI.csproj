@@ -24,9 +24,11 @@
   <ItemGroup>
     <!-- Gömülü yazı tipi (Inter, SIL OFL 1.1) ve pencere simgesi; çalışma anında kurulum gerekmez. -->
     <Resource Include="Assets\Fonts\*.ttf" />
+    <Resource Include="Assets\AlbumFonts\*.ttf" />
     <Resource Include="Assets\NexAlbum.ico" />
     <!-- Ana pencere hazırlanırken gösterilen açılış ekranı (Karar 17 §9). -->
     <SplashScreen Include="Assets\splash.png" />
     <None Include="Assets\Fonts\OFL.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Assets\AlbumFonts\OFL.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

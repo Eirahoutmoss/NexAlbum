@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using CommunityToolkit.Mvvm.Input;
+using NexAlbum.Core.Projects;
 using NexAlbum.UI.Services;
 
 namespace NexAlbum.UI.ViewModels;
@@ -287,6 +288,7 @@ public sealed partial class MainViewModel
 
     private void OnShellPageChanged(PageItemViewModel? page)
     {
+        RestoreTextSelection(page);
         UpdateSpread();
         RefreshTemplates();
     }
@@ -445,6 +447,11 @@ public sealed partial class MainViewModel
         new("Fotoğrafı yuvadan çıkar", "Yuva", "Icon.Close", null, ClearSlotCommand, "boşalt"),
         new("Boşlukları tüm sayfalara uygula", "Tasarım", "Icon.Grid", null, ApplySpacingCommand, "kenar aralık"),
         new("Fon görseli ekle", "Tasarım", "Icon.Image", null, ImportBackgroundsCommand, "arka plan doku kâğıt"),
+        new("Metin ekle: Başlık", "Metin", "Icon.Type", null, new RelayCommand(() => AddText(TextPresets.Find("title"))), "yazı el yazısı script"),
+        new("Metin ekle: İsimler", "Metin", "Icon.Type", null, new RelayCommand(() => AddText(TextPresets.Find("names"))), "yazı gelin damat çift"),
+        new("Metin ekle: Tarih", "Metin", "Icon.Type", null, new RelayCommand(() => AddText(TextPresets.Find("date"))), "yazı gün"),
+        new("Metin ekle: Alıntı", "Metin", "Icon.Type", null, new RelayCommand(() => AddText(TextPresets.Find("quote"))), "yazı söz şiir"),
+        new("Seçili metni sil", "Metin", "Icon.Trash", "Del", DeleteTextCommand, "yazı kaldır"),
         new("Temayı değiştir (Gece / Fildişi)", "Görünüm", "Icon.Moon", null, ToggleThemeCommand, "koyu açık karanlık aydınlık"),
         new("Kitap görünümü (karşılıklı sayfalar)", "Görünüm", "Icon.Book", "Ctrl+B", ToggleBookViewCommand, "çift sayfa spread açık albüm"),
         new("Sunum modu", "Görünüm", "Icon.Present", "F5", PresentCommand, "tam ekran müşteri çift göster slayt"),

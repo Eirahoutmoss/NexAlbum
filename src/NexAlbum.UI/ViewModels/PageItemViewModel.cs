@@ -38,6 +38,8 @@ public sealed class PageItemViewModel : ObservableObject
         // Etkin kaynak: düzenlenmiş sürüm varsa ekranda o görünür (PDF ve ön kontrolle aynı, Karar 20 §4).
         var assets = project.Assets.ToDictionary(a => a.Id, a => a.Effective(), StringComparer.Ordinal);
         Slots = [.. page.Slots.OrderBy(s => s.ZIndex).Select(s => new SlotItemViewModel(s, Offset(s.Bounds), s.Placement is { } p && assets.TryGetValue(p.AssetId, out var a) ? a : null))];
+        Texts = [.. page.Elements.OfType<TextElement>().OrderBy(t => t.ZIndex).Select(t => new TextItemViewModel(t, Offset(t.Bounds)))];
+        PageBounds = pageRect;
 
         background = DesignBrushes.Fill(page.Background);
         if (page.Background is { Mode: BackgroundMode.Image, ImageAssetId: { } id } fill && assets.TryGetValue(id, out var image))
@@ -87,8 +89,21 @@ public sealed class PageItemViewModel : ObservableObject
 
     public bool HasSafeArea => SafeArea is not null;
 
-    /// <summary>Kesim ve güvenli alan kılavuzları çizilsin mi? Sunum modunda kapalıdır (baskıdaki gibi görünür).</summary>
-    public bool ShowGuides { get; init; } = true;
+    /// <summary>
+    /// Kesim ve güvenli alan kılavuzları ile boş yuva ipuçları çizilsin mi? Sunum modunda kapalıdır (baskıdaki gibi görünür).
+    /// </summary>
+    public bool ShowGuides
+    {
+        get;
+        init
+        {
+            field = value;
+            foreach (var slot in Slots)
+            {
+                slot.ShowCues = value;
+            }
+        }
+    } = true;
 
     public bool ShowBleedGuide => ShowGuides && HasBleed;
 
@@ -102,6 +117,15 @@ public sealed class PageItemViewModel : ObservableObject
     }
 
     public ObservableCollection<SlotItemViewModel> Slots { get; }
+
+    /// <summary>Sayfadaki metinler (yuvaların üstünde çizilir).</summary>
+    public ObservableCollection<TextItemViewModel> Texts { get; }
+
+    /// <summary>Bitmiş sayfa alanı proje koordinatlarında (mm): yeni metinler buna göre konumlanır.</summary>
+    public RectMm PageBounds { get; }
+
+    /// <summary>Tuvalin proje koordinatlarındaki yeri (taşma payı dahil): metin bunun dışına taşınamaz.</summary>
+    public RectMm CanvasBounds => Origin;
 
     /// <summary>Tuvalde gösterilirken yüksek çözünürlüklü önizleme yüklenir; ayrılınca bırakılır (bellek).</summary>
     public void SetDetail(bool detail)
@@ -266,7 +290,10 @@ public sealed class SlotItemViewModel : ObservableObject
 
     public bool IsEmpty => Asset is null;
 
-    public bool ShowEmptyLabel => IsEmpty && !sample;
+    /// <summary>Boş yuva ipuçları ("+", yazı, kesik çizgi) gösterilsin mi? Sunumda kapalıdır.</summary>
+    public bool ShowCues { get; set; } = true;
+
+    public bool ShowEmptyLabel => IsEmpty && !sample && ShowCues;
 
     /// <summary>Boş yuvadaki "+" ikonunun boyu (mm): yuvanın kullanılabilir iç boşluğuna oranlı, çok büyük/küçük olmaz.</summary>
     public double EmptyIconSize => Math.Clamp(emptyRoom * 0.16, 4, 22);

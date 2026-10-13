@@ -157,6 +157,21 @@ public class PresentationTests
     }
 
     [Fact]
+    public void EmptySlotCuesAreHiddenInThePresentation()
+    {
+        var project = Project(1);
+        project = project.WithPages([new AlbumPage { Id = "p0", Elements = [new Slot { Id = "s", Bounds = new RectMm(10, 10, 100, 100) }] }]);
+
+        var editor = new PageItemViewModel(project.Pages[0], 0, project);
+        editor.Slots[0].ShowEmptyLabel.Should().BeTrue("düzenleyicide boş yuva «+» ile gösterilir");
+
+        var show = new PresentationViewModel(project, 0, spreads: false);
+        show.Current.Left.Slots[0].ShowEmptyLabel.Should().BeFalse("çifte gösterilen sayfada düzenleme ipucu olmaz");
+        show.Current.Left.Slots[0].ShowEmptyHint.Should().BeFalse();
+        show.Close();
+    }
+
+    [Fact]
     public void EmptyProjectCannotBePresented()
     {
         var empty = AlbumProject.Create("Boş", Core.Profiles.BuiltInProfiles.Find("builtin-30x30")!, DateTimeOffset.UtcNow, "0.1.0");

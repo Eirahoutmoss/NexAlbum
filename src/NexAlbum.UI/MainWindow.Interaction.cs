@@ -30,6 +30,13 @@ public partial class MainWindow
     private Point galleryStart;
     private AssetItemViewModel? galleryItem;
 
+    private TextItemViewModel? pressedText;
+    private FrameworkElement? textOrigin;
+    private Point textStart;
+    private double textStartX;
+    private double textStartY;
+    private bool textMoved;
+
     private Point canvasStart;
     private SlotItemViewModel? pressedSlot;
     private FrameworkElement? pressedElement;
@@ -196,6 +203,31 @@ public partial class MainWindow
     private void OnCanvasMouseDown(object sender, MouseButtonEventArgs e)
     {
         FocusPageOf(e.OriginalSource as DependencyObject);
+
+        // Metinler yuvaların üstündedir: önce metin aranır. Tıkla: seç · sürükle: taşı · çift tıkla: yazıyı düzenle.
+        if (TextAt(e.OriginalSource as DependencyObject, out var origin) is { } text && origin is not null)
+        {
+            ViewModel.SelectText(ViewModel.SelectedPage?.Texts.FirstOrDefault(t => t.Id == text.Id) ?? text);
+            pressedText = ViewModel.SelectedText;
+            textOrigin = origin;
+            textStart = e.GetPosition(origin);
+            textStartX = pressedText?.X ?? 0;
+            textStartY = pressedText?.Y ?? 0;
+            textMoved = false;
+            if (e.ClickCount == 2)
+            {
+                pressedText = null;
+                FocusTextEditor();
+            }
+            else
+            {
+                CanvasArea.CaptureMouse();
+            }
+
+            e.Handled = true;
+            return;
+        }
+
         var slot = SlotAt(e.OriginalSource as DependencyObject, out var element);
         if (slot is null)
         {
@@ -224,6 +256,18 @@ public partial class MainWindow
 
     private void OnCanvasMouseMove(object sender, MouseEventArgs e)
     {
+        if (pressedText is not null && textOrigin is not null && e.LeftButton == MouseButtonState.Pressed)
+        {
+            var p = e.GetPosition(textOrigin);
+            if (textMoved || Moved(textOrigin.PointToScreen(textStart), textOrigin.PointToScreen(p)))
+            {
+                textMoved = true;
+                MainViewModel.PreviewMoveText(pressedText, textStartX, textStartY, p.X - textStart.X, p.Y - textStart.Y);
+            }
+
+            return;
+        }
+
         if (pressedSlot is null || pressedElement is null || e.LeftButton != MouseButtonState.Pressed)
         {
             return;
@@ -247,6 +291,20 @@ public partial class MainWindow
 
     private void OnCanvasMouseUp(object sender, MouseButtonEventArgs e)
     {
+        if (pressedText is not null)
+        {
+            var text = pressedText;
+            pressedText = null;
+            textOrigin = null;
+            CanvasArea.ReleaseMouseCapture();
+            if (textMoved)
+            {
+                ViewModel.CommitTextMove(text);
+            }
+
+            return;
+        }
+
         if (panning && pressedSlot is not null)
         {
             ViewModel.CommitPlacement(pressedSlot);
@@ -342,6 +400,27 @@ public partial class MainWindow
         }
 
         return slot;
+    }
+
+    /// <summary>Tıklanan metin ve konum ölçümü için sayfa tuvalinin kökü (birimi mm).</summary>
+    private static TextItemViewModel? TextAt(DependencyObject? source, out FrameworkElement? origin)
+    {
+        origin = null;
+        TextItemViewModel? text = null;
+        for (var current = source; current is not null; current = ParentOf(current))
+        {
+            if (current is FrameworkElement { DataContext: TextItemViewModel t })
+            {
+                text = t;
+            }
+            else if (text is not null && current is FrameworkElement { DataContext: PageItemViewModel } page)
+            {
+                origin = page;
+                break;
+            }
+        }
+
+        return text;
     }
 
     private static DependencyObject? ParentOf(DependencyObject child) =>

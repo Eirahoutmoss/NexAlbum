@@ -445,6 +445,42 @@
     </Setter>
   </Style>
 
+  <!-- Simgeli aç/kapa düğmesi (kalın, eğik, hizalama); RadioButton'a da uygulanır. -->
+  <Style x:Key="IconToggle" TargetType="ToggleButton">
+    <Setter Property="Width" Value="32" />
+    <Setter Property="Height" Value="30" />
+    <Setter Property="Margin" Value="0,0,4,0" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource NexFocusVisual}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ToggleButton">
+          <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1"
+                  CornerRadius="{StaticResource ControlRadius}">
+            <ui:NexIcon x:Name="Ic" Data="{TemplateBinding ui:Ui.Icon}" Width="16" Height="16" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+              <Setter TargetName="Ic" Property="Foreground" Value="{DynamicResource TextBrush}" />
+            </Trigger>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SelectionBrush}" />
+              <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+              <Setter TargetName="Ic" Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="Bd" Property="Opacity" Value="0.38" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
   <!-- Tema seçim kartı (Ayarlar) -->
   <Style x:Key="ThemeCard" TargetType="RadioButton">
     <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />

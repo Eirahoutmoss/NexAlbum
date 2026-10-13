@@ -20,6 +20,10 @@ Revizyon 3 — 13/10/2026
 Değişiklik: Uygulamaya iki gömülü varlık eklendi (NuGet paketi değil, kaynak dosya): Inter yazı tipi (SIL OFL 1.1) ve Lucide ikonları (ISC). Ayrıntı: Karar 17.
 Gerekçe: Görünüm kurulu yazı tiplerine ve Windows sürümüne (Segoe Fluent Icons yalnızca Windows 11) bağlı kalmasın. Lisans metinleri `THIRD-PARTY-NOTICES.md`'de.
 
+Revizyon 4 — 13/10/2026
+Değişiklik: Albüm sayfa metinleri için yedi gömülü yazı tipi eklendi (kaynak dosya, NuGet değil): Great Vibes, Pinyon Script, Parisienne, Allura, Cormorant Garamond, Playfair Display, Montserrat — hepsi SIL OFL 1.1. Ayrıntı: Karar 17 §11.
+Gerekçe: Ekran ve PDF aynı dosyayı kullansın; albüm, yazı tipi kurulu olmayan bilgisayarda da aynı çıksın. OFL yazı tipleri GPL yazılımla birlikte dağıtılabilir.
+
 1. Karar Özeti
 NexAlbum'in teknoloji yığını, Windows öncelikli, ücretsiz, açık kaynak (GPL uyumlu), tek geliştirici tarafından sürdürülebilir ve yüksek performanslı olacak şekilde seçilmiştir.
 
@@ -610,6 +614,7 @@ FluentAssertions	Apache 2.0	✅	Onaylı
 CommunityToolkit.Mvvm	MIT	✅	Onaylı
 Inter (yazı tipi, gömülü)	SIL OFL 1.1	✅	Onaylı (Revizyon 3)
 Lucide (ikonlar, gömülü)	ISC	✅	Onaylı (Revizyon 3)
+Albüm yazı tipleri (7 aile, gömülü)	SIL OFL 1.1	✅	Onaylı (Revizyon 4)
 JsonSchema.Net	MIT	✅	Onaylı
 QuestPDF	Hibrit	⚠️	Reddedildi
 iText	AGPL/Ticari	❌	Reddedildi
