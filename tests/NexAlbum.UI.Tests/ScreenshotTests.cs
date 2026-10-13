@@ -99,7 +99,8 @@ public sealed class ScreenshotTests : IDisposable
         });
     }
 
-    private static Window Show(Window window, double width, double height)
+    private static T Show<T>(T window, double width, double height)
+        where T : Window
     {
         window.WindowStartupLocation = WindowStartupLocation.Manual;
         window.Left = -20000;
