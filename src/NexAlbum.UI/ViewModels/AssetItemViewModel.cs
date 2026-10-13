@@ -17,7 +17,14 @@ public sealed class AssetItemViewModel(PhotoAsset asset, bool used) : Observable
 
     public bool IsUsed { get; } = used;
 
-    public bool IsMissing => Asset.Missing;
+    public bool IsMissing => Asset.Missing && !Asset.IsEditActive;
+
+    /// <summary>Düzenlenmiş sürümü var mı (etkin ya da değil)?</summary>
+    public bool IsEdited => Asset.Edit is not null;
+
+    public string EditBadge => Asset.Edit is null
+        ? string.Empty
+        : Asset.Edit.Missing ? "Düzenleme kayıp" : Asset.UseEdit ? "Düzenlendi" : "Orijinal gösteriliyor";
 
     public string Details => $"{Asset.DisplayWidth}×{Asset.DisplayHeight}" + (Asset.CapturedAt is { } t ? " · " + t.ToString("g", System.Globalization.CultureInfo.CurrentCulture) : string.Empty);
 
@@ -29,7 +36,7 @@ public sealed class AssetItemViewModel(PhotoAsset asset, bool used) : Observable
             if (thumbnail is null && !loading)
             {
                 loading = true;
-                thumbnail = ImageLoader.Shared.TryGetCached(Asset, ImageLoader.ThumbnailWidth);
+                thumbnail = ImageLoader.Shared.TryGetCached(Asset.Effective(), ImageLoader.ThumbnailWidth);
                 if (thumbnail is not null)
                 {
                     return thumbnail;
@@ -44,7 +51,7 @@ public sealed class AssetItemViewModel(PhotoAsset asset, bool used) : Observable
 
     private async Task LoadAsync()
     {
-        var image = await Task.Run(() => ImageLoader.Shared.Load(Asset, ImageLoader.ThumbnailWidth)).ConfigureAwait(true);
+        var image = await Task.Run(() => ImageLoader.Shared.Load(Asset.Effective(), ImageLoader.ThumbnailWidth)).ConfigureAwait(true);
         thumbnail = image;
         OnPropertyChanged(nameof(Thumbnail));
     }

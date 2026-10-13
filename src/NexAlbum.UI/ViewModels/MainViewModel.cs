@@ -36,7 +36,11 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private ulong? seed;
     private ProjectLock? projectLock;
 
-    public MainViewModel(IDialogService dialogs, TimeProvider? clock = null)
+    /// <param name="dialogs">Pencereler ve dış eylemler.</param>
+    /// <param name="clock">Saat (test için).</param>
+    /// <param name="settings">Uygulama ayarları deposu; null ise %APPDATA%/NexAlbum/settings.json.</param>
+    /// <param name="photoshop">Photoshop kapısı; null ise COM (Windows).</param>
+    public MainViewModel(IDialogService dialogs, TimeProvider? clock = null, IAppSettingsStore? settings = null, Integrations.Photoshop.IPhotoshopHost? photoshop = null)
     {
         this.dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
         this.clock = clock ?? TimeProvider.System;
@@ -58,6 +62,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         AboutCommand = new RelayCommand(dialogs.ShowAbout);
         InitializeDesign();
         InitializeEditing();
+        InitializeExternal(settings, photoshop);
     }
 
     public IReadOnlyList<LayoutModeOption> LayoutModes { get; } =
@@ -477,7 +482,11 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         SelectedPage = Pages.ElementAtOrDefault(index);
     }
 
-    public void Dispose() => ReleaseLock();
+    public void Dispose()
+    {
+        StopAllWatchers();
+        ReleaseLock();
+    }
 
     private void MovePage(int delta)
     {

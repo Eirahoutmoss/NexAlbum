@@ -89,6 +89,22 @@ public sealed class DialogService(Window owner) : IDialogService
     public void Reveal(string path) =>
         Process.Start(new ProcessStartInfo("explorer.exe", "/select,\"" + path + "\"") { UseShellExecute = true })?.Dispose();
 
+    public string? AskExecutable()
+    {
+        var dialog = new OpenFileDialog { Title = "Program seçin", Filter = "Programlar (*.exe)|*.exe|Tüm dosyalar|*.*" };
+        return dialog.ShowDialog(owner) == true ? dialog.FileName : null;
+    }
+
+    public void LaunchEditor(string file, string? executable) => Integrations.Editing.ExternalEditor.Open(file, executable);
+
+    public AppSettings? EditAppSettings(AppSettings settings)
+    {
+        var window = new SettingsWindow(settings) { Owner = owner };
+        return window.ShowDialog() == true ? window.Result : null;
+    }
+
+    public void ShowBatchEdit(ViewModels.BatchEditViewModel viewModel) => new BatchEditWindow(viewModel) { Owner = owner }.ShowDialog();
+
     public void ShowAbout() => new AboutWindow { Owner = owner }.ShowDialog();
 
     public void Info(string message) => MessageBox.Show(owner, message, AppInfo.Name, MessageBoxButton.OK, MessageBoxImage.Information);

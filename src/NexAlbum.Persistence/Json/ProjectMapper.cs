@@ -157,8 +157,6 @@ internal static class ProjectMapper
         Recipe = d.Recipe,
         CreatedAt = d.CreatedAt ?? default,
         Missing = d.Missing ?? false,
-        Edit = d.Edit is { } edit ? EditFromDto(edit, path + ".edit") : null,
-        UseEdit = d.UseEdit ?? true,
     });
 
     private static PageDto PageToDto(AlbumPage page, int index) => new()

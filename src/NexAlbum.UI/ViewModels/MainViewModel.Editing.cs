@@ -318,6 +318,7 @@ public sealed partial class MainViewModel
         ClearSlotCommand.NotifyCanExecuteChanged();
         CenterPhotoCommand.NotifyCanExecuteChanged();
         ToggleFitCommand.NotifyCanExecuteChanged();
+        RefreshExternalCommands();
     }
 
     /// <summary>Sayfa yeniden kurulunca seçili yuvayı kimliğiyle geri bulur; başka sayfaya geçilince seçim kalkar.</summary>

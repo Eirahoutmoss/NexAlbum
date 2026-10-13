@@ -32,6 +32,18 @@ public interface IDialogService
     /// <summary>Fon olarak kullanılacak görselleri seçtirir (çoklu seçim); iptalde null.</summary>
     IReadOnlyList<string>? AskBackgroundImages();
 
+    /// <summary>Bir program (.exe) seçtirir; iptalde null.</summary>
+    string? AskExecutable();
+
+    /// <summary>Dosyayı harici düzenleyicide açar (program null ise Windows'un "düzenle" eylemi).</summary>
+    void LaunchEditor(string file, string? executable);
+
+    /// <summary>Uygulama ayarları penceresi; iptalde null.</summary>
+    AppSettings? EditAppSettings(AppSettings settings);
+
+    /// <summary>Toplu düzenleme penceresi (kapanana kadar bekler).</summary>
+    void ShowBatchEdit(ViewModels.BatchEditViewModel viewModel);
+
     /// <summary>Profil düzenleyiciyi açar; iptalde null.</summary>
     AlbumProfile? EditProfile(AlbumProfile profile);
 

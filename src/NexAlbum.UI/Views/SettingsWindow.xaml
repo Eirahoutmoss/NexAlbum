@@ -1,0 +1,30 @@
+<Window x:Class="NexAlbum.UI.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Ayarlar" Width="620" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False"
+        FontFamily="Inter, Segoe UI" FontSize="14" Background="{StaticResource BackgroundBrush}">
+  <StackPanel Margin="20">
+    <TextBlock Text="Harici düzenleyici" FontSize="16" FontWeight="SemiBold" />
+    <TextBlock Style="{StaticResource Caption}" Margin="0,4,0,8"
+               Text="«Düzenleyicide aç» bu programı kullanır. Boş bırakılırsa Photoshop aranır; o da yoksa Windows'un «Düzenle» eylemi kullanılır." />
+    <DockPanel>
+      <Button DockPanel.Dock="Right" Content="Gözat…" Click="OnBrowseEditor" Padding="10,2" Margin="6,0,0,0" />
+      <TextBox x:Name="EditorBox" VerticalContentAlignment="Center" />
+    </DockPanel>
+    <TextBlock x:Name="DetectedText" Style="{StaticResource Caption}" Margin="0,4,0,0" />
+
+    <TextBlock Text="Düzenlenmiş dosyalar" FontSize="16" FontWeight="SemiBold" Margin="0,18,0,0" />
+    <TextBlock Style="{StaticResource Caption}" Margin="0,4,0,8"
+               Text="Rötuşlanmış kopyalar burada, her proje için ayrı klasörde tutulur. Orijinal fotoğraflarınıza hiç yazılmaz." />
+    <DockPanel>
+      <Button DockPanel.Dock="Right" Content="Gözat…" Click="OnBrowseFolder" Padding="10,2" Margin="6,0,0,0" />
+      <TextBox x:Name="FolderBox" VerticalContentAlignment="Center" />
+    </DockPanel>
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+      <Button Content="Kaydet" Click="OnSave" IsDefault="True" Style="{StaticResource AccentButton}" Padding="18,4" Margin="0,0,8,0" />
+      <Button Content="İptal" IsCancel="True" Padding="18,4" />
+    </StackPanel>
+  </StackPanel>
+</Window>

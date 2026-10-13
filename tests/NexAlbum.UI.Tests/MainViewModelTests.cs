@@ -11,7 +11,7 @@ using Xunit;
 
 namespace NexAlbum.UI.Tests;
 
-public sealed class MainViewModelTests : IDisposable
+public sealed partial class MainViewModelTests : IDisposable
 {
     private readonly string dir = Path.Combine(Path.GetTempPath(), "nexalbum-ui-tests", Guid.NewGuid().ToString("N"));
 
@@ -456,7 +456,7 @@ public sealed class MainViewModelTests : IDisposable
 
     private static Slot SlotById(MainViewModel vm, string id) => vm.Project!.Pages.SelectMany(p => p.Slots).Single(s => s.Id == id);
 
-    private static readonly byte[] TinyPng = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAABQAAAAeCAIAAACjcKk8AAAAIklEQVR4nGPkWhDFQC5gIlvnqOZRzaOaRzWPah7VPAQ0AwAeUgFAi1B09gAAAABJRU5ErkJggg==");
+    internal static readonly byte[] TinyPng = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAABQAAAAeCAIAAACjcKk8AAAAIklEQVR4nGPkWhDFQC5gIlvnqOZRzaOaRzWPah7VPAQ0AwAeUgFAi1B09gAAAABJRU5ErkJggg==");
 
     private static AlbumProject SampleProject(int photos)
     {
@@ -500,6 +500,22 @@ public sealed class MainViewModelTests : IDisposable
         public IReadOnlyList<string>? PhotoFiles { get; init; }
 
         public IReadOnlyList<string>? AskPhotoFiles() => PhotoFiles;
+
+        public string? Executable { get; set; }
+
+        public List<(string File, string? Executable)> Launched { get; } = [];
+
+        public AppSettings? EditedSettings { get; set; }
+
+        public Action<BatchEditViewModel>? OnBatchEdit { get; set; }
+
+        public string? AskExecutable() => Executable;
+
+        public void LaunchEditor(string file, string? executable) => Launched.Add((file, executable));
+
+        public AppSettings? EditAppSettings(AppSettings settings) => EditedSettings;
+
+        public void ShowBatchEdit(BatchEditViewModel viewModel) => OnBatchEdit?.Invoke(viewModel);
 
         public AlbumProfile? EditedProfile { get; set; }
 

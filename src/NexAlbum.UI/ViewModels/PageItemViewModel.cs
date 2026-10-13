@@ -34,7 +34,8 @@ public sealed class PageItemViewModel : ObservableObject
         SafeArea = project.Profile.SafeArea.Value is { } s ? Offset(pageRect.Deflate(s)) : null;
         HasBleed = project.Profile.Bleed.Value is not null;
 
-        var assets = project.Assets.ToDictionary(a => a.Id, StringComparer.Ordinal);
+        // Etkin kaynak: düzenlenmiş sürüm varsa ekranda o görünür (PDF ve ön kontrolle aynı, Karar 20 §4).
+        var assets = project.Assets.ToDictionary(a => a.Id, a => a.Effective(), StringComparer.Ordinal);
         Slots = [.. page.Slots.OrderBy(s => s.ZIndex).Select(s => new SlotItemViewModel(s, Offset(s.Bounds), s.Placement is { } p && assets.TryGetValue(p.AssetId, out var a) ? a : null))];
 
         background = DesignBrushes.Fill(page.Background);

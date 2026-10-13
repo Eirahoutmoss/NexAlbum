@@ -39,6 +39,20 @@ public sealed class ImageLoader
         }
     }
 
+    /// <summary>Dosya yerinde değiştiğinde (harici düzenleyici kaydetti) o yolun tüm önbellek girdilerini atar.</summary>
+    public void Invalidate(string path)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        lock (gate)
+        {
+            foreach (var key in map.Keys.Where(k => string.Equals(k.Path, path, StringComparison.OrdinalIgnoreCase)).ToList())
+            {
+                order.Remove(map[key]);
+                map.Remove(key);
+            }
+        }
+    }
+
     /// <summary>Görüntüyü yükler; başarısızsa null döner. Herhangi bir iş parçacığından çağrılabilir (sonuç dondurulmuştur).</summary>
     public ImageSource? Load(PhotoAsset asset, int decodeWidth)
     {
