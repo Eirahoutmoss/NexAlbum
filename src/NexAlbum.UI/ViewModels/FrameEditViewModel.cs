@@ -89,7 +89,7 @@ public sealed class FrameEditViewModel : ObservableObject
     public double HalfHandle => HandleSize / 2;
 
     /// <summary>Köşe tutamaçları çapı.</summary>
-    public double CornerSize => HandleSize * 1.15;
+    public double CornerSize => HandleSize * 1.3;
 
     public double HalfCorner => CornerSize / 2;
 

@@ -168,8 +168,8 @@ public sealed class PageItemViewModel : ObservableObject
         set => SetProperty(ref frameEdit, value);
     }
 
-    /// <summary>Çerçeve tutamaçlarının kenarı (mm): sayfanın uzun kenarının 1/70'i, ekranda her ölçekte tutulabilir.</summary>
-    public double HandleSizeMm => Math.Max(CanvasWidth, CanvasHeight) / 70;
+    /// <summary>Çerçeve tutamaçlarının kenarı (mm): sayfanın uzun kenarının 1/55'i, ekranda her ölçekte tutulabilir.</summary>
+    public double HandleSizeMm => Math.Max(CanvasWidth, CanvasHeight) / 55;
 
     /// <summary>Sürüklerken gösterilen akıllı hizalama çizgileri (tuval koordinatı, mm).</summary>
     public ObservableCollection<SnapLineViewModel> SnapLines { get; } = [];

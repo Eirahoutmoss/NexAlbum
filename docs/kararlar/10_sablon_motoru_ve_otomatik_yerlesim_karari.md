@@ -24,6 +24,15 @@ Değişiklik: Rev. 2'deki düğüne özgü ad önerileri (Kına Gecesi, Hazırl�
 - Hazır ad menüsü: Sabah, Öğle, Öğleden sonra, Akşam, Gece, Başlangıç, Hazırlık, Yolculuk, Buluşma, Kutlama, Aile, Dostlar, Kapanış.
 Değişmeyenler: bölüm bulma (ara, gün değişimi, küçük bölüm birleştirme), saklama (ad + başlangıç), yerleşim kuralları.
 
+Revizyon 4 — 13/10/2026 (elle çerçeve düzenleme ve hizalama kılavuzları)
+Değişiklik: Şablondan gelen yuvanın çerçevesi elle değiştirilebilir. İstek: Hasan Güler (yuvalarda hizalama kılavuzları; geometrik yuvalarda elle köşe düzenleme).
+- «Çerçeve» kipi (seçili yuva): gövdeden taşıma, 8 tutamaçla boyutlandırma (Shift: oran korunur). En küçük kenar 5 mm; tuval (taşma payı dahil) dışına çıkılamaz.
+- Akıllı hizalama (metinlerle aynı kural, `SnapGuides`): sayfa ortası, sayfa kenarları, güvenli alan (profilde varsa) ve sayfadaki diğer yuva/metinlerin kenar ve ortaları; tolerans ekranda ~8 piksel, Alt ile serbest. Kılavuzlar yalnızca ekranda görünür, PDF'e girmez.
+- Köşe düzenleme: üçgen, elmas, altıgen, sekizgen, eğik, serbest çokgen ve düz dikdörtgende köşeler tek tek sürüklenir (daire, kemer ve yuvarlak köşelide yok). Köşe yuva kutusu içinde kalır; dışbükeylik bozulacaksa ya da köşe komşusuyla çakışacaksa hareket uygulanmaz. Değişen biçim serbest çokgen ("polygon") olarak saklanır; dört köşesi tam dikdörtgen olan çokgen düz dikdörtgene döner. «Dikdörtgene döndür» biçimi sıfırlar.
+- Fotoğraf yerleşimi (kaydırma, ölçek, ayarlar) çerçeve değişince korunur; fotoğraf yeni kutuyu kaplar (§9.6).
+Değişmeyenler: şablon dosyaları, determinizm (elle değiştirilen sayfa otomatik yerleşimde kilitlenmedikçe yeniden kurulur), kilitli sayfalara dokunulmaz.
+Dosya biçimi etkisi: yok (mevcut "bounds", "shape", "polygon" alanları).
+
 1. Karar Özeti
 NexAlbum'in kalbi şablon motoru ve otomatik yerleşim algoritmasıdır. Bu iki bileşen, ürünün "hızlı, doğru, çeşitli" vaadini gerçekleştirir.
 
