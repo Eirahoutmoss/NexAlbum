@@ -661,6 +661,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         RefreshShellCommands();
         RefreshPageCommands();
         RefreshTextCommands();
+        RefreshGalleryCommands();
         RefreshDesignCommands();
         RefreshEditCommands();
     }

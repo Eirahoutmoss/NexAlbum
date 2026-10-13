@@ -256,7 +256,20 @@
             <RadioButton Style="{StaticResource ChipRadio}" GroupName="GalleryFilter" Content="{Binding FilterUsedText}" IsChecked="{Binding IsFilterUsed}" />
             <RadioButton Style="{StaticResource ChipRadio}" GroupName="GalleryFilter" Content="{Binding FilterEditedText}" IsChecked="{Binding IsFilterEdited}"
                          ToolTip="Düzenleyicide ya da toplu rötuşla düzenlenmiş fotoğraflar" />
+            <RadioButton Style="{StaticResource ChipRadio}" GroupName="GalleryFilter" IsChecked="{Binding IsFilterFavorites}" AutomationProperties.Name="Favoriler"
+                         ToolTip="Favoriler (F): otomatik yerleşimde önce ve oranına en uygun yuvaya yerleşir">
+              <StackPanel Orientation="Horizontal">
+                <ui:NexIcon Data="{StaticResource Icon.Star}" Width="12" Height="12" Fill="{DynamicResource AccentBrush}" Foreground="{DynamicResource AccentBrush}"
+                            Margin="0,0,5,0" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding FilterFavoritesText}" VerticalAlignment="Center" />
+              </StackPanel>
+            </RadioButton>
           </WrapPanel>
+          <DockPanel DockPanel.Dock="Top" Margin="16,0,16,8">
+            <ComboBox DockPanel.Dock="Right" Width="150" ItemsSource="{Binding GallerySortOptions}" SelectedItem="{Binding SelectedGallerySort}"
+                      DisplayMemberPath="Name" AutomationProperties.Name="Galeri sıralaması" />
+            <TextBlock Text="Sırala" Style="{StaticResource Caption}" VerticalAlignment="Center" />
+          </DockPanel>
           <Grid>
             <ListBox x:Name="Gallery" ItemsSource="{Binding GalleryRows}" Padding="10,0,6,10"
                      AllowDrop="True" DragOver="OnFileDragOver" Drop="OnGalleryDrop"
@@ -265,8 +278,14 @@
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
                      VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.ScrollUnit="Pixel">
               <!-- Dikey çubuk hep yer ayırır: kare yüksekliği genişliğe bağlı olduğundan "Auto" çubuk görün/kaybol döngüsüne (sonsuz düzen) girer. -->
+              <ListBox.InputBindings>
+                <!-- Yalnızca galeri odaktayken: yazı kutularındaki "f" harfini yutmaz. -->
+                <KeyBinding Key="F" Command="{Binding ToggleFavoriteCommand}" />
+              </ListBox.InputBindings>
               <ListBox.ContextMenu>
                 <ContextMenu>
+                  <MenuItem Header="Favori yap / kaldır" Command="{Binding ToggleFavoriteCommand}" InputGestureText="F" />
+                  <Separator />
                   <MenuItem Header="Düzenleyicide aç" Command="{Binding OpenInEditorCommand}" />
                   <MenuItem Header="Toplu rötuş…" Command="{Binding BatchEditCommand}" />
                   <Separator />
@@ -322,12 +341,20 @@
                                   Visibility="{Binding IsEdited, Converter={StaticResource BoolToVisibility}}">
                             <ui:NexIcon Data="{StaticResource Icon.Retouch}" Width="12" Height="12" StrokeThickness="2" Foreground="#E0B864" />
                           </Border>
+                          <!-- Favori: yıldız (favoriyse hep, değilse üzerine gelince) -->
+                          <Button x:Name="Star" Style="{StaticResource StarButton}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="4"
+                                  Command="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
+                                  Tag="{Binding IsFavorite}" Visibility="Hidden" ToolTip="Favori (F)" AutomationProperties.Name="Favori" />
                           <Border x:Name="Ring" CornerRadius="8" BorderThickness="2" Margin="-2" BorderBrush="Transparent" IsHitTestVisible="False" />
                         </Grid>
                         <DataTemplate.Triggers>
                           <Trigger SourceName="Tile" Property="IsMouseOver" Value="True">
                             <Setter TargetName="Ring" Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}" />
+                            <Setter TargetName="Star" Property="Visibility" Value="Visible" />
                           </Trigger>
+                          <DataTrigger Binding="{Binding IsFavorite}" Value="True">
+                            <Setter TargetName="Star" Property="Visibility" Value="Visible" />
+                          </DataTrigger>
                           <DataTrigger Binding="{Binding IsSelected}" Value="True">
                             <Setter TargetName="Ring" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
                           </DataTrigger>
@@ -1025,6 +1052,10 @@
                       </Trigger>
                       <DataTrigger Binding="{Binding IsDropBefore}" Value="True">
                         <Setter TargetName="DropMark" Property="Visibility" Value="Visible" />
+                      </DataTrigger>
+                      <DataTrigger Binding="{Binding IsPhotoDropTarget}" Value="True">
+                        <Setter TargetName="Frame" Property="BorderBrush" Value="{DynamicResource AccentHoverBrush}" />
+                        <Setter TargetName="Frame" Property="Background" Value="{DynamicResource SelectionBrush}" />
                       </DataTrigger>
                     </ControlTemplate.Triggers>
                   </ControlTemplate>

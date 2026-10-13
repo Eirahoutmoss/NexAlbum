@@ -11,7 +11,24 @@ public enum GalleryFilter
     Unused,
     Used,
     Edited,
+    Favorites,
 }
+
+/// <summary>Galeri sıralaması (Karar 12 §5.6).</summary>
+public enum GallerySort
+{
+    /// <summary>Eklenme sırası (içe aktarma sırası).</summary>
+    Imported,
+
+    /// <summary>Çekim zamanı (EXIF); zamanı olmayanlar sonda.</summary>
+    Captured,
+
+    /// <summary>Dosya adı (sayılar sayı olarak: IMG_2 &lt; IMG_10).</summary>
+    Name,
+}
+
+/// <summary>Sıralama seçeneği.</summary>
+public sealed record GallerySortOption(GallerySort Sort, string Name);
 
 /// <summary>
 /// Galeri ızgarasının bir satırı. Izgara satırlara bölünür ki liste sanallaştırılabilsin (binlerce fotoğrafta yalnızca görünen

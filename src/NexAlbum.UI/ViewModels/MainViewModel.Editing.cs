@@ -49,6 +49,7 @@ public sealed partial class MainViewModel
                 OnPropertyChanged(nameof(SlotZoomPercent));
                 OnPropertyChanged(nameof(FitButtonText));
                 RefreshEditCommands();
+                RefreshGalleryCommands();
             }
         }
     }

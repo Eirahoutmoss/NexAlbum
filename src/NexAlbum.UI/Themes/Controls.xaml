@@ -1,10 +1,12 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:ui="clr-namespace:NexAlbum.UI.Controls">
+                    xmlns:ui="clr-namespace:NexAlbum.UI.Controls"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
   <!--
     Denetim stilleri (Karar 17 §4–§7). Renkler yalnızca DynamicResource ile alınır; böylece tema çalışırken değiştirilebilir.
     Anahtarlı stiller: ToolButton, AccentButton, OutlineAccentButton, CommandButton, IconButton, CaptionButton, CloseCaptionButton,
-    ChipRadio, ThemeCard, PanelTabs, PanelHeader, Caption, Title, Display, Card, KeyBadge, SwatchButton.
+    ChipRadio, ThemeCard, PanelTabs, PanelHeader, Caption, Title, Display, Card, KeyBadge, SwatchButton, IconToggle, StarButton.
+    Fotoğrafın üstündeki rozetler (StarButton) her temada aynı koyu zemini kullanır: alttaki görüntü temadan bağımsızdır.
   -->
 
   <FontFamily x:Key="UiFont">/NexAlbum;component/Assets/Fonts/#Inter, Segoe UI</FontFamily>
@@ -258,6 +260,35 @@
   </Style>
 
   <!-- Fon, çerçeve ve şablon galerilerindeki seçilebilir önizleme kutusu -->
+  <!-- Galeri karesindeki favori yıldızı: Tag=true iken altın dolu, değilse boş çizgi. Karanlık rozet her fotoğrafta okunur. -->
+  <Style x:Key="StarButton" TargetType="Button">
+    <Setter Property="Width" Value="22" />
+    <Setter Property="Height" Value="22" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="Bd" CornerRadius="11" Background="#99111113">
+            <ui:NexIcon x:Name="Ic" Data="{StaticResource Icon.Star}" Width="13" Height="13" StrokeThickness="2" Foreground="#F2EDE4" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="Tag">
+              <Trigger.Value>
+                <sys:Boolean>True</sys:Boolean>
+              </Trigger.Value>
+              <Setter TargetName="Ic" Property="Fill" Value="#E2B964" />
+              <Setter TargetName="Ic" Property="Foreground" Value="#E2B964" />
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Bd" Property="Background" Value="#CC111113" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
   <Style x:Key="SwatchButton" TargetType="Button">
     <Setter Property="Margin" Value="3" />
     <Setter Property="Padding" Value="3" />

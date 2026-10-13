@@ -22,6 +22,9 @@ public sealed class NexIcon : FrameworkElement
     public static readonly DependencyProperty StrokeThicknessProperty = DependencyProperty.Register(
         nameof(StrokeThickness), typeof(double), typeof(NexIcon), new FrameworkPropertyMetadata(1.6, FrameworkPropertyMetadataOptions.AffectsRender));
 
+    public static readonly DependencyProperty FillProperty = DependencyProperty.Register(
+        nameof(Fill), typeof(Brush), typeof(NexIcon), new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
+
     static NexIcon()
     {
         WidthProperty.OverrideMetadata(typeof(NexIcon), new FrameworkPropertyMetadata(18.0));
@@ -49,6 +52,13 @@ public sealed class NexIcon : FrameworkElement
         set => SetValue(StrokeThicknessProperty, value);
     }
 
+    /// <summary>İç dolgu (ör. favori yıldızı); varsayılan yok — ikonlar çizgidir.</summary>
+    public Brush? Fill
+    {
+        get => (Brush?)GetValue(FillProperty);
+        set => SetValue(FillProperty, value);
+    }
+
     protected override void OnRender(DrawingContext drawingContext)
     {
         ArgumentNullException.ThrowIfNull(drawingContext);
@@ -68,7 +78,7 @@ public sealed class NexIcon : FrameworkElement
         };
         pen.Freeze();
         drawingContext.PushTransform(new MatrixTransform(scale, 0, 0, scale, (ActualWidth - size) / 2, (ActualHeight - size) / 2));
-        drawingContext.DrawGeometry(null, pen, data);
+        drawingContext.DrawGeometry(Fill, pen, data);
         drawingContext.Pop();
     }
 }
