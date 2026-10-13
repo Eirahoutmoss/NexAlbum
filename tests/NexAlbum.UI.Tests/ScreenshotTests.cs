@@ -99,7 +99,7 @@ public sealed class ScreenshotTests : IDisposable
                 Capture(main, "07-yakinlastirma-fildisi").Should().BeTrue();
 
                 ThemeService.Apply(AppTheme.Gece);
-                var show = new PresentationWindow(new PresentationViewModel(vm.Project!, vm.SelectedPage!.Index, spreads: true)) { WindowState = WindowState.Normal };
+                var show = new PresentationWindow(new ViewModels.PresentationViewModel(vm.Project!, vm.SelectedPage!.Index, spreads: true)) { WindowState = WindowState.Normal };
                 Capture(Show(show, 1440, 900), "08-sunum").Should().BeTrue();
                 show.Hide();
 
