@@ -7,6 +7,7 @@ on:
     branches: ["**", "!ekran/**"]
     paths:
       - "src/NexAlbum.UI/**"
+      - "src/NexAlbum.Rendering/**"
       - "tests/NexAlbum.UI.Tests/**"
       - ".github/workflows/screenshots.yml"
   workflow_dispatch:
