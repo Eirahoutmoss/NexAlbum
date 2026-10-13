@@ -79,6 +79,13 @@ public sealed class PageItemViewModel : ObservableObject
 
     public bool HasSafeArea => SafeArea is not null;
 
+    /// <summary>Kesim ve güvenli alan kılavuzları çizilsin mi? Sunum modunda kapalıdır (baskıdaki gibi görünür).</summary>
+    public bool ShowGuides { get; init; } = true;
+
+    public bool ShowBleedGuide => ShowGuides && HasBleed;
+
+    public bool ShowSafeGuide => ShowGuides && HasSafeArea;
+
     /// <summary>Sayfa fonu: düz renk, gradyan ya da (arka planda yüklenen) görsel.</summary>
     public Brush Background
     {
@@ -117,6 +124,8 @@ public sealed class PageItemViewModel : ObservableObject
 /// </summary>
 public sealed class SlotItemViewModel : ObservableObject
 {
+    private readonly double emptyRoom;
+
     private readonly bool sample;
     private ImageSource? thumbnail;
     private ImageSource? detail;
@@ -145,8 +154,24 @@ public sealed class SlotItemViewModel : ObservableObject
         PhotoHeight = area.Height;
 
         var radius = slot.CornerRadiusMm;
-        OuterGeometry = DesignBrushes.Shape(slot.Shape, 0, 0, Width, Height, radius);
-        PhotoClip = DesignBrushes.Shape(slot.Shape, 0, 0, PhotoWidth, PhotoHeight, Math.Max(0, radius - (slot.Mat?.Edges.Min ?? 0)));
+        var polygonal = SlotOutline.IsPolygonal(slot);
+        OuterGeometry = polygonal
+            ? DesignBrushes.Polygon(SlotOutline.Outer(slot), slot.Bounds.X, slot.Bounds.Y)
+            : DesignBrushes.Shape(slot.Shape, 0, 0, Width, Height, radius);
+        PhotoClip = polygonal
+            ? DesignBrushes.Polygon(SlotOutline.Photo(slot), area.X, area.Y)
+            : DesignBrushes.Shape(slot.Shape, 0, 0, PhotoWidth, PhotoHeight, Math.Max(0, radius - (slot.Mat?.Edges.Min ?? 0)));
+        // Boş yuva ipucu: çokgende sınır kutusunun ortası biçimin dışına (ör. üçgenin hipotenüsüne) düşebilir;
+        // ipucu ağırlık merkezine konur ve boyutu merkezden kenarlara kalan boşluğa göre seçilir.
+        emptyRoom = Math.Min(PhotoWidth, PhotoHeight);
+        if (polygonal && SlotOutline.Photo(slot) is { Count: >= 3 } outline)
+        {
+            var (cx, cy) = Centroid(outline);
+            EmptyOffsetX = cx - area.X - (PhotoWidth / 2);
+            EmptyOffsetY = cy - area.Y - (PhotoHeight / 2);
+            emptyRoom = Math.Min(emptyRoom, 2 * DistanceToEdges(outline, cx, cy));
+        }
+
         ShapeFill = slot.Mat is { } mat ? DesignBrushes.Solid(mat.Color) : sample ? DesignBrushes.SamplePhoto : DesignBrushes.EmptySlot;
         Shadow = slot.Shadow is { } shadow ? DesignBrushes.Shadow(shadow) : null;
 
@@ -162,7 +187,9 @@ public sealed class SlotItemViewModel : ObservableObject
             var half = border.WidthMm / 2;
             StrokeThickness = border.WidthMm;
             StrokeBrush = DesignBrushes.Solid(border.Color);
-            StrokeGeometry = DesignBrushes.Shape(slot.Shape, half, half, Width - border.WidthMm, Height - border.WidthMm, Math.Max(0, radius - half));
+            StrokeGeometry = polygonal
+                ? DesignBrushes.Polygon(SlotOutline.Offset(slot, half), slot.Bounds.X, slot.Bounds.Y)
+                : DesignBrushes.Shape(slot.Shape, half, half, Width - border.WidthMm, Height - border.WidthMm, Math.Max(0, radius - half));
         }
     }
 
@@ -232,6 +259,59 @@ public sealed class SlotItemViewModel : ObservableObject
     public bool IsEmpty => Asset is null;
 
     public bool ShowEmptyLabel => IsEmpty && !sample;
+
+    /// <summary>Boş yuvadaki "+" ikonunun boyu (mm): yuvanın kullanılabilir iç boşluğuna oranlı, çok büyük/küçük olmaz.</summary>
+    public double EmptyIconSize => Math.Clamp(emptyRoom * 0.16, 4, 22);
+
+    /// <summary>Boş yuvadaki ipucu yazısının boyu (mm).</summary>
+    public double EmptyFontSize => Math.Clamp(emptyRoom * 0.055, 2.2, 6);
+
+    /// <summary>İpucu yazısı yalnızca yeterince geniş yuvada gösterilir (üçgen gibi dar biçimlerde yalnızca "+").</summary>
+    public bool ShowEmptyHint => ShowEmptyLabel && emptyRoom >= 40;
+
+    /// <summary>İpucunun fotoğraf alanının ortasından kayması (mm): çokgende ağırlık merkezine gider.</summary>
+    public double EmptyOffsetX { get; }
+
+    public double EmptyOffsetY { get; }
+
+    /// <summary>Çokgenin alan ağırlık merkezi; alan sıfırsa köşelerin ortalaması.</summary>
+    internal static (double X, double Y) Centroid(IReadOnlyList<PointMm> points)
+    {
+        double area = 0, cx = 0, cy = 0;
+        for (var i = 0; i < points.Count; i++)
+        {
+            var a = points[i];
+            var b = points[(i + 1) % points.Count];
+            var cross = (a.X * b.Y) - (b.X * a.Y);
+            area += cross;
+            cx += (a.X + b.X) * cross;
+            cy += (a.Y + b.Y) * cross;
+        }
+
+        return Math.Abs(area) < 1e-9
+            ? (points.Average(p => p.X), points.Average(p => p.Y))
+            : (cx / (3 * area), cy / (3 * area));
+    }
+
+    /// <summary>Noktadan çokgenin kenar doğrularına en kısa uzaklık (dışbükey çokgende iç teğet çemberin yarıçapına yakın).</summary>
+    internal static double DistanceToEdges(IReadOnlyList<PointMm> points, double x, double y)
+    {
+        var best = double.MaxValue;
+        for (var i = 0; i < points.Count; i++)
+        {
+            var a = points[i];
+            var b = points[(i + 1) % points.Count];
+            var dx = b.X - a.X;
+            var dy = b.Y - a.Y;
+            var length = Math.Sqrt((dx * dx) + (dy * dy));
+            if (length > 1e-9)
+            {
+                best = Math.Min(best, Math.Abs(((x - a.X) * dy) - ((y - a.Y) * dx)) / length);
+            }
+        }
+
+        return best == double.MaxValue ? 0 : best;
+    }
 
     public bool IsMissing => Asset?.Missing == true;
 

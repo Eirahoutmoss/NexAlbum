@@ -71,6 +71,7 @@ internal static class TemplateMapper
         dto.MinAspectRatio = s.MinAspectRatio;
         dto.MaxAspectRatio = s.MaxAspectRatio;
         dto.Shape = Shapes.Format(s.Shape);
+        dto.Polygon = ProjectMapper.PolygonToDto(s.Polygon);
         dto.CornerRadius = s.CornerRadiusMm;
         return dto;
     }
@@ -85,6 +86,7 @@ internal static class TemplateMapper
         MinAspectRatio = s.MinAspectRatio,
         MaxAspectRatio = s.MaxAspectRatio,
         Shape = Shapes.Parse(s.Shape, path + ".shape", SlotShape.Rectangle),
+        Polygon = ProjectMapper.PolygonFromDto(s.Polygon, path + ".polygon"),
         CornerRadiusMm = s.CornerRadius ?? 0,
     };
 

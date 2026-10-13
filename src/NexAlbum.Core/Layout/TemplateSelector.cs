@@ -21,6 +21,12 @@ public sealed class TemplateSelector
     /// <summary>Dengeli modda bu kadar sayfada bir tam sayfa (single/fullBleed) teşvik edilir (Karar 10 §10.7).</summary>
     public const int FeatureRhythm = 5;
 
+    /// <summary>
+    /// Geometrik şablonlar vurgudur: tercih edilmedikçe en fazla bu kadar sayfada bir seçilir (Karar 10 Rev. 1).
+    /// Üçgen ve çapraz kesimlerle dolu bir albüm yorar; ritim, klasik sayfaların arasında sürpriz etkisini korur.
+    /// </summary>
+    public const int GeometricRhythm = 5;
+
     private readonly IReadOnlyList<TemplateDefinition> templates;
     private readonly LayoutOptions options;
     private readonly DeterministicRandom random;
@@ -73,6 +79,7 @@ public sealed class TemplateSelector
             }
         }
 
+        fitting = ApplyGeometricRhythm(fitting);
         var candidates = ApplyDiversityRules(fitting);
         var scored = candidates
             .Select(t => Evaluate(t, group, photos))
@@ -117,13 +124,25 @@ public sealed class TemplateSelector
         return fitting;
     }
 
+    private List<TemplateDefinition> ApplyGeometricRhythm(List<TemplateDefinition> fitting)
+    {
+        if (options.PreferredCategories.Contains(TemplateCategory.Geometric))
+        {
+            return fitting;
+        }
+
+        var recent = history.TakeLast(GeometricRhythm - 1).Any(t => t.Category == TemplateCategory.Geometric);
+        var classic = fitting.Where(t => t.Category != TemplateCategory.Geometric).ToList();
+        return recent && classic.Count > 0 ? classic : fitting;
+    }
+
     private HashSet<string> RecentIds(int window) => history.TakeLast(window).Select(t => t.Id).ToHashSet(StringComparer.Ordinal);
 
     private TemplateChoice Evaluate(TemplateDefinition template, PageGroup group, IReadOnlyList<ClassifiedPhoto> photos)
     {
         var area = areaFor(template);
         var slots = template.Resolve(area, options.Design.GapPercent, options.Design.MarginPercent)
-            .Zip(template.Slots, (resolved, slot) => new LayoutSlot(slot, resolved.Bounds))
+            .Zip(template.Slots, (resolved, slot) => new LayoutSlot(slot, resolved.Bounds, resolved.Polygon))
             .Take(group.SlotCount)
             .ToList();
         var assignments = SlotMatcher.Match(photos, slots);

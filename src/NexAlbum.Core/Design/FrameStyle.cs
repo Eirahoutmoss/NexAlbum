@@ -36,8 +36,15 @@ public sealed record FrameStyle
 
     public double CornerRadiusPercent { get; init => field = Guard.InRange(value, 0, 50, nameof(CornerRadiusPercent)); }
 
-    /// <summary>Dikdörtgen, yuvarlak köşeli ya da oval (yuvaya içten teğet elips).</summary>
+    /// <summary>
+    /// Çerçevenin biçimi. Dikdörtgen (varsayılan) ve yuvarlak köşe yuvanın kendi biçimini korur — şablon çokgeni
+    /// (üçgen, çapraz kesim…) olduğu gibi kalır. Diğer biçimler (oval, altıgen, kemer…) yuvayı o biçime keser;
+    /// çerçeve kaldırılınca yuva şablon biçimine döner (Karar 10 Rev. 1).
+    /// </summary>
     public SlotShape Shape { get; init; } = SlotShape.Rectangle;
+
+    /// <summary>Bu çerçeve yuvanın biçimini değiştiriyor mu?</summary>
+    public bool OverridesShape => Shape is not (SlotShape.Rectangle or SlotShape.Rounded or SlotShape.Polygon);
 
     public ShadowStyle? Shadow { get; init; }
 
@@ -48,13 +55,16 @@ public sealed record FrameStyle
         var unit = Math.Min(slot.Bounds.Width, slot.Bounds.Height) / 100;
         var m = MatPercent;
         MatSpec? mat = m.IsZero ? null : new MatSpec(new EdgesMm(m.Top * unit, m.Right * unit, m.Bottom * unit, m.Left * unit), MatColor);
-        var radius = Shape == SlotShape.Circle ? 0 : CornerRadiusPercent * unit;
+        var radius = OverridesShape || slot.Polygon is not null ? 0 : CornerRadiusPercent * unit;
+        var shape = OverridesShape ? Shape
+            : slot.Polygon is not null ? SlotShape.Polygon
+            : radius > 0 ? SlotShape.Rounded : SlotShape.Rectangle;
         return slot with
         {
             StyleId = Id,
             Border = StrokeWidthMm > 0 ? new BorderSpec(StrokeWidthMm, StrokeColor) : null,
             Mat = mat,
-            Shape = Shape == SlotShape.Circle ? SlotShape.Circle : radius > 0 ? SlotShape.Rounded : SlotShape.Rectangle,
+            Shape = shape,
             CornerRadiusMm = radius,
             Shadow = Shadow is { } s
                 ? new ShadowSpec(s.OffsetMm, s.OffsetMm, s.BlurMm, new RgbaColor(0, 0, 0, (byte)Math.Round(Math.Clamp(s.Opacity, 0, 1) * 255)))

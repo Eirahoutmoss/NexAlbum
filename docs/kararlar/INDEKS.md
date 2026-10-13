@@ -6,9 +6,9 @@ Kararların kendisi değişmez; bu dosya yalnızca yönlendirir. Tam liste ve ma
 |---|---|---|
 | Proje/çözüm iskeleti, paketler, katmanlar | 08 Teknoloji yığını | §13 mimari, lisans tablosu |
 | Domain modeli (Album, Page, Slot, Photo…) | 09 Veri modeli | §3–§11 |
-| `.albumproj` kaydet/aç, şema, migration | 09 Veri modeli | §13–§14 |
+| `.albumproj` kaydet/aç, şema (v2), migration | 09 Veri modeli (Rev. 1) | §13–§14 |
 | Baskı profili, bleed, sırt genişliği, doğrulama | 03 Kullanıcı profilleri | §3, §7, §8 |
-| Şablon formatı, otomatik yerleşim algoritması | 10 Şablon motoru | §3, §5–§11, §15 tohum |
+| Şablon formatı, otomatik yerleşim algoritması, çokgen/geometrik yuvalar | 10 Şablon motoru (Rev. 1) | §3, §5–§11, §15 tohum |
 | PDF/JPG/SVG/PNG/TIFF çıktı, preflight | 11 Çıktı formatları | §3–§5, §7, §9–§10 |
 | Ekranlar, paneller, kısayollar, i18n, erişilebilirlik | 12 UI/UX (Rev. 1) | §3–§8, §10–§11, §15–§16 |
 | Test, kapsam, CI, analyzer, benchmark | 13 Test ve kalite | §3–§9, §11–§12 |

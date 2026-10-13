@@ -23,11 +23,11 @@
         <Rectangle Canvas.Left="{Binding PageArea.X}" Canvas.Top="{Binding PageArea.Y}"
                    Width="{Binding PageArea.Width}" Height="{Binding PageArea.Height}"
                    Stroke="#C62828" StrokeThickness="0.4" StrokeDashArray="4 3"
-                   Visibility="{Binding HasBleed, Converter={StaticResource BoolToVisibility}}" />
+                   Visibility="{Binding ShowBleedGuide, Converter={StaticResource BoolToVisibility}}" />
         <Rectangle Canvas.Left="{Binding SafeArea.X}" Canvas.Top="{Binding SafeArea.Y}"
                    Width="{Binding SafeArea.Width}" Height="{Binding SafeArea.Height}"
                    Stroke="#0066CC" StrokeThickness="0.3" StrokeDashArray="2 3"
-                   Visibility="{Binding HasSafeArea, Converter={StaticResource BoolToVisibility}}" />
+                   Visibility="{Binding ShowSafeGuide, Converter={StaticResource BoolToVisibility}}" />
       </Canvas>
     </Grid>
   </Viewbox>

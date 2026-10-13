@@ -19,9 +19,68 @@ public sealed partial class MainViewModel
     private AppTheme theme;
     private GalleryFilter galleryFilter;
     private int galleryColumns = 3;
+    private bool isBookView;
+    private PageItemViewModel? spreadLeft;
+    private PageItemViewModel? spreadRight;
+    private PageItemViewModel? facingDetail;
 
     /// <summary>Tema değişti; pencere yeni paleti uygular.</summary>
     public event EventHandler<AppTheme>? ThemeChanged;
+
+    /// <summary>Sunum modu istendi (F5); pencere tam ekran sunumu açar.</summary>
+    public event EventHandler<PresentationViewModel>? PresentationRequested;
+
+    public RelayCommand ToggleBookViewCommand { get; private set; } = null!;
+
+    public RelayCommand PresentCommand { get; private set; } = null!;
+
+    /// <summary>
+    /// Kitap görünümü: tuvalde karşılıklı iki sayfa (1–2, 3–4…) ve ortada cilt gölgesi. Albüm çift sayfa halinde
+    /// algılanır; fotoğrafçı ve çift sayfaları birlikte değerlendirir. Tercih bu bilgisayarda saklanır.
+    /// </summary>
+    public bool IsBookView
+    {
+        get => isBookView;
+        set
+        {
+            if (SetProperty(ref isBookView, value))
+            {
+                SaveSettings(appSettings with { BookView = value });
+                UpdateSpread();
+                RefreshCommands();
+                Status = value ? "Kitap görünümü: karşılıklı sayfalar." : "Tek sayfa görünümü.";
+            }
+        }
+    }
+
+    /// <summary>Kitap görünümünde soldaki (tek numaralı) sayfa.</summary>
+    public PageItemViewModel? SpreadLeft
+    {
+        get => spreadLeft;
+        private set => SetProperty(ref spreadLeft, value);
+    }
+
+    /// <summary>Kitap görünümünde sağdaki sayfa; albümün son sayfası tekse null.</summary>
+    public PageItemViewModel? SpreadRight
+    {
+        get => spreadRight;
+        private set => SetProperty(ref spreadRight, value);
+    }
+
+    public bool IsLeftSelected => isBookView && SelectedPage is not null && ReferenceEquals(SelectedPage, spreadLeft);
+
+    public bool IsRightSelected => isBookView && SelectedPage is not null && ReferenceEquals(SelectedPage, spreadRight);
+
+    /// <summary>Sunum modunu başlatır: seçili sayfanın çift sayfasından itibaren.</summary>
+    public void Present()
+    {
+        if (project is null || project.Pages.Count == 0)
+        {
+            return;
+        }
+
+        PresentationRequested?.Invoke(this, new PresentationViewModel(project, SelectedPage?.Index ?? 0, spreads: true));
+    }
 
     public CommandPaletteViewModel Palette { get; private set; } = null!;
 
@@ -53,10 +112,14 @@ public sealed partial class MainViewModel
 
     public bool HasPages => Pages.Count > 0;
 
-    /// <summary>Tuvalin altındaki gezinme: "3 / 20".</summary>
+    /// <summary>Tuvalin altındaki gezinme: "3 / 20"; kitap görünümünde "3–4 / 20".</summary>
     public string PageNavText => SelectedPage is null
         ? string.Empty
-        : string.Format(CultureInfo.CurrentCulture, "{0} / {1}", SelectedPage.Number, Pages.Count);
+        : isBookView && spreadLeft is not null
+            ? spreadRight is null
+                ? string.Format(CultureInfo.CurrentCulture, "{0} / {1}", spreadLeft.Number, Pages.Count)
+                : string.Format(CultureInfo.CurrentCulture, "{0}–{1} / {2}", spreadLeft.Number, spreadRight.Number, Pages.Count)
+            : string.Format(CultureInfo.CurrentCulture, "{0} / {1}", SelectedPage.Number, Pages.Count);
 
     public GalleryFilter GalleryFilter
     {
@@ -208,14 +271,61 @@ public sealed partial class MainViewModel
         OpenPaletteCommand = new RelayCommand(OpenPalette);
         ToggleThemeCommand = new RelayCommand(() => SetTheme(IsDarkTheme ? AppTheme.Fildisi : AppTheme.Gece, save: true));
         OpenRecentCommand = new RelayCommand<RecentProjectItem>(OpenRecent, _ => !IsBusy);
+        isBookView = appSettings.BookView;
+        ToggleBookViewCommand = new RelayCommand(() => IsBookView = !IsBookView);
+        PresentCommand = new RelayCommand(Present, () => HasProject && Pages.Count > 0 && !IsBusy);
         ForgetRecentCommand = new RelayCommand<RecentProjectItem>(ForgetRecent);
         LoadRecent();
         Palette = new CommandPaletteViewModel(BuildPaletteCommands());
     }
 
-    private void RefreshShellCommands() => OpenRecentCommand?.NotifyCanExecuteChanged();
+    private void RefreshShellCommands()
+    {
+        OpenRecentCommand?.NotifyCanExecuteChanged();
+        PresentCommand?.NotifyCanExecuteChanged();
+    }
 
-    private void OnShellPageChanged(PageItemViewModel? page) => Zoom.SetPage(page?.CanvasWidth ?? 0, page?.CanvasHeight ?? 0);
+    private void OnShellPageChanged(PageItemViewModel? page)
+    {
+        UpdateSpread();
+        RefreshTemplates();
+    }
+
+    /// <summary>Seçili sayfaya göre çift sayfayı ve tuval ölçüsünü günceller; karşı sayfanın da ayrıntılı görüntüsü yüklenir.</summary>
+    private void UpdateSpread()
+    {
+        var page = SelectedPage;
+        PageItemViewModel? facing = null;
+        if (isBookView && page is not null)
+        {
+            var left = page.Index - (page.Index % 2);
+            SpreadLeft = Pages.ElementAtOrDefault(left);
+            SpreadRight = Pages.ElementAtOrDefault(left + 1);
+            facing = ReferenceEquals(page, SpreadLeft) ? SpreadRight : SpreadLeft;
+            Zoom.SetPage(page.CanvasWidth * 2, page.CanvasHeight);
+        }
+        else
+        {
+            SpreadLeft = null;
+            SpreadRight = null;
+            Zoom.SetPage(page?.CanvasWidth ?? 0, page?.CanvasHeight ?? 0);
+        }
+
+        if (!ReferenceEquals(facingDetail, facing))
+        {
+            if (facingDetail is not null && !ReferenceEquals(facingDetail, page))
+            {
+                facingDetail.SetDetail(false);
+            }
+
+            facing?.SetDetail(true);
+            facingDetail = facing;
+        }
+
+        OnPropertyChanged(nameof(IsLeftSelected));
+        OnPropertyChanged(nameof(IsRightSelected));
+        OnPropertyChanged(nameof(PageNavText));
+    }
 
     private void SetFilter(bool on, GalleryFilter filter)
     {
@@ -329,6 +439,8 @@ public sealed partial class MainViewModel
         new("Boşlukları tüm sayfalara uygula", "Tasarım", "Icon.Grid", null, ApplySpacingCommand, "kenar aralık"),
         new("Fon görseli ekle", "Tasarım", "Icon.Image", null, ImportBackgroundsCommand, "arka plan doku kâğıt"),
         new("Temayı değiştir (Gece / Fildişi)", "Görünüm", "Icon.Moon", null, ToggleThemeCommand, "koyu açık karanlık aydınlık"),
+        new("Kitap görünümü (karşılıklı sayfalar)", "Görünüm", "Icon.Book", "Ctrl+B", ToggleBookViewCommand, "çift sayfa spread açık albüm"),
+        new("Sunum modu", "Görünüm", "Icon.Present", "F5", PresentCommand, "tam ekran müşteri çift göster slayt"),
         new("Yakınlaştır", "Görünüm", "Icon.ZoomIn", "Ctrl++", Zoom.ZoomInCommand, "büyüt zoom"),
         new("Uzaklaştır", "Görünüm", "Icon.ZoomOut", "Ctrl+-", Zoom.ZoomOutCommand, "küçült zoom"),
         new("Ekrana sığdır", "Görünüm", "Icon.Fit", "Ctrl+F", Zoom.FitCommand, "zoom"),

@@ -25,11 +25,40 @@ public enum CropMode
     Fill,
 }
 
+/// <summary>
+/// Yuva biçimi (Karar 10 Rev. 1). İlk üçü doğrudan çizilir; diğerleri <see cref="SlotOutline"/> ile çokgene çevrilir.
+/// Sıra dosya biçimini etkilemez (metin olarak saklanır) ama yeni değerler sona eklenir.
+/// </summary>
 public enum SlotShape
 {
     Rectangle,
+
+    /// <summary>Yuvaya içten teğet elips (kare yuvada daire).</summary>
     Circle,
+
+    /// <summary>Yuvarlak köşeli dikdörtgen (<see cref="Slot.CornerRadiusMm"/>).</summary>
     Rounded,
+
+    /// <summary>Şablonun tanımladığı serbest dışbükey çokgen (<see cref="Slot.Polygon"/>): üçgen, çapraz kesim, petek…</summary>
+    Polygon,
+
+    /// <summary>Tepesi yukarıda üçgen.</summary>
+    Triangle,
+
+    /// <summary>Eşkenar dörtgen (elmas).</summary>
+    Diamond,
+
+    /// <summary>Düz tepeli altıgen; yuva oranına göre düzgün altıgene yakın tutulur.</summary>
+    Hexagon,
+
+    /// <summary>Köşeleri kesik dikdörtgen (sekizgen).</summary>
+    Octagon,
+
+    /// <summary>Üstü yarım daire kemer.</summary>
+    Arch,
+
+    /// <summary>Eğik paralelkenar.</summary>
+    Slant,
 }
 
 public enum TextAlignment

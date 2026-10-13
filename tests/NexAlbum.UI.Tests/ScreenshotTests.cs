@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using FluentAssertions;
@@ -59,31 +60,54 @@ public sealed class ScreenshotTests : IDisposable
                 main.ViewModel.Open(SampleProject(now));
                 main.ViewModel.HasProject.Should().BeTrue();
                 main.ViewModel.Pages.Should().NotBeEmpty("örnek albüm otomatik oluşturuldu");
-                main.ViewModel.SelectedPage = main.ViewModel.Pages[Math.Min(1, main.ViewModel.Pages.Count - 1)];
-                main.ViewModel.SelectedAsset = main.ViewModel.Assets[2];
+                var vm = main.ViewModel;
+                vm.SelectedPage = vm.Pages[Math.Min(1, vm.Pages.Count - 1)];
+                ShowGeometricPage(vm);
+                vm.SelectedAsset = vm.Assets[2];
                 Settle(main);
                 Capture(main, "02-calisma-gece").Should().BeTrue();
 
-                main.ViewModel.Palette.Open();
-                main.ViewModel.Palette.Query = "pdf";
-                main.ViewModel.Palette.Query = string.Empty;
+                var tabs = Find<TabControl>(main);
+                tabs.SelectedIndex = 2;
+                vm.SelectedTemplateStyle = vm.TemplateStyles.Single(t => t.Style == ViewModels.TemplateStyle.Geometric);
                 Settle(main);
-                Capture(main, "03-komut-paleti-gece").Should().BeTrue();
-                main.ViewModel.Palette.Close();
+                Capture(main, "03-sablonlar-gece").Should().BeTrue();
+
+                vm.SelectedTemplateStyle = vm.TemplateStyles[0];
+                tabs.SelectedIndex = 1;
+                vm.IsBookView = true;
+                Settle(main);
+                All<ItemsControl>(main).First(c => c.Items.OfType<ViewModels.FrameItemViewModel>().Any(f => f.Frame.OverridesShape)).BringIntoView();
+                Settle(main);
+                Capture(main, "04-kitap-gece").Should().BeTrue();
+
+                vm.Palette.Open();
+                vm.Palette.Query = "pdf";
+                vm.Palette.Query = string.Empty;
+                Settle(main);
+                Capture(main, "05-komut-paleti-gece").Should().BeTrue();
+                vm.Palette.Close();
 
                 ThemeService.Apply(AppTheme.Fildisi);
+                tabs.SelectedIndex = 2;
                 Settle(main);
-                Capture(main, "04-calisma-fildisi").Should().BeTrue();
+                Capture(main, "06-calisma-fildisi").Should().BeTrue();
 
-                main.ViewModel.GalleryFilter = ViewModels.GalleryFilter.Unused;
-                main.ViewModel.Zoom.SetPercent(100);
+                vm.IsBookView = false;
+                tabs.SelectedIndex = 0;
+                vm.GalleryFilter = ViewModels.GalleryFilter.Unused;
+                vm.Zoom.SetPercent(100);
                 Settle(main);
-                Capture(main, "05-yakinlastirma-fildisi").Should().BeTrue();
+                Capture(main, "07-yakinlastirma-fildisi").Should().BeTrue();
 
                 ThemeService.Apply(AppTheme.Gece);
-                Capture(Show(new AboutWindow(), 540, double.NaN), "06-hakkinda").Should().BeTrue();
-                Capture(Show(new NewProjectWindow(), 540, double.NaN), "07-yeni-proje").Should().BeTrue();
-                Capture(Show(new SettingsWindow(new AppSettings()), 640, double.NaN), "08-ayarlar").Should().BeTrue();
+                var show = new PresentationWindow(new ViewModels.PresentationViewModel(vm.Project!, vm.SelectedPage!.Index, spreads: true)) { WindowState = WindowState.Normal };
+                Capture(Show(show, 1440, 900), "08-sunum").Should().BeTrue();
+                show.Hide();
+
+                Capture(Show(new AboutWindow(), 540, double.NaN), "09-hakkinda").Should().BeTrue();
+                Capture(Show(new NewProjectWindow(), 540, double.NaN), "10-yeni-proje").Should().BeTrue();
+                Capture(Show(new SettingsWindow(new AppSettings()), 640, double.NaN), "11-ayarlar").Should().BeTrue();
 
                 // Kapatmak "kaydedilsin mi?" sorabilir (test kilitlenir); gizleyip proje kilidini bırakmak yeterli.
                 main.ViewModel.Dispose();
@@ -97,6 +121,63 @@ public sealed class ScreenshotTests : IDisposable
                 ThemeService.Apply(AppTheme.Gece);
             }
         });
+    }
+
+    /// <summary>
+    /// Fotoğrafı en çok olan sayfaya "Karşılıklı Üçgenler + Üçlü" uygulanır: hipotenüsleri karşılıklı iki üçgen ve
+    /// yanında üç dikdörtgen (geometrik şablonların tipik örneği).
+    /// </summary>
+    private static void ShowGeometricPage(ViewModels.MainViewModel vm)
+    {
+        vm.SelectedPage = vm.Pages.OrderByDescending(p => p.PhotoCount).ThenBy(p => p.Index).First();
+        vm.SelectedTemplateCount = vm.TemplateCounts[0];
+        vm.SelectedTemplateStyle = vm.TemplateStyles.Single(t => t.Style == ViewModels.TemplateStyle.Geometric);
+        var template = vm.Templates.Single(t => t.Id == "geo-triangles-3");
+        vm.ApplyTemplateCommand.Execute(template);
+        vm.SelectedTemplateStyle = vm.TemplateStyles[0];
+        vm.Project!.Pages[vm.SelectedPage!.Index].TemplateId.Should().Be("geo-triangles-3");
+    }
+
+    private static IEnumerable<T> All<T>(DependencyObject root)
+        where T : DependencyObject
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is T match)
+            {
+                yield return match;
+            }
+
+            foreach (var nested in All<T>(child))
+            {
+                yield return nested;
+            }
+        }
+    }
+
+    private static T Find<T>(DependencyObject root)
+        where T : DependencyObject =>
+        FindOrNull<T>(root) ?? throw new InvalidOperationException(typeof(T).Name + " bulunamadı.");
+
+    private static T? FindOrNull<T>(DependencyObject root)
+        where T : DependencyObject
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is T match)
+            {
+                return match;
+            }
+
+            if (FindOrNull<T>(child) is { } found)
+            {
+                return found;
+            }
+        }
+
+        return null;
     }
 
     private static T Show<T>(T window, double width, double height)

@@ -31,6 +31,7 @@ public partial class MainWindow : Window
         ViewModel = new MainViewModel(new DialogService(this), settings: settings);
         DataContext = ViewModel;
         ViewModel.ThemeChanged += (_, theme) => ThemeService.Apply(theme);
+        ViewModel.PresentationRequested += (_, presentation) => new Views.PresentationWindow(presentation) { Owner = this }.ShowDialog();
         Loaded += OnLoaded;
         Closing += OnClosing;
         Closed += (_, _) => ViewModel.Dispose();

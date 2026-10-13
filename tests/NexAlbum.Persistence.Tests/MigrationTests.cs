@@ -98,7 +98,7 @@ public class MigrationTests
             return n;
         });
 
-        var loaded = ProjectPackageReader.Load(path, new LoadOptions { Migrations = new MigrationChain([renameTitle]) });
+        var loaded = ProjectPackageReader.Load(path, new LoadOptions { Migrations = new MigrationChain([renameTitle, .. MigrationChain.BuiltIn]) });
 
         loaded.Migrated.Should().BeTrue();
         loaded.OriginalSchemaVersion.Should().Be(0);
@@ -115,7 +115,7 @@ public class MigrationTests
         var path = dir.File("eski.albumproj");
         File.WriteAllBytes(path, PackageBuilder.EditJson(PackageBuilder.Valid(), ProjectFormat.ProjectEntry, n => n["schemaVersion"] = 0));
 
-        var loaded = ProjectPackageReader.Load(path, new LoadOptions { Migrations = new MigrationChain([new Step(0)]), BackupBeforeMigration = false });
+        var loaded = ProjectPackageReader.Load(path, new LoadOptions { Migrations = new MigrationChain([new Step(0), .. MigrationChain.BuiltIn]), BackupBeforeMigration = false });
         loaded.Migrated.Should().BeTrue();
         loaded.MigrationBackup.Should().BeNull();
         File.Exists(path + ".bak-v0").Should().BeFalse();
@@ -126,5 +126,30 @@ public class MigrationTests
     {
         var old = PackageBuilder.EditJson(PackageBuilder.Valid(), ProjectFormat.ProjectEntry, n => n["schemaVersion"] = 0);
         PackageBuilder.LoadFails(old).Error.Should().Be(ProjectLoadError.MigrationFailed);
+    }
+
+    [Fact]
+    public void V1ProjectIsUpgradedToV2WithoutChangingContent()
+    {
+        using var dir = new TempDir();
+        var path = dir.File("v1.albumproj");
+        var v1 = PackageBuilder.EditJson(PackageBuilder.Valid(), ProjectFormat.ProjectEntry, n => n["schemaVersion"] = 1);
+        File.WriteAllBytes(path, v1);
+
+        var loaded = ProjectPackageReader.Load(path, new LoadOptions { BackupBeforeMigration = false });
+
+        loaded.Migrated.Should().BeTrue();
+        loaded.OriginalSchemaVersion.Should().Be(1);
+        loaded.Project.Pages.Should().HaveCount(Samples.FullProject().Pages.Count);
+        loaded.Project.Pages.SelectMany(p => p.Slots).Should().OnlyContain(s => s.Polygon == null, "v1'de çokgen yuva yoktur");
+    }
+
+    [Fact]
+    public void BuiltInChainReachesTheCurrentVersion()
+    {
+        var node = new JsonObject { ["schemaVersion"] = 1 };
+        MigrationChain.Default.Run(node, 1, ProjectFormat.CurrentSchemaVersion)["schemaVersion"]!.GetValue<int>()
+            .Should().Be(ProjectFormat.CurrentSchemaVersion);
+        MigrationChain.BuiltIn.Should().HaveCount(ProjectFormat.CurrentSchemaVersion - 1, "her sürüm artışı bir göç adımı ister (Karar 09 §14)");
     }
 }

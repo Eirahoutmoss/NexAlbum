@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
 using NexAlbum.Assets.Import;
 using NexAlbum.Core.Common;
@@ -7,6 +8,7 @@ using NexAlbum.Core.Design;
 using NexAlbum.Core.Layout;
 using NexAlbum.Core.Projects;
 using NexAlbum.Core.Templates;
+using NexAlbum.UI.Services;
 
 namespace NexAlbum.UI.ViewModels;
 
@@ -30,9 +32,16 @@ public sealed partial class MainViewModel
     private TemplateCountOption selectedTemplateCount = null!;
     private IReadOnlyList<TemplateItemViewModel> templates = [];
     private string? templateKey;
+    private TemplateStyleOption selectedTemplateStyle = null!;
     private string? filterPageId;
 
     public IReadOnlyList<FrameItemViewModel> Frames { get; } = [.. FramePresets.All.Select(f => new FrameItemViewModel(f))];
+
+    /// <summary>Dikdörtgen yuvayı koruyan çerçeveler (çizgi, paspartu, gölge, polaroid…).</summary>
+    public IReadOnlyList<FrameItemViewModel> ClassicFrames => [.. Frames.Where(f => !f.Frame.OverridesShape)];
+
+    /// <summary>Yuvanın biçimini değiştiren çerçeveler: kemer, altıgen, elmas, kesik köşe, üçgen, eğik, yuvarlak, oval.</summary>
+    public IReadOnlyList<FrameItemViewModel> ShapedFrames => [.. Frames.Where(f => f.Frame.OverridesShape)];
 
     public IReadOnlyList<BackgroundItemViewModel> BackgroundColors { get; } = [.. BackgroundPresets.Colors.Select(p => new BackgroundItemViewModel(p))];
 
@@ -138,11 +147,41 @@ public sealed partial class MainViewModel
         }
     }
 
+    public IReadOnlyList<TemplateStyleOption> TemplateStyles { get; } =
+    [
+        new(TemplateStyle.All, "Tümü"),
+        new(TemplateStyle.Geometric, "Geometrik"),
+        new(TemplateStyle.Collage, "Kolaj"),
+        new(TemplateStyle.Grid, "Izgara"),
+        new(TemplateStyle.Simple, "Sade"),
+    ];
+
+    /// <summary>Şablon galerisinin biçim süzgeci.</summary>
+    public TemplateStyleOption SelectedTemplateStyle
+    {
+        get => selectedTemplateStyle;
+        set
+        {
+            if (SetProperty(ref selectedTemplateStyle, value ?? TemplateStyles[0]))
+            {
+                RefreshTemplates();
+            }
+        }
+    }
+
+    public bool HasTemplates => Templates.Count > 0;
+
     /// <summary>Sayfa yönüne uyan, süzgece göre şablonlar (önizlemeler projenin sayfa oranında).</summary>
     public IReadOnlyList<TemplateItemViewModel> Templates
     {
         get => templates;
-        private set => SetProperty(ref templates, value);
+        private set
+        {
+            if (SetProperty(ref templates, value))
+            {
+                OnPropertyChanged(nameof(HasTemplates));
+            }
+        }
     }
 
     public void ApplyFrame(FrameItemViewModel? item)
@@ -253,6 +292,7 @@ public sealed partial class MainViewModel
     private void InitializeDesign()
     {
         selectedTemplateCount = TemplateCounts[0];
+        selectedTemplateStyle = TemplateStyles[0];
         ApplyFrameCommand = new RelayCommand<FrameItemViewModel>(ApplyFrame, f => f is not null && CanDesign);
         ApplyBackgroundCommand = new RelayCommand<BackgroundItemViewModel>(ApplyBackground, b => b is not null && CanDesign);
         ApplyCustomColorCommand = new RelayCommand(ApplyCustomColor, () => CanDesign);
@@ -324,21 +364,43 @@ public sealed partial class MainViewModel
 
         var size = project.PageSize;
         var design = project.Settings.Design;
+        // Canlı önizleme: hücreler seçili sayfanın fotoğraflarıyla (okuma sırasıyla) dolar.
+        var photos = SelectedPage?.Slots
+            .Where(s => s.Asset is not null)
+            .OrderBy(s => s.Slot.Bounds.Y).ThenBy(s => s.Slot.Bounds.X)
+            .Select(s => s.Asset!)
+            .ToList() ?? [];
         var key = string.Create(
             CultureInfo.InvariantCulture,
-            $"{size.Width}x{size.Height}|{design.GapPercent}|{design.MarginPercent}|{SelectedTemplateCount.Count}");
+            $"{size.Width}x{size.Height}|{design.GapPercent}|{design.MarginPercent}|{SelectedTemplateCount.Count}|{SelectedTemplateStyle.Style}|{string.Join(",", photos.Select(p => p.Id))}");
         if (string.Equals(key, templateKey, StringComparison.Ordinal))
         {
             return;
         }
 
         templateKey = key;
+        var fills = photos.Select(PreviewBrush).ToList();
         var count = SelectedTemplateCount.Count;
+        var style = SelectedTemplateStyle;
         Templates = [.. BuiltInTemplates.All
-            .Where(t => t.Fits(size.Orientation) && (count == 0 || t.PhotoCount.Accepts(count)))
+            .Where(t => t.Fits(size.Orientation) && (count == 0 || t.PhotoCount.Accepts(count)) && style.Matches(t.Category))
             .OrderBy(t => t.PhotoCount.Min)
+            .ThenBy(t => t.Category == TemplateCategory.Geometric ? 0 : 1)
             .ThenBy(t => t.Category)
-            .Select(t => new TemplateItemViewModel(t, size, design))];
+            .Select(t => new TemplateItemViewModel(t, size, design, fills))];
+    }
+
+    /// <summary>Önizleme hücresi için fotoğrafın (önbellekteki) küçük resmi; henüz yüklenmemişse yumuşak dolgu.</summary>
+    private static Brush PreviewBrush(PhotoAsset asset)
+    {
+        if (ImageLoader.Shared.TryGetCached(asset, ImageLoader.ThumbnailWidth) is not { } image)
+        {
+            return TemplateItemViewModel.EmptyCellFill;
+        }
+
+        var brush = new ImageBrush(image) { Stretch = Stretch.UniformToFill };
+        brush.Freeze();
+        return brush;
     }
 
     private void ApplyDesign(string what, Func<AlbumPage, AlbumPage> change, Func<DesignSettings, DesignSettings> design)

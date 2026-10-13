@@ -327,6 +327,9 @@ internal sealed class TemplateSlotDto
 
     public string? Shape { get; set; }
 
+    /// <summary>Çokgen yuvanın köşeleri, yuva dikdörtgeni içinde 0–1 (şema v2).</summary>
+    public List<PointDto>? Polygon { get; set; }
+
     public double? CornerRadius { get; set; }
 }
 

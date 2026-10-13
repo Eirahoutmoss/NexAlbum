@@ -54,6 +54,18 @@ public sealed record Slot : PageElement
 
     public SlotShape Shape { get; init; } = SlotShape.Rectangle;
 
+    /// <summary>
+    /// Şablondan gelen taban biçim: <see cref="Bounds"/> içinde normalize dışbükey çokgen; null = dikdörtgen.
+    /// Çerçeve stilleri bunu silmez; biçimli bir çerçeve kaldırılınca yuva bu çokgene döner (Karar 10 Rev. 1).
+    /// </summary>
+    public IReadOnlyList<UnitPoint>? Polygon
+    {
+        get;
+        init => field = value is null ? null : value.Count >= 3
+            ? [.. value]
+            : throw new ArgumentException("Çokgen en az üç köşe içermeli.", nameof(Polygon));
+    }
+
     public double CornerRadiusMm { get; init => field = Guard.NonNegative(value, nameof(CornerRadiusMm)); }
 
     public BorderSpec? Border { get; init; }
@@ -68,8 +80,13 @@ public sealed record Slot : PageElement
 
     public bool IsEmpty => Placement is null;
 
-    /// <summary>Fotoğrafın göründüğü alan: yuva eksi paspartu.</summary>
-    public RectMm PhotoArea => Mat is { } m ? Bounds.Deflate(m.Edges) : Bounds;
+    /// <summary>
+    /// Fotoğrafın kapladığı alan: yuva eksi paspartu. Çokgen biçimlerde paspartu her kenardan eşit içe öteleme olduğundan
+    /// alan, içteki çokgenin sınır kutusudur; fotoğraf bu kutuyu kaplar ve çokgene kırpılır.
+    /// </summary>
+    public RectMm PhotoArea => Mat is not { } m
+        ? Bounds
+        : SlotOutline.Photo(this) is { Count: > 0 } inner ? Geometry.Polygon.Bounds(inner) : SlotOutline.IsPolygonal(this) ? default : Bounds.Deflate(m.Edges);
 }
 
 /// <summary>Metin öğesi (Karar 09 §8).</summary>

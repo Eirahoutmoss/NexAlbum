@@ -58,7 +58,7 @@ public class RoundTripTests
         ProjectPackageWriter.Save(path, Samples.FullProject(), Options() with { Portable = true, AppVersion = "0.2.0" });
 
         var loaded = ProjectPackageReader.Load(path);
-        loaded.Manifest.Should().Be(new PackageManifest("1.0", 1, Samples.Now, "0.2.0", Samples.FullProject().Id, "Ahmet & Zeynep Düğün Albümü", Portable: true));
+        loaded.Manifest.Should().Be(new PackageManifest("1.0", 2, Samples.Now, "0.2.0", Samples.FullProject().Id, "Ahmet & Zeynep Düğün Albümü", Portable: true));
         loaded.Project.AppVersion.Should().Be("0.2.0");
         loaded.Entries.Should().Contain(new[]
         {
@@ -75,7 +75,7 @@ public class RoundTripTests
         ProjectPackageWriter.Save(path, Samples.FullProject(), Options());
         var json = ReadEntry(path, ProjectFormat.ProjectEntry);
 
-        json.Should().Contain("\"schemaVersion\": 1");
+        json.Should().Contain("\"schemaVersion\": 2", "şema v2: çokgen yuvalar (Karar 10 Rev. 1)");
         json.Should().Contain("\"name\": \"Ahmet & Zeynep Düğün Albümü\"", "Türkçe karakterler ve & kaçışsız yazılmalı");
         json.Should().Contain("\"type\": \"slot\"");
         json.Should().Contain("\"type\": \"text\"");

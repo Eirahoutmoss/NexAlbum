@@ -61,6 +61,10 @@ ICONS = {
     "Album": "book-image",
     "Layers": "layers",
     "Frame": "frame",
+    "Present": "presentation",
+    "Plus": "plus",
+    "Shapes": "shapes",
+    "Expand": "expand",
 }
 
 NUM = r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?"

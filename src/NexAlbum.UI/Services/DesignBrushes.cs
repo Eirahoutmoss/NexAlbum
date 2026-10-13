@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 using NexAlbum.Core.Common;
+using NexAlbum.Core.Geometry;
 using NexAlbum.Core.Projects;
 
 namespace NexAlbum.UI.Services;
@@ -51,6 +52,28 @@ public static class DesignBrushes
         return geometry;
     }
 
+    /// <summary>
+    /// Çokgen yuva biçimi (Karar 10 Rev. 1): köşeler sayfa mm'sinde; (<paramref name="originX"/>, <paramref name="originY"/>)
+    /// yerel sıfır noktası olur. Boş/çökmüş çokgende boş geometri döner (hiçbir şey çizilmez).
+    /// </summary>
+    public static Geometry Polygon(IReadOnlyList<PointMm>? points, double originX, double originY)
+    {
+        if (points is not { Count: >= 3 })
+        {
+            return Geometry.Empty;
+        }
+
+        var geometry = new StreamGeometry();
+        using (var context = geometry.Open())
+        {
+            context.BeginFigure(new Point(points[0].X - originX, points[0].Y - originY), isFilled: true, isClosed: true);
+            context.PolyLineTo([.. points.Skip(1).Select(p => new Point(p.X - originX, p.Y - originY))], isStroked: true, isSmoothJoin: false);
+        }
+
+        geometry.Freeze();
+        return geometry;
+    }
+
     /// <summary>Gölge efekti (mm cinsinden; tuval birimi mm olduğundan doğrudan kullanılır).</summary>
     public static Effect Shadow(ShadowSpec shadow)
     {
@@ -71,7 +94,8 @@ public static class DesignBrushes
     /// <summary>Çerçeve önizlemelerinde fotoğraf yerine kullanılan yumuşak "gökyüzü" dolgusu.</summary>
     public static Brush SamplePhoto { get; } = Freeze(new LinearGradientBrush(Color.FromRgb(0x9C, 0xB8, 0xD4), Color.FromRgb(0xE9, 0xD7, 0xC0), 90));
 
-    public static Brush EmptySlot { get; } = Freeze(new SolidColorBrush(Color.FromRgb(0xE8, 0xE8, 0xE8)));
+    /// <summary>Boş yuva: sıcak, kâğıt tonunda hafif gradyan (fotoğrafın geleceği yeri sessizce gösterir).</summary>
+    public static Brush EmptySlot { get; } = Freeze(new LinearGradientBrush(Color.FromRgb(0xF3, 0xEF, 0xE8), Color.FromRgb(0xE6, 0xDF, 0xD3), 90));
 
     private static Brush Freeze(Brush brush)
     {

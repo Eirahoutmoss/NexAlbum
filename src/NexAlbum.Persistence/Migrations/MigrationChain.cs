@@ -27,8 +27,11 @@ public sealed class MigrationChain
         }
     }
 
-    /// <summary>Uygulamanın yerleşik göçleri. Şu an şema v1; ilk göç v2 ile eklenecek.</summary>
-    public static MigrationChain Default { get; } = new([]);
+    /// <summary>Uygulamanın yerleşik göç adımları, sırayla (v1 → v2: çokgen yuvalar).</summary>
+    public static IReadOnlyList<IMigration> BuiltIn { get; } = [new V1ToV2PolygonSlots()];
+
+    /// <summary>Uygulamanın yerleşik göçleri.</summary>
+    public static MigrationChain Default { get; } = new(BuiltIn);
 
     /// <summary>JSON'u <paramref name="from"/> sürümünden <paramref name="to"/> sürümüne yükseltir.</summary>
     public JsonNode Run(JsonNode project, int from, int to)

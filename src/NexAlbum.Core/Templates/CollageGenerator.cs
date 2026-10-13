@@ -210,7 +210,8 @@ public static class CollageGenerator
     public static string Geometry(TemplateDefinition template)
     {
         ArgumentNullException.ThrowIfNull(template);
-        return string.Join(";", template.Slots.Select(s => string.Create(CultureInfo.InvariantCulture, $"{s.Rect.X:0.#},{s.Rect.Y:0.#},{s.Rect.Width:0.#},{s.Rect.Height:0.#}")).Order(StringComparer.Ordinal))
+        return string.Join(";", template.Slots.Select(s => string.Create(CultureInfo.InvariantCulture, $"{s.Rect.X:0.#},{s.Rect.Y:0.#},{s.Rect.Width:0.#},{s.Rect.Height:0.#}")
+                + (s.Polygon is { } p ? "/" + string.Join(" ", p.Select(v => string.Create(CultureInfo.InvariantCulture, $"{v.X:0.###},{v.Y:0.###}"))) : string.Empty)).Order(StringComparer.Ordinal))
             + "|" + Enum.GetName(template.Category);
     }
 

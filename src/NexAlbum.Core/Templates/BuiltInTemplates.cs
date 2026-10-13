@@ -4,7 +4,8 @@ namespace NexAlbum.Core.Templates;
 
 /// <summary>
 /// Uygulamayla gelen şablonlar. Yüzde tabanlıdır; her albüm ölçüsünde çalışır (Karar 09 §10.2).
-/// Elle tasarlanmış temel şablonlar ve <see cref="CollageGenerator"/> ile 1–12 fotoğraflık yüzlerce düzen.
+/// Elle tasarlanmış temel şablonlar, geometrik şablonlar (<see cref="GeometricTemplates"/>) ve
+/// <see cref="CollageGenerator"/> ile 1–12 fotoğraflık yüzlerce düzen.
 /// </summary>
 public static class BuiltInTemplates
 {
@@ -46,7 +47,7 @@ public static class BuiltInTemplates
     ];
 
     /// <summary>
-    /// Tüm şablonlar: elle tasarlananlar + kolaj üreticisinin düzenleri (aynı geometrideki kopyalar hariç).
+    /// Tüm şablonlar: elle tasarlananlar + geometrikler + kolaj üreticisinin düzenleri (aynı geometrideki kopyalar hariç).
     /// Not: <see cref="Handcrafted"/>'tan sonra tanımlanmalı (statik başlatma sırası).
     /// </summary>
     public static IReadOnlyList<TemplateDefinition> All { get; } = Combine();
@@ -56,7 +57,7 @@ public static class BuiltInTemplates
     private static List<TemplateDefinition> Combine()
     {
         var handcrafted = Handcrafted.Select(CollageGenerator.Geometry).ToHashSet(StringComparer.Ordinal);
-        return [.. Handcrafted, .. CollageGenerator.Generate().Where(t => !handcrafted.Contains(CollageGenerator.Geometry(t)))];
+        return [.. Handcrafted, .. GeometricTemplates.All, .. CollageGenerator.Generate().Where(t => !handcrafted.Contains(CollageGenerator.Geometry(t)))];
     }
 
     private static TemplateDefinition Create(string id, string name, TemplateCategory category, double margin, double gutter, TemplateSlot[] slots) => new()

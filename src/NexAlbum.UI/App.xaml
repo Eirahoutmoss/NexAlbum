@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:converters="clr-namespace:NexAlbum.UI.Converters"
+             xmlns:ui="clr-namespace:NexAlbum.UI.Controls"
              StartupUri="MainWindow.xaml">
   <Application.Resources>
     <ResourceDictionary>
@@ -33,14 +34,24 @@
                 </Image.RenderTransform>
               </Image>
             </Canvas>
-            <TextBlock Text="Boş yuva" FontSize="6" Foreground="#9E9E9E"
-                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                       Visibility="{Binding ShowEmptyLabel, Converter={StaticResource BoolToVisibility}}" />
+            <!-- Boş yuva: altın "+" ve kısa ipucu (birim mm; Viewbox ölçekler) -->
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"
+                        Visibility="{Binding ShowEmptyLabel, Converter={StaticResource BoolToVisibility}}">
+              <StackPanel.RenderTransform>
+                <TranslateTransform X="{Binding EmptyOffsetX}" Y="{Binding EmptyOffsetY}" />
+              </StackPanel.RenderTransform>
+              <ui:NexIcon Data="{StaticResource Icon.Plus}" Width="{Binding EmptyIconSize}" Height="{Binding EmptyIconSize}"
+                          StrokeThickness="1.4" Foreground="#B08A45" HorizontalAlignment="Center" />
+              <TextBlock Text="Fotoğraf bırakın" FontSize="{Binding EmptyFontSize}" Foreground="#9C8D74" HorizontalAlignment="Center"
+                         Margin="0,1,0,0" Visibility="{Binding ShowEmptyHint, Converter={StaticResource BoolToVisibility}}" />
+            </StackPanel>
             <TextBlock Text="Dosya bulunamadı" FontSize="6" Foreground="#C62828"
                        HorizontalAlignment="Center" VerticalAlignment="Center"
                        Visibility="{Binding IsMissing, Converter={StaticResource BoolToVisibility}}" />
           </Grid>
           <Path Data="{Binding StrokeGeometry}" Stroke="{Binding StrokeBrush}" StrokeThickness="{Binding StrokeThickness}" />
+          <Path Data="{Binding OuterGeometry}" Stroke="#C9A85E" StrokeThickness="0.45" StrokeDashArray="3 2" IsHitTestVisible="False"
+                Visibility="{Binding ShowEmptyLabel, Converter={StaticResource BoolToVisibility}}" />
           <!-- Seçim ve bırakma vurgusu (yalnızca ekranda; sayfa içeriği değildir) -->
           <Path Data="{Binding OuterGeometry}" Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.4" StrokeDashArray="3 1.5"
                 IsHitTestVisible="False" Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibility}}" />
