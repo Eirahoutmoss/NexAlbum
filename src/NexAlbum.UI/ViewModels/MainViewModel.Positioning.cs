@@ -48,7 +48,7 @@ public sealed partial class MainViewModel
         }
     }
 
-    public string PositioningButtonText => IsPositioning ? "Konumlandırmayı bitir" : "Konumlandır";
+    public string PositioningButtonText => IsPositioning ? "Bitir" : "Konumlandır";
 
     /// <summary>Tekerlekle, imlecin altındaki nokta yerinde kalacak biçimde yakınlaştırır.</summary>
     /// <param name="slot">Yuva.</param>

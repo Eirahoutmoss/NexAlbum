@@ -128,6 +128,11 @@ Kurallar:
 - Varsayılan renkler: sıcak mürekkep #2B2620 (saf siyah yerine) ve altın #A9843F. Baskıdaki CMYK karşılığı profile göre değişir;
   değer uydurulmaz (Karar 03).
 - Satır kaydırma ekran ve PDF'te aynı kuralla yapılır (`TextLines`: sözcük sınırında, sabit satır yüksekliği = punto × aralık).
+- **Okunurluk etkileri** (Revizyon 3 — 13/10/2026): Gölge, Hale, Kontur, Bant (yarı saydam zemin), Kabartma; renk ve güç ayarlı,
+  ölçüleri puntoyla oranlı. «Okunur yap»: koyu yazıya beyaz hale, açık yazıya koyu gölge. Harf aralığı punto katıdır.
+  Ekran ve PDF aynı hesabı kullanır (`TextLayout`): yumuşaklık, düşük opaklıklı kopyaların halka biçiminde üst üste
+  binmesiyle elde edilir (PDF'te bulanıklık filtresi yoktur; baskı da ekrandaki gibi olur). Kabartma görseldir; baskıda
+  gerçek kabartma (emboss) ayrı bir üretim işidir.
 - Lisans metni ve telif satırları: `src/NexAlbum.UI/Assets/AlbumFonts/OFL.txt`; ayrıca `THIRD-PARTY-NOTICES.md`.
 
 12. Kapsam dışı (ileride)

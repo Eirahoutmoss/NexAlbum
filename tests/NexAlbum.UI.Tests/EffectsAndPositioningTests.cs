@@ -121,7 +121,7 @@ public sealed partial class MainViewModelTests
         vm.IsPositioning = true;
         vm.IsPositioning.Should().BeTrue();
         vm.SelectedSlot!.IsPositioning.Should().BeTrue();
-        vm.PositioningButtonText.Should().Be("Konumlandırmayı bitir");
+        vm.PositioningButtonText.Should().Be("Bitir");
 
         var before = vm.SelectedSlot.Placement!.OffsetX;
         vm.Nudge(1, 0, large: false);
