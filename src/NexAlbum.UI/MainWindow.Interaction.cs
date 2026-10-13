@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -18,6 +19,13 @@ public partial class MainWindow
 
     /// <summary>Tuvalde yuvadan sürüklenen yuvanın kimliği.</summary>
     private const string SlotFormat = "NexAlbum.SlotId";
+
+    /// <summary>Sayfa şeridinde sürüklenen sayfa (aynı süreç içi; nesnenin kendisi taşınır).</summary>
+    private const string PageFormat = "NexAlbum.Page";
+
+    private Point stripStart;
+    private PageItemViewModel? stripPage;
+    private PageItemViewModel? stripMark;
 
     private Point galleryStart;
     private AssetItemViewModel? galleryItem;
@@ -98,6 +106,89 @@ public partial class MainWindow
     {
         e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop) && ViewModel.HasProject ? DragDropEffects.Copy : DragDropEffects.None;
         e.Handled = true;
+    }
+
+    // ── Sayfa şeridi: sürükleyerek sıralama ────────────────────────────
+
+    private void OnStripMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        stripStart = e.GetPosition(null);
+        stripPage = (e.OriginalSource as FrameworkElement)?.DataContext as PageItemViewModel;
+    }
+
+    private void OnStripMouseMove(object sender, MouseEventArgs e)
+    {
+        if (e.LeftButton != MouseButtonState.Pressed || stripPage is not { } page || !Moved(stripStart, e.GetPosition(null)))
+        {
+            return;
+        }
+
+        stripPage = null;
+        DragDrop.DoDragDrop(PageStrip, new DataObject(PageFormat, page), DragDropEffects.Move);
+        ClearStripMark();
+    }
+
+    private void OnStripDragOver(object sender, DragEventArgs e)
+    {
+        if (e.Data.GetData(PageFormat) is not PageItemViewModel)
+        {
+            e.Effects = DragDropEffects.None;
+            e.Handled = true;
+            return;
+        }
+
+        var insert = StripInsertIndex(e);
+        SetStripMark(insert < ViewModel.Pages.Count ? ViewModel.Pages[insert] : null);
+        e.Effects = DragDropEffects.Move;
+        e.Handled = true;
+    }
+
+    private void OnStripDragLeave(object sender, DragEventArgs e) => ClearStripMark();
+
+    private void OnStripDrop(object sender, DragEventArgs e)
+    {
+        ClearStripMark();
+        e.Handled = true;
+        if (e.Data.GetData(PageFormat) is not PageItemViewModel page || !ViewModel.Pages.Contains(page))
+        {
+            return;
+        }
+
+        // Ekleme konumu sayfa çıkarılmadan önceki sıraya göredir; sağa taşırken bir eksiltilir.
+        var insert = StripInsertIndex(e);
+        ViewModel.MovePageTo(page, insert > page.Index ? insert - 1 : insert);
+    }
+
+    /// <summary>Fare, üzerindeki küçük resmin sol yarısındaysa o sayfanın önü, sağ yarısındaysa arkası; boşlukta sona.</summary>
+    private int StripInsertIndex(DragEventArgs e)
+    {
+        for (var current = e.OriginalSource as DependencyObject; current is not null; current = ParentOf(current))
+        {
+            if (current is ListBoxItem { DataContext: PageItemViewModel page } item)
+            {
+                return e.GetPosition(item).X < item.ActualWidth / 2 ? page.Index : page.Index + 1;
+            }
+        }
+
+        return ViewModel.Pages.Count;
+    }
+
+    private void SetStripMark(PageItemViewModel? page)
+    {
+        if (ReferenceEquals(page, stripMark))
+        {
+            return;
+        }
+
+        ClearStripMark();
+        stripMark = page;
+        page?.IsDropBefore = true;
+    }
+
+    private void ClearStripMark()
+    {
+        stripMark?.IsDropBefore = false;
+        stripMark = null;
     }
 
     // ── Tuval: seçim, kaydırma, yuvadan yuvaya taşıma ──────────────────

@@ -263,7 +263,7 @@ public sealed partial class MainViewModel
             var result = await Task.Run(() => work(current)).ConfigureAwait(true);
             if (result.Imported.Count > 0)
             {
-                UpdateProject(result.ApplyTo(current));
+                UpdateProject(result.ApplyTo(current), "İçe aktarma");
             }
 
             Status = string.Format(
@@ -380,7 +380,7 @@ public sealed partial class MainViewModel
             return false;
         }
 
-        UpdateProject(project.ReplacePage(changed));
+        UpdateProject(project.ReplacePage(changed), status is null ? "Düzenleme" : status.Split([';', '.'], 2)[0]);
         if (status is not null)
         {
             Status = status;

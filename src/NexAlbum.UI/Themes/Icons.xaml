@@ -97,6 +97,12 @@
   <Geometry x:Key="Icon.Frame">M 22 6 L 2 6 M 22 18 L 2 18 M 6 2 L 6 22 M 18 2 L 18 22</Geometry>
   <!-- presentation -->
   <Geometry x:Key="Icon.Present">M 2 3 h 20 M 21 3 v 11 a 2 2 0 0 1 -2 2 H 5 a 2 2 0 0 1 -2 -2 V 3 M 7 21 l 5 -5 5 5</Geometry>
+  <!-- undo-2 -->
+  <Geometry x:Key="Icon.Undo">M 9 14 4 9 l 5 -5 M 4 9 h 10.5 a 5.5 5.5 0 0 1 5.5 5.5 a 5.5 5.5 0 0 1 -5.5 5.5 H 11</Geometry>
+  <!-- redo-2 -->
+  <Geometry x:Key="Icon.Redo">M 15 14 l 5 -5 -5 -5 M 20 9 H 9.5 A 5.5 5.5 0 0 0 4 14.5 A 5.5 5.5 0 0 0 9.5 20 H 13</Geometry>
+  <!-- file-plus-2 -->
+  <Geometry x:Key="Icon.PagePlus">M 11.35 22 H 6 a 2 2 0 0 1 -2 -2 V 4 a 2 2 0 0 1 2 -2 h 8 a 2.4 2.4 0 0 1 1.706 0.706 l 3.588 3.588 A 2.4 2.4 0 0 1 20 8 v 5.35 M 14 2 v 5 a 1 1 0 0 0 1 1 h 5 M 14 19 h 6 M 17 16 v 6</Geometry>
   <!-- plus -->
   <Geometry x:Key="Icon.Plus">M 5 12 h 14 M 12 5 v 14</Geometry>
   <!-- shapes -->

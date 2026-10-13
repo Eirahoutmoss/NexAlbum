@@ -278,7 +278,7 @@ public sealed partial class MainViewModel
 
         var number = SelectedPage.Number;
         var result = PageDesigner.ApplyTemplate(SelectedPage.Page, item.Template, project, clock.GetUtcNow());
-        UpdateProject(project.ReplacePage(result.Page));
+        UpdateProject(project.ReplacePage(result.Page), "Şablon");
         Status = result.RemovedAssetIds.Count == 0
             ? string.Format(CultureInfo.CurrentCulture, "Sayfa {0}: «{1}» şablonu uygulandı.", number, item.Name)
             : string.Format(
@@ -414,7 +414,7 @@ public sealed partial class MainViewModel
         {
             var withDesign = PageDesigner.WithDesign(project, design(project.Settings.Design));
             var (updated, changed) = PageDesigner.ApplyToUnlocked(withDesign, change);
-            UpdateProject(updated);
+            UpdateProject(updated, what);
             var locked = updated.Pages.Count - changed;
             Status = string.Format(
                 CultureInfo.CurrentCulture,
@@ -432,7 +432,7 @@ public sealed partial class MainViewModel
         }
 
         var number = SelectedPage.Number;
-        UpdateProject(project.ReplacePage(change(SelectedPage.Page)));
+        UpdateProject(project.ReplacePage(change(SelectedPage.Page)), what);
         Status = string.Format(CultureInfo.CurrentCulture, "{0}: sayfa {1} güncellendi.", what, number);
     }
 
@@ -460,7 +460,7 @@ public sealed partial class MainViewModel
         var now = clock.GetUtcNow();
         var withDesign = PageDesigner.WithDesign(project, project.Settings.Design with { GapPercent = gap, MarginPercent = margin });
         var (updated, changed) = PageDesigner.ApplyToUnlocked(withDesign, p => PageDesigner.Relayout(p, withDesign, BuiltInTemplates.All, now));
-        UpdateProject(updated);
+        UpdateProject(updated, "Boşluklar");
         Status = gap is null
             ? string.Format(CultureInfo.CurrentCulture, "Şablon boşluklarına dönüldü; {0} sayfa yeniden ölçülendirildi.", changed)
             : string.Format(CultureInfo.CurrentCulture, "Boşluk %{0:0.#}, kenar %{1:0.#}; {2} sayfa yeniden ölçülendirildi.", gap, margin, changed);
