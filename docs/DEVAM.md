@@ -31,8 +31,9 @@ Son güncelleme: 13 Ekim 2026 (geri al / yinele, sayfa yönetimi). Başka bilgis
 
 | **Geri al / yinele** | Ctrl+Z / Ctrl+Y (Ctrl+Shift+Z), başlıkta düğmeler; 100 adım, kaydırıcı sürüklemesi tek adım; kaydedilmiş hâle dönülünce "Kaydedildi" |
 | **Sayfa yönetimi** | Ekle (komşu fonuyla), çoğalt (Ctrl+D), sil (onaysız, geri alınır), sola/sağa taşı, şeritte sürükleyerek sırala, sağ tık menüsü, sonda "+" kutusu; kilitli sayfa silinmez/taşınmaz |
+| **Sayfa metinleri (Karar 17 §11)** | Metin sekmesi: 6 hazır stil (başlık, alt başlık, tarih, isimler, alıntı, serbest), 8 gömülü yazı tipi (4 el yazısı, 2 serif, 2 sans; OFL), boyut, satır aralığı, kutu genişliği, kalın/eğik, hizalama, renk; tuvalde seç/sürükle/çift tıkla yaz, Ctrl+T, Del, geri al; PDF'te aynı satır kaydırma ve gömülü yazı tipi |
 
-Testler: Windows 545, Ubuntu 472 — hepsi geçiyor. Takılan test 5 dakikada kesilir (`--blame-hang-timeout`). CI: `build.yml`, `test.yml` ve `screenshots.yml`
+Testler: Windows 559, Ubuntu 479 — hepsi geçiyor. Takılan test 5 dakikada kesilir (`--blame-hang-timeout`). CI: `build.yml`, `test.yml` ve `screenshots.yml`
 (her dalda iki temada ekran görüntüsü üretir ve `ekran/<dal>` dalına yazar; ör. `ekran/main`).
 
 ## Elle denenmesi gerekenler
@@ -46,11 +47,12 @@ Otomatik test edilemeyenler:
 - **Sayfa şeridi:** küçük resmi sürükleyip başka bir yere bırakma (altın çizgi doğru yerde mi), sağ tık menüsü, Ctrl+Z ile silinen sayfanın geri gelmesi.
 - **Kitap görünümü:** karşı sayfadaki yuvaya tıklama/galeriden bırakma o sayfayı seçip oraya uygulanmalı.
 - **Sunum (F5):** ← → / boşluk / tıklama ile gezinme, Esc ile çıkış, birkaç saniye sonra alt bilginin ve imlecin gizlenmesi; çok monitörde doğru ekranda açılması.
+- **Metinler:** el yazısı yazı tiplerinde Türkçe harfler (ğ, ş, İ, ı) PDF'te doğru mu; çift tıklayınca yazı kutusu odaklanıyor mu; sürüklerken kaymıyor mu.
 - **Geometrik sayfaların PDF'i:** çapraz kenarlardaki boşluk ekranla aynı mı (baskı evine göndermeden önce bir sayfa basıp bakın).
 - Photoshop CI'da yok: "Rötuş → Action'ları yükle", "Önce bir fotoğrafta dene", "Düzenleyicide aç → kaydet → albüm yenilendi mi".
 
 ## Sıradaki işler (öncelik sırasıyla)
-1. **Metin öğeleri:** başlık, tarih, "Özel Anlar" gibi yazılar (model hazır; arayüz, yazı tipi seçimi ve PDF çizimi yok).
+1. Metinlerde harf aralığı (tarih gibi büyük harfli satırlar için), gölge/kontur ve hizalama kılavuzları (sayfa ortasına yapışma).
 2. Sayfalar arası fotoğraf taşıma (tuvaldeki fotoğrafı şeritteki başka bir sayfaya sürükleme); fotoğrafa yıldız/favori.
 3. **Hikâye akışı:** EXIF saatine göre düğün evreleri (hazırlık, gelin alma, nikâh, dış çekim, düğün) → bölümler.
 4. Kapak ve sırt (Karar 03 sırt genişliği); JPG/PNG çıktı (Karar 11).
