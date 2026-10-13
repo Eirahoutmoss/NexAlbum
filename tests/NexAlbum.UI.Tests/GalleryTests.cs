@@ -32,11 +32,7 @@ public sealed partial class MainViewModelTests
         vm.GalleryRows.SelectMany(r => r.Items).Should().ContainSingle().Which.Asset.Id.Should().Be(vm.Assets[1].Asset.Id);
 
         vm.Save(saveAs: false).Should().BeTrue();
-        using (var reopened = new MainViewModel(new FakeDialogs(), settings: new MemoryAppSettingsStore()))
-        {
-            reopened.Open(path);
-            reopened.Assets.Count(a => a.IsFavorite).Should().Be(1, "favori proje dosyasına yazılır");
-        }
+        ProjectPackageReader.Load(path).Project.Assets.Count(a => a.Favorite).Should().Be(1, "favori proje dosyasına yazılır");
 
         vm.UndoCommand.Execute(null);
         vm.Assets.Should().OnlyContain(a => !a.IsFavorite);
