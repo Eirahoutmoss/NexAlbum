@@ -20,6 +20,8 @@ internal static class ProjectMapper
     private static readonly TextEnum<BackgroundMode> BackgroundModes = new();
     private static readonly TextEnum<AssetSourceType> SourceTypes = new();
     private static readonly TextEnum<AssetRole> Roles = new();
+    private static readonly TextEnum<EditEngineKind> EditEngines = new();
+    private static readonly TextEnum<EditOutputFormat> EditOutputs = new();
 
     public static ProjectDto ToDto(AlbumProject p) => new()
     {
@@ -47,6 +49,7 @@ internal static class ProjectMapper
                 Margin = p.Settings.Design.MarginPercent,
                 Background = p.Settings.Design.Background is { } bg ? FillToPageDto(bg) : null,
             },
+            Editing = p.Settings.Editing.LastRecipe is { } r ? new EditingSettingsDto { LastRecipe = RecipeToDto(r) } : null,
         },
         History = p.History is { } h ? new HistoryDto { Enabled = h.Enabled, MaxSteps = h.MaxSteps } : null,
     };
@@ -103,7 +106,60 @@ internal static class ProjectMapper
                 Background = design.Background is { } bg ? FillFromPageDto(bg, "settings.design.background") : null,
             }
             : DesignSettings.Default,
+        Editing = d?.Editing?.LastRecipe is { } recipe
+            ? new EditingSettings { LastRecipe = RecipeFromDto(recipe, "settings.editing.lastRecipe") }
+            : EditingSettings.Default,
     };
+
+    private static EditRecipeDto RecipeToDto(EditRecipe r) => new()
+    {
+        Engine = EditEngines.Format(r.Engine),
+        Name = r.Name,
+        ActionSet = r.ActionSet,
+        Action = r.Action,
+        Executable = r.Executable,
+        Arguments = r.Arguments.Count > 0 ? [.. r.Arguments] : null,
+        Output = EditOutputs.Format(r.Output),
+        JpegQuality = r.JpegQuality,
+    };
+
+    private static EditRecipe RecipeFromDto(EditRecipeDto d, string path) => At(path, () => new EditRecipe
+    {
+        Engine = EditEngines.Parse(d.Engine, path + ".engine", EditEngineKind.Photoshop),
+        Name = Required(d.Name, path + ".name"),
+        ActionSet = d.ActionSet,
+        Action = d.Action,
+        Executable = d.Executable,
+        Arguments = [.. d.Arguments ?? []],
+        Output = EditOutputs.Parse(d.Output, path + ".output", EditOutputFormat.Jpeg),
+        JpegQuality = d.JpegQuality ?? 12,
+    });
+
+    private static PhotoEditDto EditToDto(PhotoEdit e) => new()
+    {
+        Path = e.Path,
+        Width = e.PixelWidth,
+        Height = e.PixelHeight,
+        Orientation = e.ExifOrientation,
+        Tool = e.Tool,
+        Recipe = e.Recipe,
+        CreatedAt = e.CreatedAt,
+        Missing = e.Missing ? true : null,
+    };
+
+    private static PhotoEdit EditFromDto(PhotoEditDto d, string path) => At(path, () => new PhotoEdit
+    {
+        Path = Required(d.Path, path + ".path"),
+        PixelWidth = RequiredValue(d.Width, path + ".width"),
+        PixelHeight = RequiredValue(d.Height, path + ".height"),
+        ExifOrientation = d.Orientation,
+        Tool = d.Tool ?? "Harici düzenleyici",
+        Recipe = d.Recipe,
+        CreatedAt = d.CreatedAt ?? default,
+        Missing = d.Missing ?? false,
+        Edit = d.Edit is { } edit ? EditFromDto(edit, path + ".edit") : null,
+        UseEdit = d.UseEdit ?? true,
+    });
 
     private static PageDto PageToDto(AlbumPage page, int index) => new()
     {
@@ -319,6 +375,8 @@ internal static class ProjectMapper
         Tags = [.. a.Tags],
         UsedInPages = [.. usedInPages],
         Missing = a.Missing,
+        Edit = a.Edit is { } edit ? EditToDto(edit) : null,
+        UseEdit = a.Edit is not null && !a.UseEdit ? false : null,
     };
 
     private static PhotoAsset AssetFromDto(AssetDto d, string path) => At(path, () => new PhotoAsset
@@ -345,6 +403,8 @@ internal static class ProjectMapper
         Favorite = d.Favorite ?? false,
         Tags = [.. d.Tags ?? []],
         Missing = d.Missing ?? false,
+        Edit = d.Edit is { } edit ? EditFromDto(edit, path + ".edit") : null,
+        UseEdit = d.UseEdit ?? true,
     });
 
     private static RectMm RectFrom(double? x, double? y, double? width, double? height, string? unit, string path) => new(

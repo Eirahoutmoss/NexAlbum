@@ -12,6 +12,10 @@ Gerekçe: .NET 8 desteği 10 Kasım 2026'da sona eriyor; MVP (4-7 ay) desteksiz 
 Ek: FluentAssertions 7.x sürümüne sabitlenir; 8.0 ve sonrası Apache 2.0 değil, ticari lisanslıdır (GPL uyumu için, Karar 02).
 Değişmeyenler: WPF, SkiaSharp, PDFsharp, SQLite, Serilog, MVVM + Clean Architecture ve katman yapısı.
 
+Revizyon 2 — 13/10/2026
+Değişiklik: Yeni katman `NexAlbum.Integrations` (harici düzenleyiciler: Photoshop COM, komut satırı araçları, dosya izleme). Bağımlılık: Integrations → Core, Assets; UI → Integrations. Ayrıntı: Karar 20.
+Gerekçe: Dış süreç ve COM erişimi Core'a ve Assets'e sızmasın; özellik isteğe bağlı kalsın. Yeni NuGet bağımlılığı yoktur.
+
 1. Karar Özeti
 NexAlbum'in teknoloji yığını, Windows öncelikli, ücretsiz, açık kaynak (GPL uyumlu), tek geliştirici tarafından sürdürülebilir ve yüksek performanslı olacak şekilde seçilmiştir.
 
@@ -498,7 +502,7 @@ text
 │  .albumproj, JSON, SQLite           │
 └─────────────────────────────────────┘
 13.2 Bağımlılık yönü
-UI → Core, Rendering, Export, Assets, Persistence.
+UI → Core, Rendering, Export, Assets, Persistence, Integrations.
 
 Core → (hiçbir şey; saf domain).
 
@@ -509,6 +513,8 @@ Export → Core, Rendering.
 Assets → Core.
 
 Persistence → Core.
+
+Integrations → Core, Assets (Revizyon 2).
 
 Kural: Core katmanı hiçbir UI/IO bağımlılığı içermez.
 

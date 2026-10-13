@@ -49,7 +49,15 @@ public static class ProjectPreflight
         var pageRect = project.PageRect;
         var bleedRect = profile.Bleed.Value is { } bleed ? pageRect.Inflate(bleed) : pageRect;
         RectMm? safeRect = profile.SafeArea.Value is { } safe ? pageRect.Deflate(safe) : null;
-        var assets = project.Assets.ToDictionary(a => a.Id, StringComparer.Ordinal);
+        // Etkin kaynak: düzenlenmiş sürüm varsa çözünürlük ve varlık denetimi ona göre yapılır (Karar 20 §4).
+        var assets = project.Assets.ToDictionary(a => a.Id, a => a.Effective(), StringComparer.Ordinal);
+        foreach (var asset in project.Assets.Where(a => a.UseEdit && a.Edit is { Missing: true }))
+        {
+            issues.Add(new("project.photo.edit-missing", ValidationSeverity.Warning,
+                Format("{0}: düzenlenmiş sürüm bulunamadı; orijinal kullanılacak.", asset.FileName), ElementId: asset.Id,
+                Suggestion: "Düzenlemeyi yeniden uygulayın ya da kaldırın."));
+        }
+
         var assetUse = new Dictionary<string, List<string>>(StringComparer.Ordinal);
 
         for (var i = 0; i < project.Pages.Count; i++)

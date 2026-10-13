@@ -158,6 +158,42 @@ public class RoundTripTests
         loaded.Should().BeEquivalentTo(project, o => o.ComparingRecordsByMembers().RespectingRuntimeTypes());
     }
 
+    [Fact]
+    public void PhotoEditsAndRecipeRoundTrip()
+    {
+        using var dir = new TempDir();
+        var path = dir.File("duzenli.albumproj");
+        var project = Samples.FullProject();
+        var assetId = project.Assets[0].Id;
+        project = PhotoEdits.Apply(project, assetId, new PhotoEdit
+        {
+            Path = dir.File("duzenli.jpg"),
+            PixelWidth = 3000,
+            PixelHeight = 2000,
+            ExifOrientation = 1,
+            Tool = "Photoshop",
+            Recipe = "Stüdyo / Sıcak Ton",
+            CreatedAt = Samples.Now,
+        });
+        project = PhotoEdits.SetUseEdit(project, assetId, use: false);
+        project = PhotoEdits.RememberRecipe(project, new EditRecipe
+        {
+            Engine = EditEngineKind.CommandLine,
+            Name = "darktable sıcak",
+            Executable = @"C:\Program Files\darktable\bin\darktable-cli.exe",
+            Arguments = ["{input}", "sicak.xmp", "{output}"],
+            Output = EditOutputFormat.Png,
+            JpegQuality = 10,
+        });
+
+        ProjectPackageWriter.Save(path, project, Options());
+        var loaded = ProjectPackageReader.Load(path).Project;
+
+        loaded.Should().BeEquivalentTo(project, o => o.ComparingRecordsByMembers().RespectingRuntimeTypes());
+        var json = ReadEntry(path, ProjectFormat.ProjectEntry);
+        json.Should().Contain("\"edit\"").And.Contain("\"useEdit\": false").And.Contain("\"lastRecipe\"").And.Contain("\"commandLine\"");
+    }
+
     internal static string ReadEntry(string package, string entry)
     {
         using var zip = ZipFile.OpenRead(package);

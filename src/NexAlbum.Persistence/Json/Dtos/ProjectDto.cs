@@ -102,6 +102,55 @@ internal sealed class AssetDto
     public List<string>? UsedInPages { get; set; }
 
     public bool? Missing { get; set; }
+
+    /// <summary>Harici araçla üretilmiş düzenlenmiş sürüm (Karar 20); opsiyonel.</summary>
+    public PhotoEditDto? Edit { get; set; }
+
+    /// <summary>Yoksa true.</summary>
+    public bool? UseEdit { get; set; }
+}
+
+internal sealed class PhotoEditDto
+{
+    public string? Path { get; set; }
+
+    public int? Width { get; set; }
+
+    public int? Height { get; set; }
+
+    public int? Orientation { get; set; }
+
+    public string? Tool { get; set; }
+
+    public string? Recipe { get; set; }
+
+    public DateTimeOffset? CreatedAt { get; set; }
+
+    public bool? Missing { get; set; }
+}
+
+internal sealed class EditingSettingsDto
+{
+    public EditRecipeDto? LastRecipe { get; set; }
+}
+
+internal sealed class EditRecipeDto
+{
+    public string? Engine { get; set; }
+
+    public string? Name { get; set; }
+
+    public string? ActionSet { get; set; }
+
+    public string? Action { get; set; }
+
+    public string? Executable { get; set; }
+
+    public List<string>? Arguments { get; set; }
+
+    public string? Output { get; set; }
+
+    public int? JpegQuality { get; set; }
 }
 
 internal sealed class ThumbnailDto
@@ -122,6 +171,8 @@ internal sealed class SettingsDto
     public SaveSettingsDto? Save { get; set; }
 
     public DesignSettingsDto? Design { get; set; }
+
+    public EditingSettingsDto? Editing { get; set; }
 }
 
 internal sealed class DesignSettingsDto

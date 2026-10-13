@@ -72,6 +72,23 @@ public sealed record PhotoAsset
     /// <summary>Kaynak dosya bulunamadı mı? Açılışta denetlenir (Karar 09 §7.4).</summary>
     public bool Missing { get; init; }
 
+    /// <summary>Harici araçla üretilmiş düzenlenmiş sürüm (Karar 20); yoksa null.</summary>
+    public PhotoEdit? Edit { get; init; }
+
+    /// <summary>Düzenlenmiş sürüm kullanılsın mı? false iken orijinal gösterilir (önce/sonra).</summary>
+    public bool UseEdit { get; init; } = true;
+
+    /// <summary>Ekran, ön kontrol ve PDF düzenlenmiş dosyayı mı kullanıyor?</summary>
+    public bool IsEditActive => UseEdit && Edit is { Missing: false };
+
+    /// <summary>
+    /// Etkin kaynak: düzenleme etkinse yol, boyut ve yön düzenlenmiş dosyadan gelir (orijinal kayıp olsa bile kullanılabilir);
+    /// değilse varlığın kendisi. Kimlik ve diğer bilgiler aynıdır.
+    /// </summary>
+    public PhotoAsset Effective() => IsEditActive && Edit is { } e
+        ? this with { SourcePath = e.Path, SourceType = AssetSourceType.Reference, PixelWidth = e.PixelWidth, PixelHeight = e.PixelHeight, ExifOrientation = e.ExifOrientation, Missing = false }
+        : this;
+
     /// <summary>EXIF 5–8 yönlerinde görüntü 90° döndürülmüş gösterilir; genişlik/yükseklik yer değiştirir.</summary>
     public bool IsRotated90 => ExifOrientation is >= 5 and <= 8;
 

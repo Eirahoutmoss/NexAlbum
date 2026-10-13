@@ -14,6 +14,7 @@ Kararların kendisi değişmez; bu dosya yalnızca yönlendirir. Tam liste ve ma
 | Test, kapsam, CI, analyzer, benchmark | 13 Test ve kalite | §3–§9, §11–§12 |
 | Branch, commit, PR, DCO, depo dosyaları, workflow'lar | 14 Topluluk ve katkı | §5, §14 |
 | Aşama sırası / MVP kapsamı ("bunu şimdi mi yapalım?") | 05 Yol haritası, 04 Tek kişi | §3–§9, §13 |
+| Photoshop/harici düzenleyici, toplu rötuş, düzenlenmiş sürüm | 20 Harici düzenleyici | §2–§5 |
 | Özellik ekle/reddet | 07 Rakip sentezi, 01, 02, 06 | Karar özeti |
 
 ## Hızlı kurallar

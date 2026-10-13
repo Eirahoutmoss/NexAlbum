@@ -30,6 +30,9 @@ public sealed record ProjectSettings
     /// <summary>Albümün varsayılan tasarımı (çerçeve, boşluk, fon).</summary>
     public DesignSettings Design { get; init => field = value ?? throw new ArgumentNullException(nameof(Design)); } = DesignSettings.Default;
 
+    /// <summary>Harici düzenleme (Karar 20).</summary>
+    public EditingSettings Editing { get; init => field = value ?? throw new ArgumentNullException(nameof(Editing)); } = EditingSettings.Default;
+
     public static ProjectSettings Default { get; } = new();
 }
 

@@ -5,6 +5,7 @@
     <Project Path="src/NexAlbum.Export/NexAlbum.Export.csproj" />
     <Project Path="src/NexAlbum.Assets/NexAlbum.Assets.csproj" />
     <Project Path="src/NexAlbum.Persistence/NexAlbum.Persistence.csproj" />
+    <Project Path="src/NexAlbum.Integrations/NexAlbum.Integrations.csproj" />
     <Project Path="src/NexAlbum.UI/NexAlbum.UI.csproj" />
   </Folder>
   <Folder Name="/tests/">
@@ -12,6 +13,7 @@
     <Project Path="tests/NexAlbum.Assets.Tests/NexAlbum.Assets.Tests.csproj" />
     <Project Path="tests/NexAlbum.Core.Tests/NexAlbum.Core.Tests.csproj" />
     <Project Path="tests/NexAlbum.Export.Tests/NexAlbum.Export.Tests.csproj" />
+    <Project Path="tests/NexAlbum.Integrations.Tests/NexAlbum.Integrations.Tests.csproj" />
     <Project Path="tests/NexAlbum.Persistence.Tests/NexAlbum.Persistence.Tests.csproj" />
     <Project Path="tests/NexAlbum.UI.Tests/NexAlbum.UI.Tests.csproj" />
   </Folder>

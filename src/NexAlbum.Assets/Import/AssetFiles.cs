@@ -8,7 +8,8 @@ namespace NexAlbum.Assets.Import;
 public static class AssetFiles
 {
     /// <summary>
-    /// Referans modundaki her varlığın dosyasını denetler ve <see cref="PhotoAsset.Missing"/> bayrağını günceller.
+    /// Referans modundaki her varlığın dosyasını denetler ve <see cref="PhotoAsset.Missing"/> bayrağını günceller;
+    /// düzenlenmiş sürümlerin dosyaları da denetlenir (Karar 20).
     /// Gömülü varlıklar paketin içindedir; dokunulmaz.
     /// </summary>
     public static AlbumProject RefreshMissing(AlbumProject project, Func<string, bool>? exists = null)
@@ -25,7 +26,7 @@ public static class AssetFiles
             }
         }
 
-        return updated;
+        return PhotoEdits.RefreshMissing(updated, exists);
     }
 
     /// <summary>Eksik varlıkların listesi.</summary>

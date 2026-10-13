@@ -52,7 +52,7 @@ public static class PdfAlbumExporter
         }
 
         var geometry = SheetGeometry.Create(project.PageSize, bleed, settings.IncludeCropMarks, settings.CropMarkOffsetMm, settings.CropMarkLengthMm);
-        var assets = project.Assets.ToDictionary(a => a.Id, StringComparer.Ordinal);
+        var assets = project.Assets.ToDictionary(a => a.Id, a => a.Effective(), StringComparer.Ordinal);
         using var images = new ImageCache();
         var files = new List<string>();
 
