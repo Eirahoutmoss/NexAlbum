@@ -170,6 +170,26 @@ public class MigrationTests
     }
 
     [Fact]
+    public void V3ProjectIsUpgradedToV4AsASingleFlow()
+    {
+        using var dir = new TempDir();
+        var path = dir.File("v3.albumproj");
+        var v3 = PackageBuilder.EditJson(PackageBuilder.Valid(), ProjectFormat.ProjectEntry, n =>
+        {
+            n["schemaVersion"] = 3;
+            n.AsObject().Remove("story");
+        });
+        File.WriteAllBytes(path, v3);
+
+        var loaded = ProjectPackageReader.Load(path, new LoadOptions { BackupBeforeMigration = false });
+
+        loaded.Migrated.Should().BeTrue();
+        loaded.OriginalSchemaVersion.Should().Be(3);
+        loaded.Project.Story.HasChapters.Should().BeFalse("v3'te hikâye akışı yoktur");
+        loaded.Project.Story.Enabled.Should().BeTrue();
+    }
+
+    [Fact]
     public void BuiltInChainReachesTheCurrentVersion()
     {
         var node = new JsonObject { ["schemaVersion"] = 1 };

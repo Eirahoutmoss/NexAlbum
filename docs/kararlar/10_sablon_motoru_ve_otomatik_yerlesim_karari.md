@@ -9,6 +9,15 @@ Değişiklik: Yuvalar artık dışbükey çokgen olabilir; "Geometrik" kategori 
 Değişmeyenler: yüzde tabanlı ölçüler, determinizm (aynı tohum → aynı albüm), fotoğrafı esnetmeme, kilitli sayfalar.
 Dosya biçimi etkisi: Karar 09 Revizyon 1 (şema v2).
 
+Revizyon 2 — 13/10/2026 (hikâye akışı)
+Değişiklik: Otomatik yerleşime **bölümler** eklendi. İstek: Hasan Güler (düğünün evrelerine göre albüm).
+- Bölüm bulma (`StoryDetector`): fotoğraflar çekim zamanına göre dizilir; **40 dk** (ayarlanabilir) ya da daha uzun ara veya gün değişimi yeni bölüm başlatır; 4'ten az fotoğraflı bölüm, arası daha kısa olan komşusuna (aynı günde) katılır.
+- Ad önerisi, başlangıç saatine göre (fotoğrafın kendi saati): düğün günü (en çok fotoğraflı gün) 12'den önce Hazırlık, 12–15 Gelin Alma, 15–18 Dış Çekim, 18–20 Nikâh, 20 sonrası Düğün; önceki gün 16 sonrası Kına Gecesi, öncesi Hazırlık; sonraki günler Ertesi Gün. Aynı ad tekrar ederse II, III… Öneridir; kullanıcı değiştirir, birleştirir, galeriden "buradan yeni bölüm" ile böler.
+- Yerleşim (§9 akışı): bölümler zaman sırasıyla; her bölüm yeni sayfada başlar, bölüm içinde fotoğraflar çekim sırasındadır (bölüm etkinken "verildiği sıra" seçeneği kullanılmaz). Hedef sayfa sayısı varsa bölümlere fotoğraf oranında dağıtılır. Zamanı olmayan fotoğraflar en sonda, bölümsüz.
+- Açılış sayfası (isteğe bağlı): bölümün ilk favorisi, yoksa ilk yatay, yoksa ilk fotoğrafı tek fotoğraflık (tercihen tam sayfa) şablonla; alt üçte birde bölüm adı (beyaz el yazısı, okunurluk gölgesiyle).
+Değişmeyenler: determinizm, kilitli sayfalar, çeşitlilik kuralları (bölüm sınırları arasında da sürer).
+Dosya biçimi etkisi: Karar 09 Revizyon 3 (şema v4).
+
 1. Karar Özeti
 NexAlbum'in kalbi şablon motoru ve otomatik yerleşim algoritmasıdır. Bu iki bileşen, ürünün "hızlı, doğru, çeşitli" vaadini gerçekleştirir.
 

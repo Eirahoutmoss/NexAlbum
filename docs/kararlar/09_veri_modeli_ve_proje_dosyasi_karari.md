@@ -16,6 +16,11 @@ Değişiklik: project.json şema sürümü 2 → **3**. Metin öğesine isteğe 
 Göç (§14): `V2ToV3TextEffects` — v2 dosyalarında "effect" yoktur; yapı değişmez, yalnızca sürüm yükselir; açılışta yedek (.bak-v2) alınır.
 Gerekçe: Fotoğraf üstündeki yazı her zeminde okunabilsin (Karar 17 §11). Etki ölçüleri punto ile oranlıdır; ekran ve PDF aynı hesabı (`TextLayout`) kullanır.
 
+Revizyon 3 — 13/10/2026 (şema v4)
+Değişiklik: project.json şema sürümü 3 → **4**. Projeye isteğe bağlı "story": { "enabled": bool, "openers": bool, "chapters": [ { "id", "name", "start": ISO-8601 } ] }. Bölüm üyeliği saklanmaz; fotoğraf, çekim zamanından önce başlayan son bölüme aittir (zamansızlar bölümsüz, sonda).
+Göç (§14): `V3ToV4Story` — v3 dosyalarında "story" yoktur (tek akış); yapı değişmez, yalnızca sürüm yükselir; açılışta yedek (.bak-v3) alınır.
+Gerekçe: Hikâye akışı (Karar 10 Rev. 2). Başlangıç zamanıyla saklamak, sonradan eklenen fotoğrafların kendiliğinden doğru bölüme düşmesini sağlar.
+
 1. Karar Özeti
 NexAlbum'in veri modeli katmanlı, sürümlenmiş, açık ve taşınabilir olacaktır.
 

@@ -1,5 +1,6 @@
 using NexAlbum.Core.Common;
 using NexAlbum.Core.Design;
+using NexAlbum.Core.Projects;
 using NexAlbum.Core.Templates;
 
 namespace NexAlbum.Core.Layout;
@@ -58,6 +59,12 @@ public sealed record LayoutOptions
 
     /// <summary>Çerçeve, boşluk ve fon (proje tasarım ayarlarından gelir).</summary>
     public DesignSettings Design { get; init => field = value ?? throw new ArgumentNullException(nameof(Design)); } = DesignSettings.Default;
+
+    /// <summary>
+    /// Hikâye akışı (Karar 10 Rev. 2): bölümler etkinse her bölüm yeni sayfada başlar, istenirse açılış sayfasıyla.
+    /// Null ya da bölümsüz plan: fotoğraflar tek akış halinde dizilir.
+    /// </summary>
+    public StoryPlan? Story { get; init; }
 
     /// <summary>Yalnızca bu şablonlar kullanılsın (boşsa hepsi).</summary>
     public IReadOnlyList<string> AllowedTemplateIds { get; init => field = value ?? throw new ArgumentNullException(nameof(AllowedTemplateIds)); } = [];

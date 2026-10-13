@@ -53,6 +53,14 @@ internal static class ProjectMapper
             Editing = p.Settings.Editing.LastRecipe is { } r ? new EditingSettingsDto { LastRecipe = RecipeToDto(r) } : null,
         },
         History = p.History is { } h ? new HistoryDto { Enabled = h.Enabled, MaxSteps = h.MaxSteps } : null,
+        Story = p.Story.HasChapters || p.Story.Openers || !p.Story.Enabled
+            ? new StoryDto
+            {
+                Enabled = p.Story.Enabled,
+                Openers = p.Story.Openers,
+                Chapters = [.. p.Story.Chapters.Select(c => new ChapterDto { Id = c.Id, Name = c.Name, Start = c.Start })],
+            }
+            : null,
     };
 
     public static AlbumProject FromDto(ProjectDto d) => At("project", () => Map(d));
@@ -90,8 +98,19 @@ internal static class ProjectMapper
             Assets = [.. (d.Assets ?? []).Select((asset, i) => AssetFromDto(asset, $"assets[{i}]"))],
             Settings = At("settings", () => SettingsFromDto(d.Settings)),
             History = d.History is { } h ? new HistorySettings { Enabled = h.Enabled ?? true, MaxSteps = h.MaxSteps ?? 100 } : null,
+            Story = d.Story is { } s ? At("story", () => StoryFromDto(s)) : StoryPlan.Empty,
         };
     }
+
+    private static StoryPlan StoryFromDto(StoryDto d) => new()
+    {
+        Enabled = d.Enabled ?? true,
+        Openers = d.Openers ?? false,
+        Chapters = [.. (d.Chapters ?? []).Select((c, i) => new StoryChapter(
+            Required(c.Id, $"chapters[{i}].id"),
+            Required(c.Name, $"chapters[{i}].name"),
+            RequiredValue(c.Start, $"chapters[{i}].start")))],
+    };
 
     private static ProjectSettings SettingsFromDto(SettingsDto? d) => new()
     {
