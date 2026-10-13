@@ -151,6 +151,18 @@ public sealed class ScreenshotTests : IDisposable
                 Capture(main, "15-hikaye-gece").Should().BeTrue();
                 vm.IsFilterAll = true;
 
+                // Hikâye filmi penceresi: dikey Reels, açılış başlığı sonrasında bir fotoğraf karesi.
+                using (var film = vm.CreateFilm()!)
+                {
+                    film.SelectedStyle = Core.Video.VideoStyle.Find("cinematic");
+                    film.PreviewSeconds = 4.2;
+                    var filmWindow = Show(new VideoWindow(film), 1320, 840);
+                    film.RenderPreviewNow();
+                    Settle(filmWindow);
+                    Capture(filmWindow, "16-film-gece").Should().BeTrue();
+                    filmWindow.Close();
+                }
+
                 var show = new PresentationWindow(new ViewModels.PresentationViewModel(vm.Project!, vm.SelectedPage!.Index, spreads: true)) { WindowState = WindowState.Normal };
                 Capture(Show(show, 1440, 900), "08-sunum").Should().BeTrue();
                 show.Hide();

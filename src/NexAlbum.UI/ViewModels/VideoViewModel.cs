@@ -187,7 +187,12 @@ public sealed partial class VideoViewModel : ObservableObject, IDisposable
 
     public DurationOption SelectedDuration
     {
-        get => DurationOptions.FirstOrDefault(d => d.Seconds == settings.TargetSeconds) ?? DurationOptions[0];
+        get
+        {
+            // Sosyal biçimde süre verilmemişse planlayıcı 30 sn kullanır (Karar 21 §2).
+            var seconds = settings.TargetSeconds ?? (SelectedFormat.Social ? 30 : null);
+            return DurationOptions.FirstOrDefault(d => d.Seconds == seconds) ?? DurationOptions[0];
+        }
         set
         {
             if (value is not null && value.Seconds != settings.TargetSeconds)
