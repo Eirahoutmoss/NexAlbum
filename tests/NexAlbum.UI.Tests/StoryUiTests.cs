@@ -61,7 +61,7 @@ public sealed partial class MainViewModelTests
         vm.StoryOpeners.Should().BeFalse("geri al: önce oluşturma, sonra açılış ayarı");
         vm.ClearStory();
         vm.HasStory.Should().BeFalse();
-        vm.Pages.Should().OnlyContain(p => !p.HasChapterLabel);
+        vm.Pages.Should().NotContain(p => p.HasChapterLabel);
     }
 
     [Fact]
