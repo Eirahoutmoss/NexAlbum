@@ -134,6 +134,9 @@ internal sealed class AssetDto
 
     public DateTimeOffset? CapturedAt { get; set; }
 
+    /// <summary>Makine saat düzeltmesi (saniye); capturedAt bu kadar kaydırılmıştır. Yoksa 0 (şema v7).</summary>
+    public long? ClockOffsetSeconds { get; set; }
+
     public DateTimeOffset? ImportedAt { get; set; }
 
     public string? CameraModel { get; set; }

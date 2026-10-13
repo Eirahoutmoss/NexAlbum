@@ -134,13 +134,20 @@ public sealed record AlbumProject
     public AlbumProject AddAsset(PhotoAsset asset)
     {
         ArgumentNullException.ThrowIfNull(asset);
-        return this with { Assets = [.. Assets, asset] };
+        return this with { Assets = [.. Assets, AlignClock(asset)] };
     }
 
     public AlbumProject AddAssets(IEnumerable<PhotoAsset> assets)
     {
         ArgumentNullException.ThrowIfNull(assets);
-        return this with { Assets = [.. Assets, .. assets] };
+        return this with { Assets = [.. Assets, .. assets.Select(AlignClock)] };
+    }
+
+    /// <summary>Yeni fotoğraf, aynı makine için daha önce girilmiş saat düzeltmesini alır.</summary>
+    private PhotoAsset AlignClock(PhotoAsset asset)
+    {
+        var offset = CameraClocks.OffsetOf(this, CameraClocks.KeyOf(asset));
+        return offset == asset.ClockOffset ? asset : asset.WithClockOffset(offset);
     }
 
     public AlbumProject ReplaceAsset(PhotoAsset asset)

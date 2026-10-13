@@ -236,6 +236,28 @@ public class MigrationTests
     }
 
     [Fact]
+    public void V6ProjectIsUpgradedToV7WithoutClockOffsets()
+    {
+        using var dir = new TempDir();
+        var path = dir.File("v6.albumproj");
+        var v6 = PackageBuilder.EditJson(PackageBuilder.Valid(), ProjectFormat.ProjectEntry, n =>
+        {
+            n["schemaVersion"] = 6;
+            foreach (var asset in n["assets"]!.AsArray())
+            {
+                asset!.AsObject().Remove("clockOffsetSeconds");
+            }
+        });
+        File.WriteAllBytes(path, v6);
+
+        var loaded = ProjectPackageReader.Load(path, new LoadOptions { BackupBeforeMigration = false });
+
+        loaded.OriginalSchemaVersion.Should().Be(6);
+        loaded.Project.Assets.Should().NotBeEmpty();
+        loaded.Project.Assets.Should().OnlyContain(a => a.ClockOffset == TimeSpan.Zero && a.CapturedAt == a.OriginalCapturedAt);
+    }
+
+    [Fact]
     public void BuiltInChainReachesTheCurrentVersion()
     {
         var node = new JsonObject { ["schemaVersion"] = 1 };

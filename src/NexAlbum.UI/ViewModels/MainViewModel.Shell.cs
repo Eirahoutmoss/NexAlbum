@@ -518,6 +518,7 @@ public sealed partial class MainViewModel
         new("Hikâye: bölümleri bul", "Hikâye", "Icon.Story", null, DetectStoryCommand, "zaman akış bölüm sabah öğle akşam gün tarih exif"),
         new("Hikâye: bölümlere göre albüm oluştur", "Hikâye", "Icon.Story", null, BuildFromStoryCommand, "otomatik akış bölüm"),
         new("Hikâye: seçili fotoğraftan yeni bölüm", "Hikâye", "Icon.Split", null, SplitStoryHereCommand, "böl ayır başlat"),
+        new("Hikâye: makine saatlerini eşitle", "Hikâye", "Icon.Clock", null, SyncClocksCommand, "saat farkı kamera makine fotoğrafçı eşitle kaydır exif zaman dilimi"),
         new("Galeri: favoriler", "Galeri", "Icon.Star", null, new RelayCommand(() => GalleryFilter = GalleryFilter.Favorites), "süzgeç filtre yıldız seçilen"),
         new("Favori yap / kaldır", "Galeri", "Icon.Star", "F", ToggleFavoriteCommand, "yıldız beğen seç öne çıkar"),
         new("Galeri: çekim zamanına göre sırala", "Galeri", "Icon.Gallery", null, new RelayCommand(() => SelectedGallerySort = GallerySortOptions[1]), "sırala tarih saat exif"),

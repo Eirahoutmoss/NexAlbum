@@ -282,6 +282,10 @@
                 <ContextMenu>
                   <MenuItem Header="Favori yap / kaldır" Command="{Binding ToggleFavoriteCommand}" InputGestureText="F" />
                   <MenuItem Header="Buradan yeni bölüm" Command="{Binding SplitStoryHereCommand}" />
+                  <MenuItem Header="Saat eşitleme: başvuru yap" Command="{Binding MarkClockReferenceCommand}"
+                            ToolTip="Aynı anı başka makineyle de çektiyseniz önce bu fotoğrafı başvuru yapın." />
+                  <MenuItem Header="Saati başvuruya eşitle" Command="{Binding MatchClockToReferenceCommand}"
+                            ToolTip="Bu fotoğrafın makinesinin tüm fotoğrafları, başvuru fotoğrafıyla aynı ana gelecek şekilde kaydırılır." />
                   <Separator />
                   <MenuItem Header="Düzenleyicide aç" Command="{Binding OpenInEditorCommand}" />
                   <MenuItem Header="Toplu rötuş…" Command="{Binding BatchEditCommand}" />
@@ -1189,6 +1193,39 @@
                 <CheckBox Margin="16,2,16,4" IsChecked="{Binding StoryOpeners}" Content="Her bölüm bir açılış sayfasıyla başlasın"
                           ToolTip="Bölümün ilk favorisi (yoksa ilk yatay fotoğrafı) tam sayfa, üzerinde bölüm adı." />
                 <CheckBox Margin="16,0,16,8" IsChecked="{Binding StoryEnabled}" Content="«Oto Oluştur» bölümleri kullansın" IsEnabled="{Binding HasStory}" />
+
+                <!-- Makine saatleri (Karar 09 Rev. 6) -->
+                <StackPanel Visibility="{Binding HasCameraClocks, Converter={StaticResource BoolToVisibility}}">
+                  <DockPanel Margin="0,0,16,0">
+                    <Button DockPanel.Dock="Right" Style="{StaticResource SmallButton}" Command="{Binding SyncClocksCommand}" VerticalAlignment="Bottom"
+                            Content="Otomatik eşitle" ToolTip="En çok fotoğraflı makineye göre diğerlerinin saat farkını çekim yoğunluklarından bulur." />
+                    <TextBlock Text="MAKİNE SAATLERİ" Style="{StaticResource PanelHeader}" />
+                  </DockPanel>
+                  <TextBlock Style="{StaticResource Caption}" Margin="16,-2,16,6" TextWrapping="Wrap"
+                             Text="İki makinenin saati farklıysa bölümler karışır. Farkı yazın (+1:07, -0:12), otomatik eşitleyin ya da aynı anın iki fotoğrafıyla eşitleyin (galeride sağ tık)." />
+                  <ItemsControl ItemsSource="{Binding CameraClockItems}" Margin="16,0,16,6" Focusable="False" AutomationProperties.Name="Makine saatleri">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <DockPanel Margin="0,0,0,6">
+                          <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" ui:Ui.Icon="{StaticResource Icon.Undo}" Width="26" Height="26"
+                                  Command="{Binding ResetCommand}" ToolTip="Düzeltmeyi kaldır" AutomationProperties.Name="Düzeltmeyi kaldır" />
+                          <Button DockPanel.Dock="Right" Style="{StaticResource SmallButton}" Content="+1 sa" Command="{Binding HourForwardCommand}" Margin="4,0,2,0"
+                                  ToolTip="Bir saat ileri (yaz/kış saati, zaman dilimi)" />
+                          <TextBox DockPanel.Dock="Right" Width="92" Text="{Binding Offset, UpdateSourceTrigger=LostFocus}" VerticalContentAlignment="Center"
+                                   TextAlignment="Center" AutomationProperties.Name="Saat farkı" ToolTip="Saat farkı: +1:07, -0:12, +1 sa 7 dk ya da dakika" Margin="4,0,0,0" />
+                          <Button DockPanel.Dock="Right" Style="{StaticResource SmallButton}" Content="−1 sa" Command="{Binding HourBackCommand}"
+                                  ToolTip="Bir saat geri" />
+                          <ui:NexIcon DockPanel.Dock="Left" Data="{StaticResource Icon.Camera}" Width="14" Height="14" Margin="0,0,8,0" VerticalAlignment="Center"
+                                      Foreground="{DynamicResource SecondaryTextBrush}" />
+                          <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" />
+                            <TextBlock Text="{Binding Details}" Style="{StaticResource Caption}" />
+                          </StackPanel>
+                        </DockPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
 
                 <!-- Boş durum -->
                 <Border Style="{StaticResource Card}" Margin="16,4,16,0" Padding="14,12" Visibility="{Binding HasNoStory, Converter={StaticResource BoolToVisibility}}">

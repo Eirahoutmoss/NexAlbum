@@ -74,6 +74,7 @@
   <!-- circle-alert -->
   <Geometry x:Key="Icon.Error">M 2 12 A 10 10 0 1 0 22 12 A 10 10 0 1 0 2 12 Z M 12 8 L 12 12 M 12 16 L 12.01 16</Geometry>
   <!-- clock -->
+  <Geometry x:Key="Icon.Camera">M 14.5 4 h -5 L 7 7 H 4 a 2 2 0 0 0 -2 2 v 9 a 2 2 0 0 0 2 2 h 16 a 2 2 0 0 0 2 -2 V 9 a 2 2 0 0 0 -2 -2 h -3 l -2.5 -3 Z M 9 13 A 3 3 0 1 0 15 13 A 3 3 0 1 0 9 13 Z</Geometry>
   <Geometry x:Key="Icon.Clock">M 2 12 A 10 10 0 1 0 22 12 A 10 10 0 1 0 2 12 Z M 12 6 v 6 l 4 2</Geometry>
   <!-- trash-2 -->
   <Geometry x:Key="Icon.Trash">M 10 11 v 6 M 14 11 v 6 M 19 6 v 14 a 2 2 0 0 1 -2 2 H 7 a 2 2 0 0 1 -2 -2 V 6 M 3 6 h 18 M 8 6 V 4 a 2 2 0 0 1 2 -2 h 4 a 2 2 0 0 1 2 2 v 2</Geometry>
