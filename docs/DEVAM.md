@@ -23,7 +23,7 @@ Son güncelleme: 13 Ekim 2026 (akşam). Başka bilgisayarda devam etmek için ö
 | Harici düzenleme (Karar 20) | Düzenleyicide aç (kayıt izlenir), toplu rötuş: Photoshop action'ı (COM) veya darktable/RawTherapee/özel araç; önce dene, önce/sonra, düzenlemeyi kaldır; orijinaller değişmez |
 | Arayüz | Galeri · tuval · sekmeli sağ panel (Sayfa / Tasarım / Şablonlar) · sayfa şeridi; Rötuş, Ayarlar, Hakkında |
 
-Testler: Windows 473+, Ubuntu 438+ — hepsi geçiyor. Katmanlar: Core, Rendering, Export, Assets, Persistence, Integrations (Karar 08 Rev. 2), UI. CI: `.github/workflows/build.yml`, `test.yml`.
+Testler: Windows 472, Ubuntu 438 — hepsi geçiyor; arayüz kapsamı %71,8. Katmanlar: Core, Rendering, Export, Assets, Persistence, Integrations (Karar 08 Rev. 2), UI. CI: `.github/workflows/build.yml`, `test.yml`.
 
 ## Elle denenmesi gerekenler
 Fare/sürükle-bırak davranışı otomatik test edilemiyor: Gezgin'den bırakma, galeriden yuvaya sürükleme,
@@ -37,7 +37,7 @@ Photoshop CI'da yok: "Rötuş → Action'ları yükle", bir action ile "Önce bi
 3. Metin öğeleri (başlık, tarih, "Özel Anlar" gibi yazılar) — model hazır, arayüz ve PDF çizimi yok.
 4. Marka: `docs/marka/` konseptinden Karar 17 → SVG logo, `.ico` uygulama simgesi, açılış ekranı, isteğe bağlı koyu/altın tema.
 5. Kapak ve sırt (Karar 03 sırt genişliği), JPG/PNG çıktı (Karar 11).
-6. Genel kod kapsamı %68,8 → hedef %70: UI dışı mantığı görünüm modellerine taşıyıp test etmek.
+6. Rötuş için sıradaki adımlar: Photoshop UXP paneli (isteğe bağlı), yüz/cilt odaklı hazır action paketi önerileri, rötuşçuya iş listesi devretme (Karar 20 §1).
 
 ## Notlar
 - Eski `feature/*` dalları uzak depoda duruyor (silinmeleri sorun değil); her şey `main`'de.
