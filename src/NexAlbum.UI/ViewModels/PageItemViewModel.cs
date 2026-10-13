@@ -79,6 +79,9 @@ public sealed class PageItemViewModel : ObservableObject
 
     public bool IsLocked => Page.Locked;
 
+    /// <summary>Sayfada not (ör. prova geri bildirimi) var mı?</summary>
+    public bool HasNotes => !string.IsNullOrWhiteSpace(Page.Notes);
+
     public string? TemplateId => Page.TemplateId;
 
     public int PhotoCount => Slots.Count(s => !s.IsEmpty);

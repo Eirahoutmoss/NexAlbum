@@ -110,6 +110,17 @@ public static class PageImageExporter
         return result;
     }
 
+    /// <summary>JPEG baytları (prova için; meta verisiz).</summary>
+    public static byte[] EncodeJpeg(BitmapSource image, int quality = 85)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        var encoder = new JpegBitmapEncoder { QualityLevel = Math.Clamp(quality, 1, 100) };
+        encoder.Frames.Add(BitmapFrame.Create(image));
+        using var stream = new MemoryStream();
+        encoder.Save(stream);
+        return stream.ToArray();
+    }
+
     private static string Save(BitmapSource image, string path, ImageFormat format, int quality)
     {
         BitmapEncoder encoder;

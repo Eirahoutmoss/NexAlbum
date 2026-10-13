@@ -1,3 +1,10 @@
+Revizyon 2 — 13/10/2026 (çevrimdışı HTML prova)
+Değişiklik: Müşteri onayı için tek dosyalık HTML prova eklendi. İstek: Hasan Güler (çift/müşteri için çevrimdışı prova, beğeni/not, geri içe aktarma).
+- Dosya: "ad - prova.html"; sayfalar (ve kapak) uzun kenarı ~1600 piksel JPEG olarak dosyaya gömülür (data URI). İnternet, sunucu, dış yazı tipi ya da betik yoktur; dosya hiçbir yere veri göndermez. Açık/koyu tema, telefonda da okunur.
+- Müşteri her sayfayı ♥ ile beğenir, not yazar, genel not bırakır; yazılanlar tarayıcıda saklanır. «Geri bildirimi kaydet» küçük bir JSON indirir: {format: "nexalbum-proof-feedback", version: 1, projectId, pages: [{id, liked, note}], general}.
+- İçe aktarma: başka projenin dosyası reddedilir; notlar sayfa notuna "Prova: ♥ beğenildi · not" satırı olarak yazılır (önceki prova satırı değişir, tasarımcının notları kalır), genel not proje açıklamasına. Not 2000 karakterle sınırlı, denetim karakterleri atılır. Geri alınabilir. Notlu sayfalar şeritte işaretlenir, not sayfa panelinde görünür.
+Değişmeyenler: prova baskı dosyası değildir.
+
 Revizyon 1 — 13/10/2026 (kapak PDF'i ve JPG/PNG önizleme)
 Değişiklik: (1) Kapak varsa baskı PDF'inin yanına tek sayfalık "ad_kapak.pdf" yazılır: TrimBox = kapak yaprağı (arka + sırt + ön), taşma payı ve kesim işaretleri iç sayfalarla aynı kural; kesim işaretleri açıksa katlama (sırt) çizgileri üstte ve altta taşma payının dışında 0,25 pt çizgiyle işaretlenir. (2) §4 JPG ve §7.1 PNG uygulandı: sayfalar ekrandaki çizimle aynı sonuçla, bitmiş ölçüye kırpılarak 150 DPI kaydedilir ("ad_sayfa-001.jpg", kapak "ad_kapak.jpg"); JPEG kalitesi proje ayarından (varsayılan 90). "Bu dosya önizleme amaçlıdır. Baskı için PDF çıktısı kullanın." notu arayüzde ve JPEG meta verisinde (açıklama) yer alır. Renk sRGB.
 Değişmeyenler: baskı dosyası PDF'tir; JPG/PNG önizlemedir.

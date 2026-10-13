@@ -473,7 +473,7 @@ public sealed partial class MainViewModelTests : IDisposable
         }));
     }
 
-    private sealed class FakeDialogs : IDialogService
+    internal sealed class FakeDialogs : IDialogService
     {
         public NewProjectChoice? NewProject { get; init; }
 
@@ -530,6 +530,14 @@ public sealed partial class MainViewModelTests : IDisposable
         public string? ImagePath { get; set; }
 
         public string? AskImagePath(string suggestedName) => ImagePath;
+
+        public string? ProofPath { get; set; }
+
+        public string? FeedbackPath { get; set; }
+
+        public string? AskProofPath(string suggestedName) => ProofPath;
+
+        public string? AskProofFeedbackPath() => FeedbackPath;
 
         public void Reveal(string path) => Revealed = path;
 
