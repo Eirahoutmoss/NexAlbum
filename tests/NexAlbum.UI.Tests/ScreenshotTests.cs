@@ -142,6 +142,16 @@ public sealed class ScreenshotTests : IDisposable
                 Capture(main, "14-konumlandirma-gece").Should().BeTrue();
                 vm.IsPositioning = false;
 
+                // Fotoğraf ayarları: sıcak, pozlamalı ve hafif düzeltilmiş; panel görünür.
+                vm.AdjustExposure = 25;
+                vm.AdjustTemperature = 45;
+                vm.AdjustContrast = 20;
+                vm.Straighten = 3;
+                Settle(main);
+                All<TextBlock>(main).First(t => t.Text == "FOTOĞRAF AYARLARI").BringIntoView();
+                Settle(main);
+                Capture(main, "17-fotograf-ayarlari-gece").Should().BeTrue();
+
                 vm.DetectStory();
                 vm.Chapters.Should().HaveCount(4);
                 vm.SelectedChapter = vm.Chapters[1];
