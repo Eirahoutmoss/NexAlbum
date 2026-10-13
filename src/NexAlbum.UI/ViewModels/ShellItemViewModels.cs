@@ -12,6 +12,9 @@ public enum GalleryFilter
     Used,
     Edited,
     Favorites,
+
+    /// <summary>Hikâye panelinde seçili bölümün fotoğrafları.</summary>
+    Chapter,
 }
 
 /// <summary>Galeri sıralaması (Karar 12 §5.6).</summary>

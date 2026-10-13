@@ -74,6 +74,10 @@ ICONS = {
     "Plus": "plus",
     "Shapes": "shapes",
     "Expand": "expand",
+    "Story": "book-heart",
+    "Merge": "merge",
+    "Split": "split",
+    "Sparkles": "sparkles",
 }
 
 NUM = r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?"

@@ -126,7 +126,7 @@ public sealed class AutoLayoutEngine : ILayoutEngine
         }
 
         var groupOptions = story is null ? options : options with { TargetPageCount = null };
-        var plannedGroups = new List<(Segment Segment, ClassifiedPhoto? Hero, IReadOnlyList<PageGroup> Groups, List<ClassifiedPhoto> Rest)>();
+        var plannedGroups = new List<(Segment Segment, ClassifiedPhoto? Hero, IReadOnlyList<PageGroup> Groups, List<ClassifiedPhoto> Remaining)>();
         foreach (var segment in segments)
         {
             ClassifiedPhoto? hero = null;
