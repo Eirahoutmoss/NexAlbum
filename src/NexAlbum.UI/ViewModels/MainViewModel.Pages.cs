@@ -70,7 +70,7 @@ public sealed partial class MainViewModel
             return;
         }
 
-        var (updated, index) = PageOperations.AddBlank(project, SelectedPage?.Index ?? (Pages.Count - 1), clock.GetUtcNow());
+        var (updated, index) = PageOperations.AddBlank(project, SelectedPage is { IsCover: false } current ? current.Index : Pages.Count - 1, clock.GetUtcNow());
         UpdateProject(updated, "Sayfa ekle");
         SelectedPage = Pages.ElementAtOrDefault(index);
         Status = F("Sayfa {0} eklendi. «Şablonlar» sekmesinden bir düzen seçin ya da galeriden fotoğraf sürükleyin.", index + 1);
@@ -78,7 +78,7 @@ public sealed partial class MainViewModel
 
     public void DuplicatePage()
     {
-        if (project is null || SelectedPage is null)
+        if (project is null || SelectedPage is null or { IsCover: true })
         {
             return;
         }
@@ -91,7 +91,7 @@ public sealed partial class MainViewModel
 
     public void DeletePage()
     {
-        if (project is null || SelectedPage is null)
+        if (project is null || SelectedPage is null or { IsCover: true })
         {
             return;
         }
@@ -156,10 +156,10 @@ public sealed partial class MainViewModel
         UndoCommand = new RelayCommand(Undo, () => HasProject && history.CanUndo && !IsBusy);
         RedoCommand = new RelayCommand(Redo, () => HasProject && history.CanRedo && !IsBusy);
         AddPageCommand = new RelayCommand(AddPage, () => HasProject && !IsBusy);
-        DuplicatePageCommand = new RelayCommand(DuplicatePage, () => SelectedPage is not null && !IsBusy);
-        DeletePageCommand = new RelayCommand(DeletePage, () => SelectedPage is { IsLocked: false } && !IsBusy);
+        DuplicatePageCommand = new RelayCommand(DuplicatePage, () => SelectedPage is { IsCover: false } && !IsBusy);
+        DeletePageCommand = new RelayCommand(DeletePage, () => SelectedPage is { IsLocked: false, IsCover: false } && !IsBusy);
         MovePageLeftCommand = new RelayCommand(() => ShiftPage(-1), () => SelectedPage is { IsLocked: false, Index: > 0 } && !IsBusy);
-        MovePageRightCommand = new RelayCommand(() => ShiftPage(1), () => SelectedPage is { IsLocked: false } page && page.Index < Pages.Count - 1 && !IsBusy);
+        MovePageRightCommand = new RelayCommand(() => ShiftPage(1), () => SelectedPage is { IsLocked: false, IsCover: false } page && page.Index < Pages.Count - 1 && !IsBusy);
     }
 
     private void RefreshPageCommands()

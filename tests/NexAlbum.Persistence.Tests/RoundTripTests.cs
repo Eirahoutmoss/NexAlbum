@@ -58,7 +58,7 @@ public class RoundTripTests
         ProjectPackageWriter.Save(path, Samples.FullProject(), Options() with { Portable = true, AppVersion = "0.2.0" });
 
         var loaded = ProjectPackageReader.Load(path);
-        loaded.Manifest.Should().Be(new PackageManifest("1.0", 7, Samples.Now, "0.2.0", Samples.FullProject().Id, "Ahmet & Zeynep Düğün Albümü", Portable: true));
+        loaded.Manifest.Should().Be(new PackageManifest("1.0", 8, Samples.Now, "0.2.0", Samples.FullProject().Id, "Ahmet & Zeynep Düğün Albümü", Portable: true));
         loaded.Project.AppVersion.Should().Be("0.2.0");
         loaded.Entries.Should().Contain(new[]
         {
@@ -75,7 +75,8 @@ public class RoundTripTests
         ProjectPackageWriter.Save(path, Samples.FullProject(), Options());
         var json = ReadEntry(path, ProjectFormat.ProjectEntry);
 
-        json.Should().Contain("\"schemaVersion\": 7", "şema v7: makine saat düzeltmesi (Karar 09 Rev. 6)");
+        json.Should().Contain("\"schemaVersion\": 8", "şema v8: kapak (Karar 09 Rev. 7)");
+        json.Should().Contain("\"cover\": {", "kapak yaprağı yazılır");
         json.Should().Contain("\"clockOffsetSeconds\": -3780", "saat düzeltmesi saniye olarak yazılır");
         json.Should().Contain("\"blackWhite\": true", "siyah-beyaz yazılır");
         json.Should().Contain("\"transition\": \"dipToWhite\"", "elle seçilen geçiş yazılır");

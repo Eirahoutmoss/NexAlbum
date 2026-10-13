@@ -106,7 +106,7 @@ public sealed partial class MainViewModel
             return;
         }
 
-        PresentationRequested?.Invoke(this, new PresentationViewModel(project, SelectedPage?.Index ?? 0, spreads: true));
+        PresentationRequested?.Invoke(this, new PresentationViewModel(project, Math.Max(0, SelectedPage?.Index ?? 0), spreads: true));
     }
 
     public CommandPaletteViewModel Palette { get; private set; } = null!;
@@ -518,6 +518,9 @@ public sealed partial class MainViewModel
         new("Hikâye: bölümleri bul", "Hikâye", "Icon.Story", null, DetectStoryCommand, "zaman akış bölüm sabah öğle akşam gün tarih exif"),
         new("Hikâye: bölümlere göre albüm oluştur", "Hikâye", "Icon.Story", null, BuildFromStoryCommand, "otomatik akış bölüm"),
         new("Hikâye: seçili fotoğraftan yeni bölüm", "Hikâye", "Icon.Split", null, SplitStoryHereCommand, "böl ayır başlat"),
+        new("Kapak oluştur / yeniden oluştur", "Albüm", "Icon.Book", null, CreateCoverCommand, "kapak sırt ön arka cilt sert yumuşak"),
+        new("Kapağı göster", "Albüm", "Icon.Book", null, ShowCoverCommand, "kapak sırt"),
+        new("Sayfaları JPG/PNG olarak kaydet (önizleme)", "Albüm", "Icon.Image", null, ExportImagesCommand, "jpg jpeg png görüntü resim önizleme paylaş instagram dışa aktar"),
         new("Yuva çerçevesini düzenle (taşı, boyutlandır, köşeler)", "Yuva", "Icon.Shapes", null, ToggleFrameEditingCommand, "çerçeve yuva boyut köşe biçim üçgen altıgen hizala taşı"),
         new("Hikâye: makine saatlerini eşitle", "Hikâye", "Icon.Clock", null, SyncClocksCommand, "saat farkı kamera makine fotoğrafçı eşitle kaydır exif zaman dilimi"),
         new("Galeri: favoriler", "Galeri", "Icon.Star", null, new RelayCommand(() => GalleryFilter = GalleryFilter.Favorites), "süzgeç filtre yıldız seçilen"),

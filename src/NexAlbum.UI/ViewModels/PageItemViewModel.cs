@@ -24,14 +24,19 @@ public sealed class PageItemViewModel : ObservableObject
     private Brush? chapterColor;
     private FrameEditViewModel? frameEdit;
 
-    public PageItemViewModel(AlbumPage page, int index, AlbumProject project)
+    /// <param name="page">Sayfa.</param>
+    /// <param name="index">Sıra (kapakta −1).</param>
+    /// <param name="project">Proje.</param>
+    /// <param name="cover">Kapak yaprağı geometrisi; verilirse sayfa kapak olarak çizilir (yaprak ölçüsü, katlama çizgileri).</param>
+    public PageItemViewModel(AlbumPage page, int index, AlbumProject project, CoverGeometry? cover = null)
     {
         ArgumentNullException.ThrowIfNull(page);
         ArgumentNullException.ThrowIfNull(project);
         Page = page;
         Index = index;
+        Cover = cover;
 
-        var pageRect = project.PageRect;
+        var pageRect = cover is null ? project.PageRect : RectMm.FromSize(cover.Sheet);
         var bleed = project.Profile.Bleed.Value is { } b ? pageRect.Inflate(b) : pageRect;
         Origin = bleed;
         CanvasWidth = bleed.Width;
@@ -45,6 +50,9 @@ public sealed class PageItemViewModel : ObservableObject
         Slots = [.. page.Slots.OrderBy(s => s.ZIndex).Select(s => new SlotItemViewModel(s, Offset(s.Bounds), s.Placement is { } p && assets.TryGetValue(p.AssetId, out var a) ? a : null))];
         Texts = [.. page.Elements.OfType<TextElement>().OrderBy(t => t.ZIndex).Select(t => new TextItemViewModel(t, Offset(t.Bounds)))];
         PageBounds = pageRect;
+        FoldLines = cover is null
+            ? []
+            : [.. cover.Folds.Select(f => new SnapLineViewModel(f - Origin.X, 0, f - Origin.X, CanvasHeight, SnapKind.PageEdge))];
 
         background = DesignBrushes.Fill(page.Background);
         if (page.Background is { Mode: BackgroundMode.Image, ImageAssetId: { } id } fill && assets.TryGetValue(id, out var image))
@@ -59,7 +67,15 @@ public sealed class PageItemViewModel : ObservableObject
 
     public int Number => Index + 1;
 
-    public string Title => string.Format(CultureInfo.CurrentCulture, "Sayfa {0}", Number);
+    public string Title => IsCover ? "Kapak" : string.Format(CultureInfo.CurrentCulture, "Sayfa {0}", Number);
+
+    /// <summary>Kapak yaprağı geometrisi; iç sayfada null.</summary>
+    public CoverGeometry? Cover { get; }
+
+    public bool IsCover => Cover is not null;
+
+    /// <summary>Kapakta sırt katlama çizgileri (tuval koordinatı, mm); iç sayfada boş.</summary>
+    public IReadOnlyList<SnapLineViewModel> FoldLines { get; }
 
     public bool IsLocked => Page.Locked;
 
@@ -193,6 +209,24 @@ public sealed class PageItemViewModel : ObservableObject
     }
 
     /// <summary>Tuvalde gösterilirken yüksek çözünürlüklü önizleme yüklenir; ayrılınca bırakılır (bellek).</summary>
+    /// <summary>Görüntü çıktısı için fotoğrafları ve fon görselini hemen yükler (genişlik piksel).</summary>
+    public void LoadNow(AlbumProject project, int width)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+        foreach (var slot in Slots)
+        {
+            slot.LoadNow(width);
+        }
+
+        if (Page.Background is { Mode: BackgroundMode.Image, ImageAssetId: { } id } fill && project.FindAsset(id) is { } asset
+            && ImageLoader.Shared.Load(asset.Effective(), width) is { } image)
+        {
+            var brush = new ImageBrush(image) { Stretch = Stretch.UniformToFill, Opacity = fill.Opacity };
+            brush.Freeze();
+            Background = brush;
+        }
+    }
+
     public void SetDetail(bool detail)
     {
         foreach (var slot in Slots)
@@ -483,6 +517,17 @@ public sealed class SlotItemViewModel : ObservableObject
             }
 
             return thumbnail;
+        }
+    }
+
+    /// <summary>Görüntü çıktısı için fotoğrafı istenen genişlikte hemen (eşzamanlı) yükler.</summary>
+    public void LoadNow(int width)
+    {
+        ++detailVersion;
+        if (Asset is not null)
+        {
+            detail = ImageLoader.Shared.Load(Asset, width);
+            OnPropertyChanged(nameof(Image));
         }
     }
 

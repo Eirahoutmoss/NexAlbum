@@ -301,6 +301,32 @@ public sealed class PdfExportTests : IDisposable
         return -1;
     }
 
+    [Fact]
+    public void CoverIsOneSheetWithFoldMarks()
+    {
+        var profile = Profile() with { Cover = new CoverSpec(CoverType.Hardcover, new SizeMm(310, 300), null, new SpineSpec(16)) };
+        var project = Project(profile);
+        var geometry = Core.Layout.CoverLayout.Geometry(profile, out _)!;
+        project = project with { Cover = Core.Layout.CoverLayout.Create(project, geometry, Now) };
+        var path = Path.Combine(dir, "album.pdf");
+
+        var result = PdfAlbumExporter.ExportCover(project, geometry, PdfAlbumExporter.CoverPath(path));
+
+        result.Files.Should().ContainSingle().Which.Should().EndWith("album_kapak.pdf");
+        using var pdf = PdfReader.Open(result.Files[0], PdfDocumentOpenMode.Import);
+        pdf.PageCount.Should().Be(1);
+        var page = pdf.Pages[0];
+        (page.TrimBox.Width * 25.4 / 72).Should().BeApproximately(636, 0.01, "arka 310 + sırt 16 + ön 310");
+        (page.TrimBox.Height * 25.4 / 72).Should().BeApproximately(300, 0.01);
+        (page.Width.Point * 25.4 / 72).Should().BeApproximately(636 + 6 + 16, 0.01, "taşma payı ve işaret payı");
+
+        var sheet = SheetGeometry.Create(geometry.Sheet, EdgesMm.Uniform(3), cropMarks: true);
+        var marks = PdfAlbumExporter.FoldMarks(sheet, geometry, EdgesMm.Uniform(3), 3, 5);
+        marks.Should().HaveCount(4, "iki katlama, üstte ve altta");
+        marks.Select(m => m.X1).Distinct().Should().Equal(sheet.Trim.X + 310, sheet.Trim.X + 326);
+        marks.Should().OnlyContain(m => m.Y2 <= sheet.Trim.Y - 3 || m.Y1 >= sheet.Trim.Bottom + 3, "taşma payının dışında");
+    }
+
     private sealed class SyncProgress(Action<int> report) : IProgress<int>
     {
         public void Report(int value) => report(value);

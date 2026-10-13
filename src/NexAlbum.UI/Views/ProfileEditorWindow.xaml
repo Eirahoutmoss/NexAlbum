@@ -28,6 +28,7 @@
       <Grid.RowDefinitions>
         <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
         <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+        <RowDefinition /><RowDefinition /><RowDefinition />
       </Grid.RowDefinitions>
 
       <TextBlock Grid.Row="0" Text="Profil adı" Style="{StaticResource Label}" />
@@ -74,8 +75,29 @@
       <TextBlock Grid.Row="8" Text="Kesim işaretleri" Style="{StaticResource Label}" />
       <CheckBox Grid.Row="8" Grid.Column="1" IsChecked="{Binding CropMarks}" Content="PDF'e kesim işaretleri ekle" VerticalAlignment="Center" />
 
-      <TextBlock Grid.Row="9" Text="Doğrulama" Style="{StaticResource Label}" />
-      <CheckBox Grid.Row="9" Grid.Column="1" IsChecked="{Binding Verified}" Content="Bu değerleri baskı evimden aldım" VerticalAlignment="Center" />
+      <TextBlock Grid.Row="9" Text="Kapak" Style="{StaticResource Label}" />
+      <StackPanel Grid.Row="9" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+        <ComboBox x:Name="CoverBox" DisplayMemberPath="Name" SelectedItem="{Binding CoverType}" Width="140" Margin="0,0,6,0" />
+        <TextBlock Text="Sırt" VerticalAlignment="Center" Margin="6,0,6,0" />
+        <TextBox Text="{Binding SpineWidth, UpdateSourceTrigger=PropertyChanged}" ToolTip="Sırt genişliği (mm) — baskı evinizden alın; sayfa sayısına göre değişir" />
+        <TextBlock Text="mm" Style="{StaticResource Caption}" VerticalAlignment="Center" />
+      </StackPanel>
+
+      <TextBlock Grid.Row="10" Text="Ön kapak (G × Y)" Style="{StaticResource Label}" />
+      <StackPanel Grid.Row="10" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+        <TextBox Text="{Binding FrontWidth, UpdateSourceTrigger=PropertyChanged}" ToolTip="Ön kapak genişliği (mm)" />
+        <TextBox Text="{Binding FrontHeight, UpdateSourceTrigger=PropertyChanged}" ToolTip="Ön kapak yüksekliği (mm)" />
+      </StackPanel>
+
+      <TextBlock Grid.Row="11" Text="Arka kapak (G × Y)" Style="{StaticResource Label}" />
+      <StackPanel Grid.Row="11" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+        <TextBox Text="{Binding BackWidth, UpdateSourceTrigger=PropertyChanged}" ToolTip="Arka kapak genişliği (mm); boşsa ön kapakla aynı alınır" />
+        <TextBox Text="{Binding BackHeight, UpdateSourceTrigger=PropertyChanged}" ToolTip="Arka kapak yüksekliği (mm)" />
+        <TextBlock Text="boşsa ön kapakla aynı" Style="{StaticResource Caption}" VerticalAlignment="Center" />
+      </StackPanel>
+
+      <TextBlock Grid.Row="12" Text="Doğrulama" Style="{StaticResource Label}" />
+      <CheckBox Grid.Row="12" Grid.Column="1" IsChecked="{Binding Verified}" Content="Bu değerleri baskı evimden aldım" VerticalAlignment="Center" />
     </Grid>
 
     <TextBlock x:Name="Messages" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{DynamicResource ErrorBrush}" />

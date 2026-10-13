@@ -49,6 +49,9 @@ public interface IDialogService
 
     string? AskPdfPath(string suggestedName);
 
+    /// <summary>JPG/PNG çıktısının taban dosya adını sordurur (sayfa numaraları eklenir); iptalde null.</summary>
+    string? AskImagePath(string suggestedName);
+
     /// <summary>Çıktı klasörünü dosya gezgininde gösterir.</summary>
     void Reveal(string path);
 

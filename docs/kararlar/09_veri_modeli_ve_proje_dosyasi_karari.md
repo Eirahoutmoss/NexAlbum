@@ -38,6 +38,10 @@ Eşitleme yolları: (1) farkı elle yazmak (+1:07, −0:12, ±1 sa düğmeleri),
 Göç (§14): `V6ToV7CameraClocks` — yapı değişmez, yalnızca sürüm yükselir.
 Gerekçe: İki fotoğrafçı/iki makine ile çekilen etkinliklerde saat farkı bölümleri karıştırır.
 
+Revizyon 7 — 13/10/2026 (şema v8)
+Değişiklik: project.json şema sürümü 7 → **8**. Projeye isteğe bağlı "cover" alanı eklendi: sayfa biçiminde (id "cover", type "frontCover") kapak yaprağı; koordinatlar yaprağın sol üst köşesine göre (arka kapak solda, sırt, ön kapak sağda; Karar 03 Rev. 1). Kapak "pages" dizisine girmez; sayfa sayısı ve sırası değişmez. Varlık silinince kapaktaki yerleşimi de temizlenir.
+Göç (§14): `V7ToV8Cover` — yapı değişmez, yalnızca sürüm yükselir.
+
 1. Karar Özeti
 NexAlbum'in veri modeli katmanlı, sürümlenmiş, açık ve taşınabilir olacaktır.
 
