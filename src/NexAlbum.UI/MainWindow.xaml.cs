@@ -17,7 +17,7 @@ namespace NexAlbum.UI;
 public partial class MainWindow : Window
 {
     /// <summary>Galeri karesinin en küçük genişliği (DIP); sütun sayısı buna göre hesaplanır.</summary>
-    private const double MinTileWidth = 92;
+    private const double MinTileWidth = 84;
 
     public MainWindow()
         : this(new JsonAppSettingsStore())

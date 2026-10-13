@@ -324,7 +324,7 @@
                       Width="{Binding Zoom.DisplayWidth}" Height="{Binding Zoom.DisplayHeight}"
                       Visibility="{Binding Zoom.HasPage, Converter={StaticResource BoolToVisibility}}">
                 <Border.Effect>
-                  <DropShadowEffect BlurRadius="28" ShadowDepth="6" Direction="270" Opacity="0.45" Color="Black" />
+                  <DropShadowEffect BlurRadius="28" ShadowDepth="6" Direction="270" Opacity="{DynamicResource PageShadowOpacity}" Color="{DynamicResource ShadowColor}" />
                 </Border.Effect>
                 <ContentControl Content="{Binding SelectedPage}" Focusable="False">
                   <ContentControl.ContentTemplate>
