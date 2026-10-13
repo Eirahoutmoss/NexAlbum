@@ -58,6 +58,9 @@ public interface IDialogService
     /// <summary>Provadan dönen geri bildirim dosyasını (.json) seçtirir; iptalde null.</summary>
     string? AskProofFeedbackPath();
 
+    /// <summary>Yüklenecek eklenti paketini (.nexpaket) seçtirir; iptalde null.</summary>
+    string? AskExtensionPackagePath();
+
     /// <summary>Çıktı klasörünü dosya gezgininde gösterir.</summary>
     void Reveal(string path);
 

@@ -56,7 +56,7 @@ public sealed partial class MainViewModelTests
         file.Should().StartWith(Path.Combine(dir, "duzenli")).And.EndWith("-elle.png");
         File.Exists(file).Should().BeTrue();
 
-        File.WriteAllBytes(file, [.. TinyPng, 1, 2, 3]);
+        WriteWhenFree(file, [.. TinyPng, 1, 2, 3]);
         vm.OnExternalEditSaved(vm.Project!.Photos[0].Id, file);
 
         var asset = vm.Project!.Photos[0];
@@ -83,7 +83,7 @@ public sealed partial class MainViewModelTests
         vm.Project!.Photos[0].Edit.Should().BeNull();
         File.Exists(file).Should().BeTrue("düzenlenmiş dosya silinmez");
 
-        File.WriteAllText(file, "bozuk");
+        WriteWhenFree(file, "bozuk"u8.ToArray());
         vm.OnExternalEditSaved(vm.Project!.Photos[0].Id, file);
         vm.Project!.Photos[0].Edit.Should().BeNull();
         vm.Status.Should().Contain("okunamadı");
@@ -210,6 +210,26 @@ public sealed partial class MainViewModelTests
         {
             Scripts.Add(script);
             return Reply;
+        }
+    }
+
+    /// <summary>
+    /// Düzenleyicinin kaydını taklit eder. Tuval görüntüyü arka planda okurken dosya kısa süre kilitli olabilir (gerçek bir
+    /// düzenleyici de kaydetmeyi yeniler); en fazla 3 sn denenir.
+    /// </summary>
+    private static void WriteWhenFree(string path, byte[] data)
+    {
+        for (var attempt = 0; ; attempt++)
+        {
+            try
+            {
+                File.WriteAllBytes(path, data);
+                return;
+            }
+            catch (IOException) when (attempt < 30)
+            {
+                Thread.Sleep(100);
+            }
         }
     }
 }

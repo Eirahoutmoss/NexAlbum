@@ -73,6 +73,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         InitializeFrame();
         InitializeCover();
         InitializeProof();
+        InitializeExtensions();
         InitializeShell();
     }
 

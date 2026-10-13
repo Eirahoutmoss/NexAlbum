@@ -17,6 +17,7 @@ Kararların kendisi değişmez; bu dosya yalnızca yönlendirir. Tam liste ve ma
 | Photoshop/harici düzenleyici, toplu rötuş, düzenlenmiş sürüm | 20 Harici düzenleyici | §2–§5 |
 | Renk, tema, logo, yazı tipi, ikon, açılış ekranı | 17 Marka | §3–§9 |
 | Hikâye filmi, sosyal medya klibi, FFmpeg, müzik | 21 Hikâye filmi | §2–§7 |
+| Eklenti/stil paketi (.nexpaket), yeni film stilleri | 22 Eklenti paketleri | §2–§4 |
 | Özellik ekle/reddet | 07 Rakip sentezi, 01, 02, 06 | Karar özeti |
 
 ## Hızlı kurallar

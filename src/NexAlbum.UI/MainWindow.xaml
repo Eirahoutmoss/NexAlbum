@@ -138,6 +138,10 @@
                   <MenuItem Header="Çevrimdışı HTML prova oluştur…" Command="{Binding ExportProofCommand}"
                             ToolTip="Tek dosya: müşteri sayfaları beğenir, not yazar ve küçük bir geri bildirim dosyası indirir." />
                   <MenuItem Header="Prova geri bildirimini içe aktar…" Command="{Binding ImportProofCommand}" />
+                  <Separator />
+                  <MenuItem Header="Eklenti paketi yükle (.nexpaket)…" Command="{Binding InstallExtensionCommand}"
+                            ToolTip="Yeni film stilleri (ileride yazı/çerçeve stilleri) getiren veri paketleri; kod çalıştırmaz." />
+                  <MenuItem Header="Eklenti klasörünü aç" Command="{Binding ShowExtensionsFolderCommand}" />
                 </ContextMenu>
               </Button.ContextMenu>
             </Button>

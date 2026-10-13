@@ -197,6 +197,26 @@ public sealed class ScreenshotTests : IDisposable
                     filmWindow.Close();
                 }
 
+                // Eklenti paketi: örnek paketin «Noir» stili listede paket adıyla, önizlemede siyah-beyaz.
+                var sample = Persistence.Extensions.ExtensionPackageReader.Read(
+                    File.ReadAllText(Path.Combine(RepositoryRoot(), "samples", "eklentiler", "ornek-sinema", "manifest.json")), "ornek");
+                Core.Extensions.ExtensionCatalog.Use(new Core.Extensions.ExtensionCatalog([sample]));
+                try
+                {
+                    using var film = vm.CreateFilm()!;
+                    film.SelectedStyle = Core.Video.VideoStyle.Find("ornek-sinema/noir");
+                    film.PreviewSeconds = 4.2;
+                    var filmWindow = Show(new VideoWindow(film), 1320, 840);
+                    film.RenderPreviewNow();
+                    Settle(filmWindow);
+                    Capture(filmWindow, "21-film-eklenti-gece").Should().BeTrue();
+                    filmWindow.Close();
+                }
+                finally
+                {
+                    Core.Extensions.ExtensionCatalog.Use(new Core.Extensions.ExtensionCatalog([]));
+                }
+
                 var show = new PresentationWindow(new ViewModels.PresentationViewModel(vm.Project!, vm.SelectedPage!.Index, spreads: true)) { WindowState = WindowState.Normal };
                 Capture(Show(show, 1440, 900), "08-sunum").Should().BeTrue();
                 show.Hide();
@@ -223,6 +243,18 @@ public sealed class ScreenshotTests : IDisposable
     /// Fotoğrafı en çok olan sayfaya "Karşılıklı Üçgenler + Üçlü" uygulanır: hipotenüsleri karşılıklı iki üçgen ve
     /// yanında üç dikdörtgen (geometrik şablonların tipik örneği).
     /// </summary>
+    /// <summary>Depo kökü (NexAlbum.slnx'in bulunduğu klasör).</summary>
+    private static string RepositoryRoot()
+    {
+        var dir = AppContext.BaseDirectory;
+        while (dir is not null && !File.Exists(Path.Combine(dir, "NexAlbum.slnx")))
+        {
+            dir = Path.GetDirectoryName(dir);
+        }
+
+        return dir ?? throw new DirectoryNotFoundException("Depo kökü bulunamadı.");
+    }
+
     private static void ShowGeometricPage(ViewModels.MainViewModel vm)
     {
         vm.SelectedPage = vm.Pages.OrderByDescending(p => p.PhotoCount).ThenBy(p => p.Index).First();
