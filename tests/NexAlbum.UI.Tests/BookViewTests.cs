@@ -142,6 +142,40 @@ public class PresentationTests
     }
 
     [Fact]
+    public void PresentationEffectsCycleAndBrowseLabelsViews()
+    {
+        var show = new PresentationViewModel(Project(5), startPageIndex: 0, spreads: true);
+
+        show.Effect.Kind.Should().Be(Core.Video.TransitionKind.Aperture, "varsayılan Aperture");
+        show.EffectText.Should().Be("Efekt: Aperture");
+        PresentationViewModel.Effects.Should().NotContain(e => e.Kind == Core.Video.TransitionKind.Cut);
+        PresentationViewModel.Effects.Count.Should().BeGreaterThanOrEqualTo(30);
+
+        var seen = new HashSet<Core.Video.TransitionKind>();
+        for (var i = 0; i < PresentationViewModel.Effects.Count; i++)
+        {
+            seen.Add(show.Effect.Kind);
+            show.CycleEffect();
+        }
+
+        seen.Should().HaveCount(PresentationViewModel.Effects.Count, "E tüm efektleri dolaşır");
+        show.Effect.Kind.Should().Be(Core.Video.TransitionKind.Aperture, "başa döner");
+        show.CycleEffect(-1);
+        show.Effect.Kind.Should().NotBe(Core.Video.TransitionKind.Aperture, "Shift+E geri gider");
+        show.UseEffect(Core.Video.TransitionKind.Honeycomb);
+        show.Effect.Name.Should().Be("Petek");
+        show.EffectDuration.Should().BeGreaterThan(TimeSpan.FromMilliseconds(1100), "petek biraz daha uzun sürer");
+
+        show.ShortCounter.Should().Be("01 — 03");
+        show.Next();
+        show.ShortCounter.Should().Be("02 — 03");
+        PresentationViewModel.Label(show.Views[1]).Should().Be("Sayfa 3–4");
+        PresentationViewModel.Label(show.Views[2]).Should().Be("Sayfa 5");
+        show.Autoplay = true;
+        show.AutoplayText.Should().Contain("Otomatik");
+    }
+
+    [Fact]
     public void SinglePagesHideGuidesAndShowTheTrimmedPage()
     {
         var show = new PresentationViewModel(Project(3), startPageIndex: 2, spreads: false);

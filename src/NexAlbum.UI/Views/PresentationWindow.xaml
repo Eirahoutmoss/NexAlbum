@@ -6,8 +6,8 @@
         Title="Sunum — NexAlbum" WindowStyle="None" ResizeMode="NoResize" WindowState="Maximized" WindowStartupLocation="CenterOwner"
         ShowInTaskbar="False" Background="#0A0A0B" Foreground="#ECE8E1" UseLayoutRounding="True"
         PreviewKeyDown="OnKey" MouseMove="OnActivity">
-  <!-- Sunum modu (Karar 17 §10): arayüz çekilir, yalnızca sayfalar kalır. Renkler temadan bağımsızdır: koyu sahne. -->
-  <Grid x:Name="Root" MouseLeftButtonUp="OnClick" Background="Transparent">
+  <!-- Sunum modu (Karar 17 §10, Karar 23): arayüz çekilir; sayfalar pro geçiş efektleriyle değişir, «Göz at» odak şeridi. -->
+  <Grid>
     <Grid.Resources>
       <!-- Bitmiş sayfa: tuval taşma payı kadar kaydırılıp kırpılır -->
       <DataTemplate x:Key="PageTemplate">
@@ -24,52 +24,118 @@
         <GradientStop Offset="0.58" Color="#1F000000" />
         <GradientStop Offset="1" Color="#00000000" />
       </LinearGradientBrush>
-    </Grid.Resources>
-    <Rectangle IsHitTestVisible="False">
-      <Rectangle.Fill>
-        <RadialGradientBrush Center="0.5,0.45" GradientOrigin="0.5,0.45" RadiusX="0.75" RadiusY="0.8">
-          <GradientStop Offset="0" Color="#1D1B18" />
-          <GradientStop Offset="1" Color="#070708" />
-        </RadialGradientBrush>
-      </Rectangle.Fill>
-    </Rectangle>
-
-    <Border x:Name="Stage" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="72,56,72,84">
-      <Border.Effect>
-        <DropShadowEffect BlurRadius="48" ShadowDepth="14" Direction="270" Opacity="0.7" Color="Black" />
-      </Border.Effect>
-      <Viewbox Stretch="Uniform">
-        <Grid Width="{Binding ViewWidth}" Height="{Binding PageHeight}">
-          <StackPanel Orientation="Horizontal">
-            <Border Width="{Binding PageWidth}" Height="{Binding PageHeight}" Background="#FBFAF7">
-              <ContentControl Content="{Binding Current.Left}" ContentTemplate="{StaticResource PageTemplate}" Focusable="False" />
-            </Border>
-            <Border Width="{Binding PageWidth}" Height="{Binding PageHeight}" Background="#FBFAF7"
-                    Visibility="{Binding IsSpreads, Converter={StaticResource BoolToVisibility}}">
-              <ContentControl Content="{Binding Current.Right}" ContentTemplate="{StaticResource PageTemplate}" Focusable="False" />
-            </Border>
-          </StackPanel>
-          <!-- Cilt: ortada yumuşak gölge ve ince kırım çizgisi -->
-          <Grid Width="26" HorizontalAlignment="Center" IsHitTestVisible="False"
-                Visibility="{Binding IsSpreads, Converter={StaticResource BoolToVisibility}}">
-            <Rectangle Fill="{StaticResource Spine}" />
-            <Rectangle Width="0.35" Fill="#33000000" />
+      <!-- Bir görünüm (çift ya da tek sayfa): sahnede ve göz at şeridinde aynı çizim -->
+      <DataTemplate x:Key="SpreadView">
+        <Viewbox Stretch="Uniform">
+          <Grid Width="{Binding DataContext.ViewWidth, RelativeSource={RelativeSource AncestorType=Window}}"
+                Height="{Binding DataContext.PageHeight, RelativeSource={RelativeSource AncestorType=Window}}">
+            <StackPanel Orientation="Horizontal">
+              <Border Width="{Binding DataContext.PageWidth, RelativeSource={RelativeSource AncestorType=Window}}"
+                      Height="{Binding DataContext.PageHeight, RelativeSource={RelativeSource AncestorType=Window}}" Background="#FBFAF7">
+                <ContentControl Content="{Binding Left}" ContentTemplate="{StaticResource PageTemplate}" Focusable="False" />
+              </Border>
+              <Border Width="{Binding DataContext.PageWidth, RelativeSource={RelativeSource AncestorType=Window}}"
+                      Height="{Binding DataContext.PageHeight, RelativeSource={RelativeSource AncestorType=Window}}" Background="#FBFAF7"
+                      Visibility="{Binding DataContext.IsSpreads, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVisibility}}">
+                <ContentControl Content="{Binding Right}" ContentTemplate="{StaticResource PageTemplate}" Focusable="False" />
+              </Border>
+            </StackPanel>
+            <!-- Cilt: ortada yumuşak gölge ve ince kırım çizgisi -->
+            <Grid Width="26" HorizontalAlignment="Center" IsHitTestVisible="False"
+                  Visibility="{Binding DataContext.IsSpreads, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BoolToVisibility}}">
+              <Rectangle Fill="{StaticResource Spine}" />
+              <Rectangle Width="0.35" Fill="#33000000" />
+            </Grid>
           </Grid>
+        </Viewbox>
+      </DataTemplate>
+    </Grid.Resources>
+
+    <!-- Sahne: efekt için görüntüsü alınan katman (alt bilgi ve imleç dahil değil) -->
+    <Grid x:Name="Root" MouseLeftButtonUp="OnClick" Background="Transparent">
+      <Rectangle IsHitTestVisible="False">
+        <Rectangle.Fill>
+          <RadialGradientBrush Center="0.5,0.45" GradientOrigin="0.5,0.45" RadiusX="0.75" RadiusY="0.8">
+            <GradientStop Offset="0" Color="#1D1B18" />
+            <GradientStop Offset="1" Color="#070708" />
+          </RadialGradientBrush>
+        </Rectangle.Fill>
+      </Rectangle>
+
+      <Border x:Name="Stage" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="72,56,72,84">
+        <Border.Effect>
+          <DropShadowEffect BlurRadius="48" ShadowDepth="14" Direction="270" Opacity="0.7" Color="Black" />
+        </Border.Effect>
+        <ContentControl Content="{Binding Current}" ContentTemplate="{StaticResource SpreadView}" Focusable="False" />
+      </Border>
+    </Grid>
+
+    <!-- Geçiş efekti: iki görüntü arasında Skia ile çizilir (filmdekiyle aynı) -->
+    <Image x:Name="EffectImage" Stretch="Fill" Visibility="Collapsed" IsHitTestVisible="False" RenderOptions.BitmapScalingMode="Linear" />
+
+    <!-- Göz at: odak şeridi -->
+    <Grid x:Name="Browse" Visibility="Collapsed" Background="#F2111110" MouseWheel="OnBrowseWheel"
+          MouseLeftButtonDown="OnBrowseDown" MouseMove="OnBrowseMove" MouseLeftButtonUp="OnBrowseUp">
+      <Canvas x:Name="Strip" ClipToBounds="True" />
+      <Grid VerticalAlignment="Bottom" Margin="56,0,56,40" IsHitTestVisible="False">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="BrowseLabel" FontFamily="Georgia" FontSize="26" Foreground="#F2EFE8" />
+        <TextBlock x:Name="BrowseCounter" Grid.Column="1" FontFamily="Consolas" FontSize="12" Foreground="#99F2EFE8" VerticalAlignment="Bottom" />
+        <TextBlock Grid.Column="2" Text="← → · tekerlek · sürükle   ·   Enter / tıkla: aç   ·   G: kapat" FontSize="12" Foreground="#99F2EFE8"
+                   HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+        <Grid Grid.Row="1" Grid.ColumnSpan="3" Height="1" Margin="0,16,0,0">
+          <Rectangle Fill="#2EF2EFE8" />
+          <Rectangle x:Name="BrowseBar" Fill="#F2EFE8" HorizontalAlignment="Left" RenderTransformOrigin="0,0.5">
+            <Rectangle.RenderTransform>
+              <ScaleTransform x:Name="BrowseBarScale" ScaleX="0" />
+            </Rectangle.RenderTransform>
+          </Rectangle>
         </Grid>
-      </Viewbox>
-    </Border>
+      </Grid>
+    </Grid>
+
+    <!-- Otomatik oynatma çizgisi ve sayaç -->
+    <Grid x:Name="Track" VerticalAlignment="Bottom" Margin="56,0,56,22" Height="1" IsHitTestVisible="False" Visibility="Collapsed">
+      <Rectangle Fill="#2EECE8E1" />
+      <Rectangle x:Name="TrackFill" Fill="#E0B864" RenderTransformOrigin="0,0.5">
+        <Rectangle.RenderTransform>
+          <ScaleTransform x:Name="TrackScale" ScaleX="0" />
+        </Rectangle.RenderTransform>
+      </Rectangle>
+    </Grid>
 
     <!-- Alt bilgi: birkaç saniye hareketsizlikte kaybolur -->
-    <Border x:Name="Hud" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,24" Padding="18,8" CornerRadius="20"
+    <Border x:Name="Hud" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,34" Padding="18,8" CornerRadius="20"
             Background="#B3121214" BorderBrush="#33E2B964" BorderThickness="1" IsHitTestVisible="False">
       <StackPanel Orientation="Horizontal">
         <Image Source="{StaticResource LogoSmallImage}" Width="18" Height="18" VerticalAlignment="Center" />
         <TextBlock Text="{Binding Title}" Margin="10,0,0,0" FontWeight="Medium" VerticalAlignment="Center" />
         <Rectangle Width="1" Height="14" Margin="14,0" Fill="#44ECE8E1" VerticalAlignment="Center" />
-        <TextBlock Text="{Binding CounterText}" Foreground="#E0B864" FontWeight="SemiBold" VerticalAlignment="Center" />
+        <TextBlock Text="{Binding ShortCounter}" Foreground="#E0B864" FontFamily="Consolas" FontWeight="SemiBold" VerticalAlignment="Center" />
         <Rectangle Width="1" Height="14" Margin="14,0" Fill="#44ECE8E1" VerticalAlignment="Center" />
-        <TextBlock Text="← → gezin   ·   Esc çık" Foreground="#A29C92" FontSize="12" VerticalAlignment="Center" />
+        <TextBlock Text="{Binding EffectText}" Foreground="#ECE8E1" VerticalAlignment="Center" />
+        <TextBlock Text=" (E)" Foreground="#A29C92" FontSize="12" VerticalAlignment="Center" />
+        <Rectangle Width="1" Height="14" Margin="14,0" Fill="#44ECE8E1" VerticalAlignment="Center" />
+        <TextBlock Text="{Binding AutoplayText}" Foreground="#A29C92" FontSize="12" VerticalAlignment="Center" />
+        <Rectangle Width="1" Height="14" Margin="14,0" Fill="#44ECE8E1" VerticalAlignment="Center" />
+        <TextBlock Text="G göz at   ·   ← → gezin   ·   Esc çık" Foreground="#A29C92" FontSize="12" VerticalAlignment="Center" />
       </StackPanel>
     </Border>
+
+    <!-- Mercek imleci: sağ yarıda «Sonraki», solda «Önceki» -->
+    <Canvas IsHitTestVisible="False">
+      <Border x:Name="Lens" Width="76" Height="76" CornerRadius="38" BorderBrush="#ECE8E1" BorderThickness="1" Background="#26000000"
+              Opacity="0" Margin="-38,-38,0,0">
+        <TextBlock x:Name="LensText" Text="SONRAKİ" FontSize="10.5" FontWeight="Medium" Foreground="#ECE8E1" HorizontalAlignment="Center" VerticalAlignment="Center" />
+      </Border>
+    </Canvas>
   </Grid>
 </Window>

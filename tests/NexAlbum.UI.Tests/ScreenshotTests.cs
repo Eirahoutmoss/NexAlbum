@@ -219,6 +219,24 @@ public sealed class ScreenshotTests : IDisposable
 
                 var show = new PresentationWindow(new ViewModels.PresentationViewModel(vm.Project!, vm.SelectedPage!.Index, spreads: true)) { WindowState = WindowState.Normal };
                 Capture(Show(show, 1440, 900), "08-sunum").Should().BeTrue();
+
+                // Pro efekt: Aperture tıklanan noktadan açılırken (ilerleme %55), kenarda halka.
+                show.ShowEffectFrame(show.ViewModel.Next, new Point(1000, 300), 0.55);
+                Settle(show);
+                Capture(show, "22-sunum-aperture").Should().BeTrue();
+
+                // Petek efekti.
+                show.ViewModel.UseEffect(Core.Video.TransitionKind.Honeycomb);
+                show.ShowEffectFrame(show.ViewModel.Next, null, 0.5);
+                Settle(show);
+                Capture(show, "23-sunum-petek").Should().BeTrue();
+
+                // Göz at: odak şeridi; ortadaki görünüm net, yanlar bulanık.
+                show.ToggleBrowse();
+                show.SetStripPosition(1.35);
+                Settle(show);
+                Capture(show, "24-sunum-goz-at").Should().BeTrue();
+                show.ToggleBrowse();
                 show.Hide();
 
                 Capture(Show(new AboutWindow(), 540, double.NaN), "09-hakkinda").Should().BeTrue();
