@@ -155,8 +155,8 @@ public class VideoRenderingTests
                 for (var x = x0; x < x1; x += 4)
                 {
                     var c = bitmap.GetPixel(x, y);
-                    red += c.Red > 150 && c.Blue < 90 ? 1 : 0;
-                    blue += c.Blue > 150 && c.Red < 90 ? 1 : 0;
+                    red += c.Red > 150 && c.Green < 90 && c.Blue < 90 ? 1 : 0;
+                    blue += c.Blue > 150 && c.Red < 90 && c.Green < 90 ? 1 : 0;
                 }
             }
 
@@ -198,7 +198,8 @@ public class VideoRenderingTests
     [InlineData(TitleAnimation.BlurWords)]
     public void AnimatedTitlesStartHiddenAndEndReadable(TitleAnimation animation)
     {
-        var timeline = new VideoTimeline(Hd, 30, [new TitleClip(0, 3, TransitionKind.Cut, 0, VideoLook.Natural, "Yaz Akşamı", null) { Animation = animation }], 3, false, false, 0, []);
+        // Film 6 sn: 2,5. saniyede sondaki karartma henüz başlamamıştır.
+        var timeline = new VideoTimeline(Hd, 30, [new TitleClip(0, 4, TransitionKind.Cut, 0, VideoLook.Natural, "Yaz Akşamı", null) { Animation = animation }], 6, false, false, 0, []);
         var renderer = new FrameRenderer(timeline, new ColorPhotos());
 
         static int Bright(SKBitmap b)
