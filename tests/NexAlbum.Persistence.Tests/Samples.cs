@@ -105,7 +105,7 @@ internal static class Samples
                         Scale = 1.25,
                         Rotation = 90,
                         Crop = new NormalizedRect(0.1, 0.1, 0.8, 0.7),
-                        Adjustments = new ImageAdjustments { Brightness = 0.1, Contrast = -0.05, Saturation = 0.2 },
+                        Adjustments = new ImageAdjustments { Brightness = 0.1, Contrast = -0.05, Saturation = 0.2, Exposure = 0.25, Temperature = -0.3, BlackWhite = true },
                     },
                     Shape = SlotShape.Rounded,
                     CornerRadiusMm = 4,

@@ -198,6 +198,7 @@ public sealed class SlotItemViewModel : ObservableObject
     private bool isSelected;
     private bool isDropTarget;
     private bool isPositioning;
+    private bool showUnadjusted;
     private PhotoPlacement? placement;
     private RectMm imageRect;
 
@@ -397,8 +398,13 @@ public sealed class SlotItemViewModel : ObservableObject
     public void Preview(PhotoPlacement value)
     {
         ArgumentNullException.ThrowIfNull(value);
+        var recolor = placement?.Adjustments != value.Adjustments;
         placement = value;
         imageRect = ComputeImageRect(value);
+        if (recolor)
+        {
+            OnPropertyChanged(nameof(Image));
+        }
         OnPropertyChanged(nameof(Placement));
         OnPropertyChanged(nameof(ImageX));
         OnPropertyChanged(nameof(ImageY));
@@ -412,7 +418,23 @@ public sealed class SlotItemViewModel : ObservableObject
             ? new RectMm(0, 0, Math.Max(0, PhotoWidth), Math.Max(0, PhotoHeight))
             : ImageFit.FullImageRect(new RectMm(0, 0, PhotoWidth, PhotoHeight), Asset.DisplayAspectRatio, value, Slot.CropMode);
 
-    public ImageSource? Image
+    /// <summary>Öncesi/sonrası: true iken fotoğraf ayarları ekranda uygulanmaz (proje değişmez).</summary>
+    public bool ShowUnadjusted
+    {
+        get => showUnadjusted;
+        set
+        {
+            if (SetProperty(ref showUnadjusted, value))
+            {
+                OnPropertyChanged(nameof(Image));
+            }
+        }
+    }
+
+    /// <summary>Yuvada gösterilen görüntü: fotoğraf ayarları (pozlama, renk, siyah-beyaz) uygulanmış, PDF ile aynı.</summary>
+    public ImageSource? Image => showUnadjusted ? RawImage : AdjustedImages.Get(RawImage, placement?.Adjustments);
+
+    private ImageSource? RawImage
     {
         get
         {

@@ -208,6 +208,34 @@ public class MigrationTests
     }
 
     [Fact]
+    public void V5ProjectIsUpgradedToV6WithoutNewAdjustments()
+    {
+        using var dir = new TempDir();
+        var path = dir.File("v5.albumproj");
+        var v5 = PackageBuilder.EditJson(PackageBuilder.Valid(), ProjectFormat.ProjectEntry, n =>
+        {
+            n["schemaVersion"] = 5;
+            foreach (var element in n["pages"]!.AsArray().SelectMany(p => p!["elements"]!.AsArray()))
+            {
+                if (element!["placement"]?["filters"] is JsonObject filters)
+                {
+                    filters.Remove("exposure");
+                    filters.Remove("temperature");
+                    filters.Remove("blackWhite");
+                }
+            }
+        });
+        File.WriteAllBytes(path, v5);
+
+        var loaded = ProjectPackageReader.Load(path, new LoadOptions { BackupBeforeMigration = false });
+
+        loaded.OriginalSchemaVersion.Should().Be(5);
+        var adjustments = loaded.Project.Pages.SelectMany(p => p.Slots).Select(s => s.Placement?.Adjustments).OfType<ImageAdjustments>().ToList();
+        adjustments.Should().NotBeEmpty();
+        adjustments.Should().OnlyContain(a => a.Exposure == 0 && a.Temperature == 0 && !a.BlackWhite);
+    }
+
+    [Fact]
     public void BuiltInChainReachesTheCurrentVersion()
     {
         var node = new JsonObject { ["schemaVersion"] = 1 };

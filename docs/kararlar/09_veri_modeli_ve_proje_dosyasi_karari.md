@@ -26,6 +26,12 @@ Değişiklik: project.json şema sürümü 4 → **5**. Projeye isteğe bağlı 
 Göç (§14): `V4ToV5Video` — yapı değişmez, yalnızca sürüm yükselir.
 Gerekçe: Hikâye filmi (Karar 21 §6): aynı ayarlarla aynı video.
 
+Revizyon 5 — 13/10/2026 (şema v6)
+Değişiklik: project.json şema sürümü 5 → **6**. Yerleşim "filters" alanına isteğe bağlı "exposure" (−1…1, ±1,5 durak), "temperature" (−1…1, soğuk↔sıcak) ve "blackWhite" (bool). Ayarlar tahribatsızdır; ekran ve PDF aynı renk matrisini (Core `ColorMatrix`) uygular. PDF'te ayarlı fotoğraf ayarlanmış piksellerle yeniden kodlanır (JPEG kalite 92), ayarsız fotoğraf eskisi gibi yeniden sıkıştırılmadan gömülür.
+Göç (§14): `V5ToV6PhotoAdjustments` — yapı değişmez, yalnızca sürüm yükselir.
+Döndürme: yuvadaki "rotation" alanı düzeltme açısı olarak ±15° ile kullanılır; fotoğraf yuvayı kaplamaya devam eder (ImageFit, ekran ve PDF aynı hesap). Kullanıcının 90° döndürmesi fotoğrafın kendisine aittir: varlığın "orientation" (EXIF kodu 1–8) alanına işlenir ve albümün her yerinde geçerli olur; dosya yeniden okunsa bile projedeki yön esas alınır.
+Gerekçe: Efekt belgesi §1 (P0) — parlaklık/kontrast/pozlama, sıcaklık/doygunluk, siyah-beyaz.
+
 1. Karar Özeti
 NexAlbum'in veri modeli katmanlı, sürümlenmiş, açık ve taşınabilir olacaktır.
 

@@ -333,7 +333,15 @@ internal static class ProjectMapper
         Scale = p.Scale,
         Rotation = p.Rotation,
         CropRect = new RectDto { X = p.Crop.X, Y = p.Crop.Y, Width = p.Crop.Width, Height = p.Crop.Height },
-        Filters = new FiltersDto { Brightness = p.Adjustments.Brightness, Contrast = p.Adjustments.Contrast, Saturation = p.Adjustments.Saturation },
+        Filters = new FiltersDto
+        {
+            Brightness = p.Adjustments.Brightness,
+            Contrast = p.Adjustments.Contrast,
+            Saturation = p.Adjustments.Saturation,
+            Exposure = p.Adjustments.Exposure == 0 ? null : p.Adjustments.Exposure,
+            Temperature = p.Adjustments.Temperature == 0 ? null : p.Adjustments.Temperature,
+            BlackWhite = p.Adjustments.BlackWhite ? true : null,
+        },
     };
 
     private static PhotoPlacement PlacementFromDto(PlacementDto d, string path) => new()
@@ -347,7 +355,15 @@ internal static class ProjectMapper
             ? new NormalizedRect(c.X ?? 0, c.Y ?? 0, c.Width ?? 1, c.Height ?? 1)
             : NormalizedRect.Full,
         Adjustments = d.Filters is { } f
-            ? new ImageAdjustments { Brightness = f.Brightness ?? 0, Contrast = f.Contrast ?? 0, Saturation = f.Saturation ?? 0 }
+            ? new ImageAdjustments
+            {
+                Brightness = f.Brightness ?? 0,
+                Contrast = f.Contrast ?? 0,
+                Saturation = f.Saturation ?? 0,
+                Exposure = f.Exposure ?? 0,
+                Temperature = f.Temperature ?? 0,
+                BlackWhite = f.BlackWhite ?? false,
+            }
             : ImageAdjustments.None,
     };
 

@@ -568,6 +568,69 @@
                       </DockPanel>
                     </StackPanel>
                   </Border>
+                  <TextBlock Text="FOTOĞRAF AYARLARI" Style="{StaticResource PanelHeader}" />
+                  <StackPanel Margin="16,0,16,0" IsEnabled="{Binding SelectedSlotHasPhoto}">
+                    <DockPanel Margin="0,6,0,0" ToolTip="Işık miktarı (±1,5 durak)">
+                      <TextBlock DockPanel.Dock="Right" Text="{Binding AdjustExposure, StringFormat={}{0:+0;−0;0}}" Width="40" TextAlignment="Right" VerticalAlignment="Center"
+                                 Foreground="{DynamicResource SecondaryTextBrush}" />
+                      <TextBlock Text="Pozlama" Width="86" VerticalAlignment="Center" />
+                      <Slider Minimum="-100" Maximum="100" Value="{Binding AdjustExposure, Delay=150}" SmallChange="1" LargeChange="10" VerticalAlignment="Center"
+                              AutomationProperties.Name="Pozlama" />
+                    </DockPanel>
+                    <DockPanel Margin="0,6,0,0" ToolTip="Genel aydınlık">
+                      <TextBlock DockPanel.Dock="Right" Text="{Binding AdjustBrightness, StringFormat={}{0:+0;−0;0}}" Width="40" TextAlignment="Right" VerticalAlignment="Center"
+                                 Foreground="{DynamicResource SecondaryTextBrush}" />
+                      <TextBlock Text="Parlaklık" Width="86" VerticalAlignment="Center" />
+                      <Slider Minimum="-100" Maximum="100" Value="{Binding AdjustBrightness, Delay=150}" SmallChange="1" LargeChange="10" VerticalAlignment="Center"
+                              AutomationProperties.Name="Parlaklık" />
+                    </DockPanel>
+                    <DockPanel Margin="0,6,0,0" ToolTip="Açık ve koyu arasındaki fark">
+                      <TextBlock DockPanel.Dock="Right" Text="{Binding AdjustContrast, StringFormat={}{0:+0;−0;0}}" Width="40" TextAlignment="Right" VerticalAlignment="Center"
+                                 Foreground="{DynamicResource SecondaryTextBrush}" />
+                      <TextBlock Text="Kontrast" Width="86" VerticalAlignment="Center" />
+                      <Slider Minimum="-100" Maximum="100" Value="{Binding AdjustContrast, Delay=150}" SmallChange="1" LargeChange="10" VerticalAlignment="Center"
+                              AutomationProperties.Name="Kontrast" />
+                    </DockPanel>
+                    <DockPanel Margin="0,6,0,0" ToolTip="− soğuk (mavi) · + sıcak (turuncu)">
+                      <TextBlock DockPanel.Dock="Right" Text="{Binding AdjustTemperature, StringFormat={}{0:+0;−0;0}}" Width="40" TextAlignment="Right" VerticalAlignment="Center"
+                                 Foreground="{DynamicResource SecondaryTextBrush}" />
+                      <TextBlock Text="Sıcaklık" Width="86" VerticalAlignment="Center" />
+                      <Slider Minimum="-100" Maximum="100" Value="{Binding AdjustTemperature, Delay=150}" SmallChange="1" LargeChange="10" VerticalAlignment="Center"
+                              AutomationProperties.Name="Sıcaklık" />
+                    </DockPanel>
+                    <DockPanel Margin="0,6,0,0" ToolTip="Renk yoğunluğu">
+                      <TextBlock DockPanel.Dock="Right" Text="{Binding AdjustSaturation, StringFormat={}{0:+0;−0;0}}" Width="40" TextAlignment="Right" VerticalAlignment="Center"
+                                 Foreground="{DynamicResource SecondaryTextBrush}" />
+                      <TextBlock Text="Doygunluk" Width="86" VerticalAlignment="Center" />
+                      <Slider Minimum="-100" Maximum="100" Value="{Binding AdjustSaturation, Delay=150}" SmallChange="1" LargeChange="10" VerticalAlignment="Center"
+                              AutomationProperties.Name="Doygunluk" />
+                    </DockPanel>
+                    <DockPanel Margin="0,6,0,0" ToolTip="Eğri ufku doğrultur; fotoğraf yuvayı kaplamaya devam eder">
+                      <TextBlock DockPanel.Dock="Right" Text="{Binding Straighten, StringFormat={}{0:0.#}°}" Width="40" TextAlignment="Right" VerticalAlignment="Center"
+                                 Foreground="{DynamicResource SecondaryTextBrush}" />
+                      <TextBlock Text="Düzeltme" Width="86" VerticalAlignment="Center" />
+                      <Slider Minimum="-15" Maximum="15" Value="{Binding Straighten, Delay=150}" SmallChange="0.5" LargeChange="2" VerticalAlignment="Center"
+                              AutomationProperties.Name="Düzeltme" />
+                    </DockPanel>
+                    <WrapPanel Margin="0,8,0,0">
+                      <ToggleButton Style="{StaticResource ChipToggle}" Content="Siyah-beyaz" IsChecked="{Binding AdjustBlackWhite}" Margin="0,0,6,6" />
+                      <ToggleButton Style="{StaticResource ChipToggle}" Content="Öncesi" IsChecked="{Binding CompareAdjustments}" Margin="0,0,6,6"
+                                    ToolTip="Ayarlar olmadan nasıl göründüğüne bakın (proje değişmez)" />
+                      <Button Style="{StaticResource SmallButton}" Command="{Binding RotateLeftCommand}" ToolTip="Sola 90° döndür (albümün her yerinde)"
+                              AutomationProperties.Name="Sola döndür">
+                        <ui:NexIcon Data="{StaticResource Icon.RotateLeft}" Width="14" Height="14" />
+                      </Button>
+                      <Button Style="{StaticResource SmallButton}" Command="{Binding RotateRightCommand}" ToolTip="Sağa 90° döndür (albümün her yerinde)"
+                              AutomationProperties.Name="Sağa döndür">
+                        <ui:NexIcon Data="{StaticResource Icon.RotateRight}" Width="14" Height="14" />
+                      </Button>
+                      <Button Style="{StaticResource SmallButton}" Content="Sıfırla" Command="{Binding ResetAdjustmentsCommand}" />
+                      <Button Style="{StaticResource SmallButton}" Content="Sayfadakilere uygula" Command="{Binding AdjustmentsToPageCommand}"
+                              ToolTip="Bu renk ayarlarını sayfadaki tüm fotoğraflara uygular (tutarlı renk)" />
+                    </WrapPanel>
+                    <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0"
+                               Text="Orijinal dosya değişmez. Ekranda gördüğünüz ayar PDF'e de aynen girer." />
+                  </StackPanel>
                   <TextBlock Style="{StaticResource Caption}" Margin="16,10,16,0"
                              Text="Sürükle: başka yuvaya taşı / yer değiştir · Ctrl + sürükle: yuva içinde kaydır · Tekerlek: yakınlaştır · Galeriden sürükleyerek fotoğraf koyun." />
                 </StackPanel>
