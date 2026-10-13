@@ -98,25 +98,26 @@ public sealed class FrameRenderer(VideoTimeline timeline, IPhotoSource photos, F
     /// <summary>Görünüm renk matrisi (yalnızca video; baskıyı etkilemez).</summary>
     public static SKColorFilter? LookFilter(VideoLook look) => look switch
     {
+        // Skia renk matrisinde kaydırma sütunu 0–1 ölçeğindedir (255'e bölünür).
         VideoLook.Warm => SKColorFilter.CreateColorMatrix(
         [
-            1.08f, 0, 0, 0, 6,
-            0, 1.0f, 0, 0, 2,
-            0, 0, 0.88f, 0, -4,
+            1.06f, 0, 0, 0, 4 / 255f,
+            0, 1.0f, 0, 0, 1 / 255f,
+            0, 0, 0.9f, 0, -3 / 255f,
             0, 0, 0, 1, 0,
         ]),
         VideoLook.Cool => SKColorFilter.CreateColorMatrix(
         [
-            0.92f, 0, 0, 0, -2,
+            0.93f, 0, 0, 0, -2 / 255f,
             0, 1.0f, 0, 0, 0,
-            0, 0, 1.1f, 0, 8,
+            0, 0, 1.08f, 0, 6 / 255f,
             0, 0, 0, 1, 0,
         ]),
         VideoLook.BlackWhite => SKColorFilter.CreateColorMatrix(
         [
-            0.30f * 1.1f, 0.59f * 1.1f, 0.11f * 1.1f, 0, -8,
-            0.30f * 1.1f, 0.59f * 1.1f, 0.11f * 1.1f, 0, -8,
-            0.30f * 1.1f, 0.59f * 1.1f, 0.11f * 1.1f, 0, -8,
+            0.30f * 1.1f, 0.59f * 1.1f, 0.11f * 1.1f, 0, -8 / 255f,
+            0.30f * 1.1f, 0.59f * 1.1f, 0.11f * 1.1f, 0, -8 / 255f,
+            0.30f * 1.1f, 0.59f * 1.1f, 0.11f * 1.1f, 0, -8 / 255f,
             0, 0, 0, 1, 0,
         ]),
         VideoLook.Sepia => SKColorFilter.CreateColorMatrix(

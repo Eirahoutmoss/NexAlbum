@@ -98,6 +98,11 @@ public class VideoRenderingTests
         var gray = Center(new FrameRenderer(Timeline(TransitionKind.Crossfade, VideoLook.BlackWhite), new ColorPhotos()), 1);
         Math.Abs(gray.Red - gray.Green).Should().BeLessThan(3, "siyah-beyaz");
         Math.Abs(gray.Green - gray.Blue).Should().BeLessThan(3);
+        gray.Red.Should().BeInRange(60, 110, "kırmızının parlaklığı korunur (kaydırma 0–1 ölçeğinde)");
+
+        var warm = Center(new FrameRenderer(Timeline(TransitionKind.Crossfade, VideoLook.Warm), new ColorPhotos()), 1);
+        warm.Green.Should().BeLessThan(20, "sıcak ton yeşili doyurmaz");
+        warm.Red.Should().BeGreaterThan(240);
 
         var sepia = Center(new FrameRenderer(Timeline(TransitionKind.Crossfade, VideoLook.Sepia), new ColorPhotos()), 1);
         sepia.Red.Should().BeGreaterThan(sepia.Blue, "sepya sıcaktır");
