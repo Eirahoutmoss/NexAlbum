@@ -56,7 +56,7 @@ public static class PhotoMover
     {
         ArgumentNullException.ThrowIfNull(project);
         if (project.FindPage(sourcePageId) is not { } source || project.FindPage(targetPageId) is not { } target
-            || source.FindElement(slotId) is not Slot { Placement: { } placement } from
+            || source.FindElement(slotId) is not Slot { Placement: { } placement } origin
             || project.FindAsset(placement.AssetId) is not { } asset)
         {
             return (project, PhotoMoveResult.NotFound);
@@ -79,7 +79,7 @@ public static class PhotoMover
 
         var moved = Reset(placement);
         var updated = project
-            .ReplacePage(source.ReplaceElement(from with { Placement = null }) with { UpdatedAt = now })
+            .ReplacePage(source.ReplaceElement(origin with { Placement = null }) with { UpdatedAt = now })
             .ReplacePage(target.ReplaceElement(slot with { Placement = moved }) with { UpdatedAt = now })
             .Touch(now);
         return (updated, PhotoMoveResult.Done);
@@ -94,7 +94,7 @@ public static class PhotoMover
     {
         ArgumentNullException.ThrowIfNull(project);
         if (project.FindPage(sourcePageId) is not { } source || project.FindPage(targetPageId) is not { } target
-            || source.FindElement(slotId) is not Slot { Placement: { } placement } from
+            || source.FindElement(slotId) is not Slot { Placement: { } placement } origin
             || target.FindElement(targetSlotId) is not Slot to)
         {
             return (project, PhotoMoveResult.NotFound);
@@ -103,7 +103,7 @@ public static class PhotoMover
         var incoming = to.Placement;
         if (string.Equals(source.Id, target.Id, StringComparison.Ordinal)
             || target.Slots.Any(s => s.Id != to.Id && s.Placement?.AssetId == placement.AssetId)
-            || (incoming is not null && source.Slots.Any(s => s.Id != from.Id && s.Placement?.AssetId == incoming.AssetId)))
+            || (incoming is not null && source.Slots.Any(s => s.Id != origin.Id && s.Placement?.AssetId == incoming.AssetId)))
         {
             return (project, PhotoMoveResult.AlreadyThere);
         }
@@ -114,7 +114,7 @@ public static class PhotoMover
         }
 
         var updated = project
-            .ReplacePage(source.ReplaceElement(from with { Placement = Reset(incoming) }) with { UpdatedAt = now })
+            .ReplacePage(source.ReplaceElement(origin with { Placement = Reset(incoming) }) with { UpdatedAt = now })
             .ReplacePage(target.ReplaceElement(to with { Placement = Reset(placement) }) with { UpdatedAt = now })
             .Touch(now);
         return (updated, PhotoMoveResult.Done);

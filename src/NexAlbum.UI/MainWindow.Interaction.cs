@@ -149,7 +149,7 @@ public partial class MainWindow
         {
             var target = StripPageUnder(e);
             var ok = MainViewModel.CanReceivePhoto(target)
-                && !(e.Data.GetData(SourcePageFormat) is string from && string.Equals(from, target!.Page.Id, StringComparison.Ordinal));
+                && !(e.Data.GetData(SourcePageFormat) is string dragged && string.Equals(dragged, target!.Page.Id, StringComparison.Ordinal));
             SetStripPhotoTarget(ok ? target : null);
             e.Effects = !ok ? DragDropEffects.None : e.Data.GetDataPresent(AssetFormat) ? DragDropEffects.Copy : DragDropEffects.Move;
             e.Handled = true;
@@ -346,9 +346,9 @@ public partial class MainWindow
             var source = pressedSlot;
             ResetPress();
             var data = new DataObject(SlotFormat, source.Id);
-            if (ViewModel.SelectedPage is { } from)
+            if (ViewModel.SelectedPage is { } origin)
             {
-                data.SetData(SourcePageFormat, from.Page.Id);
+                data.SetData(SourcePageFormat, origin.Page.Id);
             }
 
             DragDrop.DoDragDrop(CanvasArea, data, DragDropEffects.Move);
@@ -435,9 +435,9 @@ public partial class MainWindow
         {
             // Kitap görünümünde karşı sayfadaki yuvaya bırakılırsa fotoğraf o sayfaya geçer (doluysa yer değiştirir).
             var targetPage = PageAt(VisualTreeHelper.HitTest(CanvasArea, e.GetPosition(CanvasArea))?.VisualHit);
-            if (e.Data.GetData(SourcePageFormat) is string from && targetPage is not null && !string.Equals(from, targetPage.Page.Id, StringComparison.Ordinal))
+            if (e.Data.GetData(SourcePageFormat) is string originPage && targetPage is not null && !string.Equals(originPage, targetPage.Page.Id, StringComparison.Ordinal))
             {
-                ViewModel.MovePhotoToSlot(from, sourceId, targetPage, slot);
+                ViewModel.MovePhotoToSlot(originPage, sourceId, targetPage, slot);
             }
             else
             {
