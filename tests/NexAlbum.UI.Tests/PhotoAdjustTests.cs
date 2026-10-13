@@ -91,3 +91,35 @@ public sealed partial class MainViewModelTests
         });
     }
 }
+
+/// <summary>Metni sürüklerken akıllı hizalama.</summary>
+public sealed partial class MainViewModelTests
+{
+    [Fact]
+    public void DraggedTextSnapsToThePageCenterAndShowsGuides()
+    {
+        using var vm = new MainViewModel(new FakeDialogs(), settings: new MemoryAppSettingsStore());
+        vm.Open(PagedProject(1));
+        vm.SelectedPage = vm.Pages[0];
+        vm.AddText(Core.Projects.TextPresets.Find("title"));
+        var page = vm.SelectedPage!;
+        var text = vm.SelectedText!;
+        var (x, y) = (text.X, text.Y);
+        var centerX = page.PageArea.X + (page.PageArea.Width / 2);
+        var dx = centerX + 1.2 - (x + (text.Width / 2));
+
+        vm.DragText(text, x, y, dx, 0, toleranceMm: 2);
+        (text.X + (text.Width / 2)).Should().BeApproximately(centerX, 1e-9);
+        page.SnapLines.Should().Contain(l => l.IsCenter && l.X1 == l.X2);
+
+        vm.DragText(text, x, y, dx, 0, toleranceMm: 2, snap: false);
+        (text.X + (text.Width / 2)).Should().BeApproximately(centerX + 1.2, 1e-9, "Alt ile serbest");
+        page.SnapLines.Should().BeEmpty();
+
+        vm.DragText(text, x, y, dx, 0, toleranceMm: 2);
+        vm.CommitTextMove(text);
+        vm.SelectedPage!.SnapLines.Should().BeEmpty("bırakınca çizgiler kalkar");
+        var moved = vm.SelectedPage.Texts.Single();
+        (moved.X + (moved.Width / 2)).Should().BeApproximately(centerX, 1e-6, "yapışmış konum kaydedilir");
+    }
+}
