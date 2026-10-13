@@ -35,7 +35,7 @@ public class PolygonRoundTripTests
         var slots = page0.Slots.ToList();
         var template = GeometricTemplates.All.First(t => t.Id == "geo-triangles-3");
 
-        ProjectPackageWriter.Save(path, project, new SaveOptions { AppVersion = "0.2.0", Templates = [template] });
+        ProjectPackageWriter.Save(path, project, new SaveOptions { AppVersion = project.AppVersion, Templates = [template] });
         var loaded = ProjectPackageReader.Load(path);
 
         loaded.Project.Should().BeEquivalentTo(project, o => o.ComparingRecordsByMembers().RespectingRuntimeTypes());

@@ -58,7 +58,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         ExportPdfCommand = new AsyncRelayCommand(ExportPdfAsync, () => HasProject && Pages.Count > 0 && !IsBusy);
         ToggleLockCommand = new RelayCommand(ToggleLock, () => SelectedPage is not null);
         PreviousPageCommand = new RelayCommand(() => MovePage(-1), () => SelectedPage is { Index: > 0 });
-        NextPageCommand = new RelayCommand(() => MovePage(1), () => SelectedPage is not null && SelectedPage.Index < Pages.Count - 1);
+        NextPageCommand = new RelayCommand(() => MovePage(1), () => SelectedPage is not null && (IsBookView ? SelectedPage.Index - (SelectedPage.Index % 2) + 2 : SelectedPage.Index + 1) < Pages.Count);
         AboutCommand = new RelayCommand(dialogs.ShowAbout);
         InitializeDesign();
         InitializeEditing();
@@ -499,8 +499,10 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             return;
         }
 
-        var target = SelectedPage.Index + delta;
-        if (target >= 0 && target < Pages.Count)
+        // Kitap görünümünde bir sonraki/önceki çift sayfanın soluna gidilir.
+        var target = IsBookView ? SelectedPage.Index - (SelectedPage.Index % 2) + (2 * delta) : SelectedPage.Index + delta;
+        target = Math.Clamp(target, 0, Pages.Count - 1);
+        if (target != SelectedPage.Index)
         {
             SelectedPage = Pages[target];
         }

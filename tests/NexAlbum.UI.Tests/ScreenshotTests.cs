@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using FluentAssertions;
@@ -59,31 +60,52 @@ public sealed class ScreenshotTests : IDisposable
                 main.ViewModel.Open(SampleProject(now));
                 main.ViewModel.HasProject.Should().BeTrue();
                 main.ViewModel.Pages.Should().NotBeEmpty("örnek albüm otomatik oluşturuldu");
-                main.ViewModel.SelectedPage = main.ViewModel.Pages[Math.Min(1, main.ViewModel.Pages.Count - 1)];
-                main.ViewModel.SelectedAsset = main.ViewModel.Assets[2];
+                var vm = main.ViewModel;
+                vm.SelectedPage = vm.Pages[Math.Min(1, vm.Pages.Count - 1)];
+                ShowGeometricPage(vm);
+                vm.SelectedAsset = vm.Assets[2];
                 Settle(main);
                 Capture(main, "02-calisma-gece").Should().BeTrue();
 
-                main.ViewModel.Palette.Open();
-                main.ViewModel.Palette.Query = "pdf";
-                main.ViewModel.Palette.Query = string.Empty;
+                var tabs = Find<TabControl>(main);
+                tabs.SelectedIndex = 2;
+                vm.SelectedTemplateStyle = vm.TemplateStyles.Single(t => t.Style == ViewModels.TemplateStyle.Geometric);
                 Settle(main);
-                Capture(main, "03-komut-paleti-gece").Should().BeTrue();
-                main.ViewModel.Palette.Close();
+                Capture(main, "03-sablonlar-gece").Should().BeTrue();
+
+                vm.SelectedTemplateStyle = vm.TemplateStyles[0];
+                tabs.SelectedIndex = 1;
+                vm.IsBookView = true;
+                Settle(main);
+                Capture(main, "04-kitap-gece").Should().BeTrue();
+
+                vm.Palette.Open();
+                vm.Palette.Query = "pdf";
+                vm.Palette.Query = string.Empty;
+                Settle(main);
+                Capture(main, "05-komut-paleti-gece").Should().BeTrue();
+                vm.Palette.Close();
 
                 ThemeService.Apply(AppTheme.Fildisi);
+                tabs.SelectedIndex = 2;
                 Settle(main);
-                Capture(main, "04-calisma-fildisi").Should().BeTrue();
+                Capture(main, "06-calisma-fildisi").Should().BeTrue();
 
-                main.ViewModel.GalleryFilter = ViewModels.GalleryFilter.Unused;
-                main.ViewModel.Zoom.SetPercent(100);
+                vm.IsBookView = false;
+                tabs.SelectedIndex = 0;
+                vm.GalleryFilter = ViewModels.GalleryFilter.Unused;
+                vm.Zoom.SetPercent(100);
                 Settle(main);
-                Capture(main, "05-yakinlastirma-fildisi").Should().BeTrue();
+                Capture(main, "07-yakinlastirma-fildisi").Should().BeTrue();
 
                 ThemeService.Apply(AppTheme.Gece);
-                Capture(Show(new AboutWindow(), 540, double.NaN), "06-hakkinda").Should().BeTrue();
-                Capture(Show(new NewProjectWindow(), 540, double.NaN), "07-yeni-proje").Should().BeTrue();
-                Capture(Show(new SettingsWindow(new AppSettings()), 640, double.NaN), "08-ayarlar").Should().BeTrue();
+                var show = new PresentationWindow(new PresentationViewModel(vm.Project!, vm.SelectedPage!.Index, spreads: true)) { WindowState = WindowState.Normal };
+                Capture(Show(show, 1440, 900), "08-sunum").Should().BeTrue();
+                show.Hide();
+
+                Capture(Show(new AboutWindow(), 540, double.NaN), "09-hakkinda").Should().BeTrue();
+                Capture(Show(new NewProjectWindow(), 540, double.NaN), "10-yeni-proje").Should().BeTrue();
+                Capture(Show(new SettingsWindow(new AppSettings()), 640, double.NaN), "11-ayarlar").Should().BeTrue();
 
                 // Kapatmak "kaydedilsin mi?" sorabilir (test kilitlenir); gizleyip proje kilidini bırakmak yeterli.
                 main.ViewModel.Dispose();
@@ -97,6 +119,47 @@ public sealed class ScreenshotTests : IDisposable
                 ThemeService.Apply(AppTheme.Gece);
             }
         });
+    }
+
+    /// <summary>Seçili sayfaya geometrik bir şablon uygulanmış olsun (ekran görüntüsünde yeni biçimler görünsün).</summary>
+    private static void ShowGeometricPage(ViewModels.MainViewModel vm)
+    {
+        var page = vm.Pages.FirstOrDefault(p => p.TemplateId is { } id && BuiltInTemplates.Find(id)?.Category == TemplateCategory.Geometric);
+        if (page is not null)
+        {
+            vm.SelectedPage = page;
+            return;
+        }
+
+        vm.SelectedTemplateStyle = vm.TemplateStyles.Single(t => t.Style == ViewModels.TemplateStyle.Geometric);
+        var photos = vm.SelectedPage!.PhotoCount;
+        var template = vm.Templates.FirstOrDefault(t => t.Template.PhotoCount.Accepts(photos)) ?? vm.Templates.First();
+        vm.ApplyTemplateCommand.Execute(template);
+        vm.SelectedTemplateStyle = vm.TemplateStyles[0];
+    }
+
+    private static T Find<T>(DependencyObject root)
+        where T : DependencyObject =>
+        FindOrNull<T>(root) ?? throw new InvalidOperationException(typeof(T).Name + " bulunamadı.");
+
+    private static T? FindOrNull<T>(DependencyObject root)
+        where T : DependencyObject
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is T match)
+            {
+                return match;
+            }
+
+            if (FindOrNull<T>(child) is { } found)
+            {
+                return found;
+            }
+        }
+
+        return null;
     }
 
     private static T Show<T>(T window, double width, double height)

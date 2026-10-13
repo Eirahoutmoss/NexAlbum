@@ -35,9 +35,14 @@
     <KeyBinding Key="PageUp" Command="{Binding PreviousPageCommand}" />
     <KeyBinding Key="PageDown" Command="{Binding NextPageCommand}" />
     <KeyBinding Key="F1" Command="{Binding AboutCommand}" />
+    <KeyBinding Key="B" Modifiers="Control" Command="{Binding ToggleBookViewCommand}" />
+    <KeyBinding Key="F5" Command="{Binding PresentCommand}" />
   </Window.InputBindings>
 
   <Window.Resources>
+    <DataTemplate x:Key="CanvasPage">
+      <views:PageView />
+    </DataTemplate>
     <Style x:Key="ToolbarDivider" TargetType="Rectangle">
       <Setter Property="Width" Value="1" />
       <Setter Property="Height" Value="34" />
@@ -194,6 +199,22 @@
                     ToolTip="Baskı profilini düzenle (taşma payı, güvenli alan, DPI…)" />
             <Button Style="{StaticResource CommandButton}" ui:Ui.Icon="{StaticResource Icon.Preflight}" Content="Ön kontrol" Command="{Binding PreflightCommand}"
                     ToolTip="Baskı öncesi kontrol: DPI, eksik dosya, boş yuva, güvenli alan" />
+            <Rectangle Style="{StaticResource ToolbarDivider}" />
+            <Button ui:Ui.Icon="{StaticResource Icon.Book}" Content="Kitap" Command="{Binding ToggleBookViewCommand}"
+                    ToolTip="Kitap görünümü: karşılıklı iki sayfa, ortada cilt (Ctrl+B)">
+              <Button.Style>
+                <Style TargetType="Button" BasedOn="{StaticResource CommandButton}">
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsBookView}" Value="True">
+                      <Setter Property="Background" Value="{DynamicResource SelectionBrush}" />
+                      <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </Button.Style>
+            </Button>
+            <Button Style="{StaticResource CommandButton}" ui:Ui.Icon="{StaticResource Icon.Present}" Content="Sunum" Command="{Binding PresentCommand}"
+                    ToolTip="Sunum modu: tam ekran, yalnızca sayfalar — çiftle birlikte bakmak için (F5)" />
           </StackPanel>
         </DockPanel>
       </Border>
@@ -326,13 +347,42 @@
                 <Border.Effect>
                   <DropShadowEffect BlurRadius="28" ShadowDepth="6" Direction="270" Opacity="{DynamicResource PageShadowOpacity}" Color="{DynamicResource ShadowColor}" />
                 </Border.Effect>
-                <ContentControl Content="{Binding SelectedPage}" Focusable="False">
-                  <ContentControl.ContentTemplate>
-                    <DataTemplate>
-                      <views:PageView />
-                    </DataTemplate>
-                  </ContentControl.ContentTemplate>
-                </ContentControl>
+                <Grid>
+                  <!-- Tek sayfa -->
+                  <ContentControl Content="{Binding SelectedPage}" ContentTemplate="{StaticResource CanvasPage}" Focusable="False"
+                                  Visibility="{Binding IsBookView, Converter={StaticResource InverseBoolToVisibility}}" />
+                  <!-- Kitap görünümü: karşılıklı iki sayfa + cilt gölgesi; etkin sayfa ince altın çizgiyle belirtilir -->
+                  <Grid Visibility="{Binding IsBookView, Converter={StaticResource BoolToVisibility}}">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="#FBFAF7">
+                      <ContentControl Content="{Binding SpreadLeft}" ContentTemplate="{StaticResource CanvasPage}" Focusable="False" />
+                    </Border>
+                    <Border Grid.Column="1" Background="#FBFAF7">
+                      <ContentControl Content="{Binding SpreadRight}" ContentTemplate="{StaticResource CanvasPage}" Focusable="False" />
+                    </Border>
+                    <Border Grid.Column="0" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="0,2,0,0" IsHitTestVisible="False" Opacity="0.9"
+                            Visibility="{Binding IsLeftSelected, Converter={StaticResource BoolToVisibility}}" />
+                    <Border Grid.Column="1" BorderBrush="{DynamicResource AccentBrush}" BorderThickness="0,2,0,0" IsHitTestVisible="False" Opacity="0.9"
+                            Visibility="{Binding IsRightSelected, Converter={StaticResource BoolToVisibility}}" />
+                    <Grid Grid.ColumnSpan="2" Width="34" HorizontalAlignment="Center" IsHitTestVisible="False">
+                      <Rectangle>
+                        <Rectangle.Fill>
+                          <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Offset="0" Color="#00000000" />
+                            <GradientStop Offset="0.42" Color="#1C000000" />
+                            <GradientStop Offset="0.5" Color="#42000000" />
+                            <GradientStop Offset="0.58" Color="#1C000000" />
+                            <GradientStop Offset="1" Color="#00000000" />
+                          </LinearGradientBrush>
+                        </Rectangle.Fill>
+                      </Rectangle>
+                      <Rectangle Width="1" Fill="#30000000" />
+                    </Grid>
+                  </Grid>
+                </Grid>
               </Border>
             </Grid>
           </ScrollViewer>
@@ -625,9 +675,44 @@
                   <ComboBox DockPanel.Dock="Right" Width="130" ItemsSource="{Binding TemplateCounts}" SelectedItem="{Binding SelectedTemplateCount}" DisplayMemberPath="Name" />
                   <TextBlock Text="Fotoğraf sayısı" VerticalAlignment="Center" />
                 </DockPanel>
-                <TextBlock Style="{StaticResource Caption}" Margin="0,8,0,0"
-                           Text="Seçili sayfaya uygulamak için bir şablona tıklayın. Fotoğraflar korunur; sığmayanlar «kullanılmamış» olur." />
+                <ListBox ItemsSource="{Binding TemplateStyles}" SelectedItem="{Binding SelectedTemplateStyle}" Margin="-2,12,0,0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                  <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <WrapPanel />
+                    </ItemsPanelTemplate>
+                  </ListBox.ItemsPanel>
+                  <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                      <Setter Property="Cursor" Value="Hand" />
+                      <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                      <Setter Property="Template">
+                        <Setter.Value>
+                          <ControlTemplate TargetType="ListBoxItem">
+                            <Border x:Name="Bd" CornerRadius="12" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Padding="10,3" Margin="0,0,6,6">
+                              <TextBlock x:Name="T" Text="{Binding Name}" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                              <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+                              </Trigger>
+                              <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SelectionBrush}" />
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                <Setter TargetName="T" Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+                              </Trigger>
+                            </ControlTemplate.Triggers>
+                          </ControlTemplate>
+                        </Setter.Value>
+                      </Setter>
+                    </Style>
+                  </ListBox.ItemContainerStyle>
+                </ListBox>
+                <TextBlock Style="{StaticResource Caption}" Margin="0,4,0,0"
+                           Text="Önizlemeler seçili sayfanın fotoğraflarıyla gösterilir. Tıklayınca şablon sayfaya uygulanır; sığmayan fotoğraflar «kullanılmamış» olur." />
               </StackPanel>
+              <TextBlock DockPanel.Dock="Top" Text="Bu süzgece uyan şablon yok." Style="{StaticResource Caption}" Margin="16,12"
+                         Visibility="{Binding HasTemplates, Converter={StaticResource InverseBoolToVisibility}}" />
               <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding Templates}" Margin="12,0,12,16">
                   <ItemsControl.ItemsPanel>
@@ -639,7 +724,8 @@
                     <DataTemplate>
                       <Button Style="{StaticResource SwatchButton}" ToolTip="{Binding ToolTip}" CommandParameter="{Binding}"
                               Command="{Binding DataContext.ApplyTemplateCommand, RelativeSource={RelativeSource AncestorType=Window}}">
-                        <Viewbox Width="94" Height="72">
+                        <StackPanel Width="96">
+                        <Viewbox Width="96" Height="74">
                           <Grid Width="{Binding Width}" Height="{Binding Height}" Background="#FBFAF7">
                             <ItemsControl ItemsSource="{Binding Cells}" Focusable="False">
                               <ItemsControl.ItemsPanel>
@@ -655,12 +741,18 @@
                               </ItemsControl.ItemContainerStyle>
                               <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                  <Path Data="{Binding Shape}" Fill="#CDBF9F" />
+                                  <Path Data="{Binding Shape}" Fill="{Binding Fill}" />
                                 </DataTemplate>
                               </ItemsControl.ItemTemplate>
                             </ItemsControl>
                           </Grid>
                         </Viewbox>
+                        <DockPanel Margin="1,4,1,1">
+                          <ui:NexIcon DockPanel.Dock="Right" Data="{StaticResource Icon.Shapes}" Width="11" Height="11" Foreground="{DynamicResource AccentTextBrush}"
+                                      ToolTip="Geometrik" Visibility="{Binding IsGeometric, Converter={StaticResource BoolToVisibility}}" />
+                          <TextBlock Text="{Binding Name}" FontSize="10.5" TextTrimming="CharacterEllipsis" />
+                        </DockPanel>
+                        </StackPanel>
                       </Button>
                     </DataTemplate>
                   </ItemsControl.ItemTemplate>

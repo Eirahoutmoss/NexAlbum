@@ -94,7 +94,14 @@ public sealed class BackgroundItemViewModel : ObservableObject
 /// <summary>Şablon galerisindeki bir şablon; hücreler projenin sayfa oranında ve tasarım boşluklarıyla çözülür.</summary>
 public sealed class TemplateItemViewModel
 {
-    public TemplateItemViewModel(TemplateDefinition template, SizeMm page, DesignSettings design)
+    /// <summary>Fotoğraf yokken hücre dolgusu (kâğıt üzerinde sıcak gri-altın).</summary>
+    public static Brush EmptyCellFill { get; } = CreateEmptyFill();
+
+    /// <param name="template">Şablon.</param>
+    /// <param name="page">Projenin sayfa ölçüsü.</param>
+    /// <param name="design">Boşluk ve kenar payı.</param>
+    /// <param name="photos">Canlı önizleme: seçili sayfanın fotoğrafları (okuma sırasıyla); hücreler bunlarla doldurulur.</param>
+    public TemplateItemViewModel(TemplateDefinition template, SizeMm page, DesignSettings design, IReadOnlyList<Brush>? photos = null)
     {
         ArgumentNullException.ThrowIfNull(template);
         ArgumentNullException.ThrowIfNull(design);
@@ -103,20 +110,25 @@ public sealed class TemplateItemViewModel
         Height = page.Height;
         var area = new RectMm(0, 0, page.Width, page.Height);
         var shapes = template.Slots.ToDictionary(s => s.Id, s => s, StringComparer.Ordinal);
-        Cells = [.. template.Resolve(area, design.GapPercent, design.MarginPercent).Select(r =>
+        var fills = photos ?? [];
+        Cells = [.. template.Resolve(area, design.GapPercent, design.MarginPercent).Select((r, i) =>
         {
             var slot = shapes[r.SlotId];
+            var fill = i < fills.Count ? fills[i] : EmptyCellFill;
             if (r.Polygon is { } polygon)
             {
-                return new TemplateCell(r.Bounds.X, r.Bounds.Y, DesignBrushes.Polygon(Polygon.Map(polygon, r.Bounds), r.Bounds.X, r.Bounds.Y));
+                return new TemplateCell(r.Bounds.X, r.Bounds.Y, DesignBrushes.Polygon(Polygon.Map(polygon, r.Bounds), r.Bounds.X, r.Bounds.Y), fill);
             }
 
             var radius = slot.Shape == SlotShape.Rounded ? Math.Max(slot.CornerRadiusMm, Math.Min(r.Bounds.Width, r.Bounds.Height) * 0.08) : slot.CornerRadiusMm;
-            return new TemplateCell(r.Bounds.X, r.Bounds.Y, DesignBrushes.Shape(slot.Shape, 0, 0, r.Bounds.Width, r.Bounds.Height, radius));
+            return new TemplateCell(r.Bounds.X, r.Bounds.Y, DesignBrushes.Shape(slot.Shape, 0, 0, r.Bounds.Width, r.Bounds.Height, radius), fill);
         })];
+        IsGeometric = template.Category == TemplateCategory.Geometric;
     }
 
     public TemplateDefinition Template { get; }
+
+    public bool IsGeometric { get; }
 
     public string Id => Template.Id;
 
@@ -135,10 +147,40 @@ public sealed class TemplateItemViewModel
     public double Height { get; }
 
     public IReadOnlyList<TemplateCell> Cells { get; }
+
+    private static Brush CreateEmptyFill()
+    {
+        var brush = new LinearGradientBrush(Color.FromRgb(0xD8, 0xCB, 0xAE), Color.FromRgb(0xC2, 0xB0, 0x8A), 90);
+        brush.Freeze();
+        return brush;
+    }
 }
 
-/// <summary>Şablon önizlemesindeki bir hücre (mm, sayfanın sol üst köşesine göre).</summary>
-public sealed record TemplateCell(double X, double Y, Geometry Shape);
+/// <summary>Şablon önizlemesindeki bir hücre (mm, sayfanın sol üst köşesine göre); dolgu sayfanın fotoğrafı olabilir.</summary>
+public sealed record TemplateCell(double X, double Y, Geometry Shape, Brush Fill);
 
 /// <summary>Şablon süzgeci: fotoğraf sayısı (0 = tümü).</summary>
 public sealed record TemplateCountOption(int Count, string Name);
+
+/// <summary>Şablon galerisinin biçim süzgeci.</summary>
+public enum TemplateStyle
+{
+    All,
+    Geometric,
+    Collage,
+    Grid,
+    Simple,
+}
+
+/// <summary>Biçim süzgeci seçeneği.</summary>
+public sealed record TemplateStyleOption(TemplateStyle Style, string Name)
+{
+    public bool Matches(TemplateCategory category) => Style switch
+    {
+        TemplateStyle.Geometric => category == TemplateCategory.Geometric,
+        TemplateStyle.Collage => category is TemplateCategory.Collage or TemplateCategory.Featured,
+        TemplateStyle.Grid => category == TemplateCategory.Grid,
+        TemplateStyle.Simple => category is TemplateCategory.Single or TemplateCategory.FullBleed or TemplateCategory.Minimal,
+        _ => true,
+    };
+}

@@ -94,7 +94,8 @@ public static class DesignBrushes
     /// <summary>Çerçeve önizlemelerinde fotoğraf yerine kullanılan yumuşak "gökyüzü" dolgusu.</summary>
     public static Brush SamplePhoto { get; } = Freeze(new LinearGradientBrush(Color.FromRgb(0x9C, 0xB8, 0xD4), Color.FromRgb(0xE9, 0xD7, 0xC0), 90));
 
-    public static Brush EmptySlot { get; } = Freeze(new SolidColorBrush(Color.FromRgb(0xE8, 0xE8, 0xE8)));
+    /// <summary>Boş yuva: sıcak, kâğıt tonunda hafif gradyan (fotoğrafın geleceği yeri sessizce gösterir).</summary>
+    public static Brush EmptySlot { get; } = Freeze(new LinearGradientBrush(Color.FromRgb(0xF3, 0xEF, 0xE8), Color.FromRgb(0xE6, 0xDF, 0xD3), 90));
 
     private static Brush Freeze(Brush brush)
     {

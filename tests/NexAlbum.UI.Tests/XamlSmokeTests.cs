@@ -47,6 +47,12 @@ public class XamlSmokeTests
             var page = new PageView();
             page.Should().NotBeNull();
 
+            var empty = Core.Projects.AlbumProject.Create("Sunum", Core.Profiles.BuiltInProfiles.All[0], DateTimeOffset.UtcNow, "0.1.0")
+                .WithPages([new Core.Projects.AlbumPage { Id = "p1" }]);
+            var presentation = new PresentationWindow(new PresentationViewModel(empty, 0, spreads: true));
+            presentation.DataContext.Should().BeOfType<PresentationViewModel>();
+            presentation.Close();
+
             main.Close();
             about.Close();
             newProject.Close();

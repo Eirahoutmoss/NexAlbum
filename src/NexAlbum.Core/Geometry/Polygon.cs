@@ -162,6 +162,18 @@ public static class Polygon
             result[i] = new PointMm(origins[prev].X + (d1.X * t), origins[prev].Y + (d1.Y * t));
         }
 
+        // Çökme denetimi: alan işareti tek başına yetmez (her kenardan aşırı öteleme çokgeni 180° döndürür, işaret aynı kalır).
+        // Her kenar özgün yönünü korumalı; tersine dönen ya da sıfıra inen kenar çokgenin çöktüğünü gösterir.
+        for (var i = 0; i < n; i++)
+        {
+            var a = result[i];
+            var b = result[(i + 1) % n];
+            if (((b.X - a.X) * directions[i].X) + ((b.Y - a.Y) * directions[i].Y) <= Epsilon)
+            {
+                return [];
+            }
+        }
+
         var newArea = SignedArea(result);
         return Math.Sign(newArea) != Math.Sign(area) || Math.Abs(newArea) < Epsilon ? [] : result;
     }

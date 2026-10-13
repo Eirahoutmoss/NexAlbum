@@ -20,6 +20,9 @@ public sealed record AppSettings
     /// <summary>Arayüz teması: "Gece" (varsayılan) ya da "Fildisi" (Karar 17). Null ya da tanınmayan değer = Gece.</summary>
     public string? Theme { get; init; }
 
+    /// <summary>Tuvalde karşılıklı iki sayfa (kitap görünümü) gösterilsin mi?</summary>
+    public bool BookView { get; init; }
+
     /// <summary>Son açılan/kaydedilen projeler, en yenisi başta (başlangıç ekranı).</summary>
     public IReadOnlyList<RecentProject> RecentProjects { get; init; } = [];
 }

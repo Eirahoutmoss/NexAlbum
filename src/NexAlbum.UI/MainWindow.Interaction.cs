@@ -104,6 +104,7 @@ public partial class MainWindow
 
     private void OnCanvasMouseDown(object sender, MouseButtonEventArgs e)
     {
+        FocusPageOf(e.OriginalSource as DependencyObject);
         var slot = SlotAt(e.OriginalSource as DependencyObject, out var element);
         if (slot is null)
         {
@@ -175,6 +176,7 @@ public partial class MainWindow
 
         if (SlotAt(e.OriginalSource as DependencyObject, out _) is { IsEmpty: false } slot)
         {
+            FocusPageOf(e.OriginalSource as DependencyObject);
             ViewModel.ZoomSlot(slot, e.Delta > 0 ? 1.1 : 1 / 1.1);
             e.Handled = true;
         }
@@ -196,6 +198,12 @@ public partial class MainWindow
     private async void OnCanvasDrop(object sender, DragEventArgs e)
     {
         var slot = SlotUnder(e);
+        if (slot is not null && !e.Data.GetDataPresent(SlotFormat))
+        {
+            // Kitap görünümünde karşı sayfaya bırakılan fotoğraf o sayfaya gider (yuvalar arası taşıma yalnızca aynı sayfada).
+            FocusPageOf(VisualTreeHelper.HitTest(CanvasArea, e.GetPosition(CanvasArea))?.VisualHit);
+        }
+
         ClearDropTarget();
         e.Handled = true;
         if (Files(e) is { } files)
@@ -260,6 +268,26 @@ public partial class MainWindow
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Kitap görünümünde tıklanan/bırakılan öğenin sayfası seçili değilse önce o sayfa seçilir; düzenleme işlemleri
+    /// her zaman seçili sayfada çalışır.
+    /// </summary>
+    private void FocusPageOf(DependencyObject? source)
+    {
+        for (var current = source; current is not null; current = ParentOf(current))
+        {
+            if (current is FrameworkElement { DataContext: PageItemViewModel page })
+            {
+                if (!ReferenceEquals(page, ViewModel.SelectedPage) && ViewModel.Pages.Contains(page))
+                {
+                    ViewModel.SelectedPage = page;
+                }
+
+                return;
+            }
+        }
     }
 
     private SlotItemViewModel? SlotUnder(DragEventArgs e)

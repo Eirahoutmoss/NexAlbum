@@ -79,6 +79,13 @@ public sealed class PageItemViewModel : ObservableObject
 
     public bool HasSafeArea => SafeArea is not null;
 
+    /// <summary>Kesim ve güvenli alan kılavuzları çizilsin mi? Sunum modunda kapalıdır (baskıdaki gibi görünür).</summary>
+    public bool ShowGuides { get; init; } = true;
+
+    public bool ShowBleedGuide => ShowGuides && HasBleed;
+
+    public bool ShowSafeGuide => ShowGuides && HasSafeArea;
+
     /// <summary>Sayfa fonu: düz renk, gradyan ya da (arka planda yüklenen) görsel.</summary>
     public Brush Background
     {
@@ -239,6 +246,15 @@ public sealed class SlotItemViewModel : ObservableObject
     public bool IsEmpty => Asset is null;
 
     public bool ShowEmptyLabel => IsEmpty && !sample;
+
+    /// <summary>Boş yuvadaki "+" ikonunun boyu (mm): yuvanın kısa kenarına oranlı, çok büyük/küçük olmaz.</summary>
+    public double EmptyIconSize => Math.Clamp(Math.Min(PhotoWidth, PhotoHeight) * 0.16, 4, 22);
+
+    /// <summary>Boş yuvadaki ipucu yazısının boyu (mm).</summary>
+    public double EmptyFontSize => Math.Clamp(Math.Min(PhotoWidth, PhotoHeight) * 0.055, 2.2, 6);
+
+    /// <summary>İpucu yazısı yalnızca yeterince geniş yuvada gösterilir.</summary>
+    public bool ShowEmptyHint => ShowEmptyLabel && Math.Min(PhotoWidth, PhotoHeight) >= 40;
 
     public bool IsMissing => Asset?.Missing == true;
 
