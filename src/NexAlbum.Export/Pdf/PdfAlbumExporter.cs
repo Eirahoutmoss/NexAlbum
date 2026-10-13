@@ -499,7 +499,7 @@ public static class PdfAlbumExporter
                 var bytes = source.SourceType == AssetSourceType.Reference && File.Exists(source.SourcePath)
                     ? Rendering.Photos.PhotoAdjust.AdjustedJpeg(source.SourcePath, adjustments, source.ExifOrientation)
                     : null;
-                image = bytes is null ? null : XImage.FromStream(new MemoryStream(bytes));
+                image = bytes is null ? null : XImage.FromStream(new MemoryStream(bytes, 0, bytes.Length, writable: false, publiclyVisible: true));
                 adjusted[key] = image;
             }
 
