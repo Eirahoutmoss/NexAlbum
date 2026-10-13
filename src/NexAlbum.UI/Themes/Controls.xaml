@@ -512,6 +512,70 @@
     </Setter>
   </Style>
 
+  <!-- 3×3 hizalama ızgarasının hücresi: ortada nokta; üzerine gelince ve basınca vurgulanır. -->
+  <Style x:Key="AnchorButton" TargetType="Button">
+    <Setter Property="Margin" Value="2" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource NexFocusVisual}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Button">
+          <Border x:Name="Bd" CornerRadius="4" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Background="Transparent">
+            <Ellipse x:Name="Dot" Width="6" Height="6" Fill="{DynamicResource SecondaryTextBrush}" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+              <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+              <Setter TargetName="Dot" Property="Fill" Value="{DynamicResource AccentBrush}" />
+            </Trigger>
+            <Trigger Property="IsPressed" Value="True">
+              <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SelectionBrush}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter TargetName="Bd" Property="Opacity" Value="0.4" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <!-- Aç/kapa çip (ChipRadio görünümünde ToggleButton) -->
+  <Style x:Key="ChipToggle" TargetType="ToggleButton">
+    <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+    <Setter Property="Padding" Value="10,3" />
+    <Setter Property="FontSize" Value="12" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{StaticResource NexFocusVisual}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ToggleButton">
+          <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1"
+                  CornerRadius="12" Padding="{TemplateBinding Padding}">
+            <ContentPresenter VerticalAlignment="Center" RecognizesAccessKey="True" />
+          </Border>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+              <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+            </Trigger>
+            <Trigger Property="IsChecked" Value="True">
+              <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SelectionBrush}" />
+              <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+              <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="0.45" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
   <!-- Tema seçim kartı (Ayarlar) -->
   <Style x:Key="ThemeCard" TargetType="RadioButton">
     <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />

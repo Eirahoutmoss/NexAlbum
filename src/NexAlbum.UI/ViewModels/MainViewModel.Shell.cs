@@ -464,6 +464,8 @@ public sealed partial class MainViewModel
         new("Metin ekle: Tarih", "Metin", "Icon.Type", null, new RelayCommand(() => AddText(TextPresets.Find("date"))), "yazı gün"),
         new("Metin ekle: Alıntı", "Metin", "Icon.Type", null, new RelayCommand(() => AddText(TextPresets.Find("quote"))), "yazı söz şiir"),
         new("Seçili metni sil", "Metin", "Icon.Trash", "Del", DeleteTextCommand, "yazı kaldır"),
+        new("Metni okunur yap (hale / gölge)", "Metin", "Icon.Type", null, MakeTextReadableCommand, "gölge hale kontur bant kabartma okunurluk etki"),
+        new("Yuvadaki fotoğrafı konumlandır", "Düzenle", "Icon.Expand", null, TogglePositioningCommand, "kaydır kırp pan merkez odak yer"),
         new("Temayı değiştir (Gece / Fildişi)", "Görünüm", "Icon.Moon", null, ToggleThemeCommand, "koyu açık karanlık aydınlık"),
         new("Kitap görünümü (karşılıklı sayfalar)", "Görünüm", "Icon.Book", "Ctrl+B", ToggleBookViewCommand, "çift sayfa spread açık albüm"),
         new("Sunum modu", "Görünüm", "Icon.Present", "F5", PresentCommand, "tam ekran müşteri çift göster slayt"),

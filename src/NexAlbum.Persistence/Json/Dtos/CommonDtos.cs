@@ -223,6 +223,18 @@ internal sealed class TextDto : ElementDto
     public double? LineHeight { get; set; }
 
     public double? LetterSpacing { get; set; }
+
+    /// <summary>Şema v3: okunurluk etkisi; yoksa etki yok.</summary>
+    public TextEffectDto? Effect { get; set; }
+}
+
+internal sealed class TextEffectDto
+{
+    public string? Kind { get; set; }
+
+    public string? Color { get; set; }
+
+    public double? Strength { get; set; }
 }
 
 internal sealed class BackgroundElementDto : ElementDto

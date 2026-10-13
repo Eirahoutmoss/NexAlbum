@@ -1,5 +1,6 @@
 using System.Text.Json.Nodes;
 using FluentAssertions;
+using NexAlbum.Core.Projects;
 using NexAlbum.Persistence.Format;
 using NexAlbum.Persistence.Migrations;
 using NexAlbum.Persistence.Packaging;
@@ -142,6 +143,30 @@ public class MigrationTests
         loaded.OriginalSchemaVersion.Should().Be(1);
         loaded.Project.Pages.Should().HaveCount(Samples.FullProject().Pages.Count);
         loaded.Project.Pages.SelectMany(p => p.Slots).Should().OnlyContain(s => s.Polygon == null, "v1'de çokgen yuva yoktur");
+    }
+
+    [Fact]
+    public void V2ProjectIsUpgradedToV3WithTextsWithoutEffects()
+    {
+        using var dir = new TempDir();
+        var path = dir.File("v2.albumproj");
+        var v2 = PackageBuilder.EditJson(PackageBuilder.Valid(), ProjectFormat.ProjectEntry, n =>
+        {
+            n["schemaVersion"] = 2;
+            foreach (var element in n["pages"]!.AsArray().SelectMany(p => p!["elements"]!.AsArray()))
+            {
+                element!.AsObject().Remove("effect");
+            }
+        });
+        File.WriteAllBytes(path, v2);
+
+        var loaded = ProjectPackageReader.Load(path, new LoadOptions { BackupBeforeMigration = false });
+
+        loaded.Migrated.Should().BeTrue();
+        loaded.OriginalSchemaVersion.Should().Be(2);
+        var texts = loaded.Project.Pages.SelectMany(p => p.Elements.OfType<TextElement>()).ToList();
+        texts.Should().NotBeEmpty();
+        texts.Should().OnlyContain(t => t.Effect.IsNone, "v2'de metin etkisi yoktur");
     }
 
     [Fact]

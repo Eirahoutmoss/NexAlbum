@@ -12,8 +12,9 @@ public static class ProjectFormat
     /// <summary>
     /// Bu uygulamanın yazdığı ve okuyabildiği en yeni şema sürümü (Karar 09 §14.1).
     /// v2 (Karar 10 Rev. 1): yuvalarda "polygon" köşeleri ve yeni biçimler (triangle, diamond, hexagon, octagon, arch, slant).
+    /// v3 (Karar 09 Rev. 2): metinlerde "effect" (gölge, hale, kontur, bant, kabartma); "letterSpacing" punto katıdır.
     /// </summary>
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 3;
 
     public const string ManifestEntry = "manifest.json";
     public const string ProjectEntry = "project.json";

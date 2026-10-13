@@ -11,6 +11,11 @@ Değişiklik: project.json şema sürümü 1 → **2**. Yuvaya isteğe bağlı "
 Göç (§14): `V1ToV2PolygonSlots` — v1 dosyalarında bu alanlar yoktur; yapı değişmez, yalnızca sürüm yükselir; açılışta yedek (.bak-v1) alınır. Sürüm yükseltmenin amacı: eski uygulama v2 dosyayı "bilinmeyen biçim" hatasıyla değil, "daha yeni sürümle kaydedilmiş" uyarısıyla reddeder.
 Doğrulama: köşe sayısı ≥ 3, her köşe 0–1 aralığında; şablon çokgenleri ayrıca dışbükey olmalıdır.
 
+Revizyon 2 — 13/10/2026 (şema v3)
+Değişiklik: project.json şema sürümü 2 → **3**. Metin öğesine isteğe bağlı "effect" alanı: { "kind": "shadow|glow|outline|band|emboss", "color": "#RRGGBB[AA]", "strength": 0–1 }. Yoksa etki yoktur. "letterSpacing" artık tanımlıdır: punto katı (0,1 = puntonun %10'u kadar harf arası).
+Göç (§14): `V2ToV3TextEffects` — v2 dosyalarında "effect" yoktur; yapı değişmez, yalnızca sürüm yükselir; açılışta yedek (.bak-v2) alınır.
+Gerekçe: Fotoğraf üstündeki yazı her zeminde okunabilsin (Karar 17 §11). Etki ölçüleri punto ile oranlıdır; ekran ve PDF aynı hesabı (`TextLayout`) kullanır.
+
 1. Karar Özeti
 NexAlbum'in veri modeli katmanlı, sürümlenmiş, açık ve taşınabilir olacaktır.
 

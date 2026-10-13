@@ -14,6 +14,7 @@ internal static class ProjectMapper
     private static readonly TextEnum<PageType> PageTypes = new();
     private static readonly TextEnum<SpreadPosition> SpreadPositions = new();
     private static readonly TextEnum<CropMode> CropModes = new();
+    private static readonly TextEnum<TextEffectKind> EffectKinds = new();
     private static readonly TextEnum<SlotShape> Shapes = new();
     private static readonly TextEnum<TextAlignment> Alignments = new();
     private static readonly TextEnum<VerticalAlignment> VerticalAlignments = new();
@@ -311,6 +312,7 @@ internal static class ProjectMapper
         VerticalAlignment = VerticalAlignments.Format(t.VerticalAlignment),
         LineHeight = t.LineHeight,
         LetterSpacing = t.LetterSpacing,
+        Effect = t.Effect.IsNone ? null : new TextEffectDto { Kind = EffectKinds.Format(t.Effect.Kind), Color = t.Effect.Color.ToHex(), Strength = t.Effect.Strength },
         ZIndex = t.ZIndex,
     };
 
@@ -334,6 +336,14 @@ internal static class ProjectMapper
             VerticalAlignment = VerticalAlignments.Parse(d.VerticalAlignment, path + ".verticalAlignment", VerticalAlignment.Top),
             LineHeight = d.LineHeight,
             LetterSpacing = d.LetterSpacing ?? 0,
+            Effect = d.Effect is { } e
+                ? new TextEffect
+                {
+                    Kind = EffectKinds.Parse(e.Kind, path + ".effect.kind", TextEffectKind.None),
+                    Color = Color(e.Color, path + ".effect.color") ?? RgbaColor.Black,
+                    Strength = e.Strength ?? 0.6,
+                }
+                : TextEffect.None,
             ZIndex = d.ZIndex ?? 0,
         };
     }

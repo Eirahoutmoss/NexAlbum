@@ -265,6 +265,9 @@ public partial class MainWindow
     {
         FocusPageOf(e.OriginalSource as DependencyObject);
 
+        // Yön tuşları ve +/− tuval odaktayken seçili yuvaya/metne gider (panel kaydırıcılarına değil).
+        CanvasArea.Focus();
+
         // Metinler yuvaların üstündedir: önce metin aranır. Tıkla: seç · sürükle: taşı · çift tıkla: yazıyı düzenle.
         if (TextAt(e.OriginalSource as DependencyObject, out var origin) is { } text && origin is not null)
         {
@@ -301,11 +304,20 @@ public partial class MainWindow
         }
 
         ViewModel.SelectSlot(slot);
+        if (e.ClickCount == 2 && slot is { IsEmpty: false })
+        {
+            // Çift tık: konumlandırma kipi (düz sürükleme fotoğrafı yuvanın içinde kaydırır).
+            ViewModel.IsPositioning = !ViewModel.IsPositioning;
+            ResetPress();
+            e.Handled = true;
+            return;
+        }
+
         pressedSlot = ViewModel.SelectedSlot;
         pressedElement = element;
         canvasStart = e.GetPosition(element);
         panStart = pressedSlot?.Placement;
-        panning = panStart is not null && Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+        panning = panStart is not null && (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) || ViewModel.IsPositioning);
         if (panning)
         {
             CanvasArea.CaptureMouse();
@@ -391,12 +403,47 @@ public partial class MainWindow
             return;
         }
 
-        if (SlotAt(e.OriginalSource as DependencyObject, out _) is { IsEmpty: false } slot)
+        if (SlotAt(e.OriginalSource as DependencyObject, out var element) is { IsEmpty: false } slot && element is not null)
         {
             FocusPageOf(e.OriginalSource as DependencyObject);
-            ViewModel.ZoomSlot(slot, e.Delta > 0 ? 1.1 : 1 / 1.1);
+
+            // İmlecin altındaki nokta yerinde kalır: fotoğrafın istenen bölgesine tekerlekle yaklaşılır.
+            var at = e.GetPosition(element);
+            ViewModel.ZoomSlotAt(ViewModel.SelectedPage?.Slots.FirstOrDefault(s => s.Id == slot.Id) ?? slot, e.Delta > 0 ? 1.1 : 1 / 1.1, at.X, at.Y);
             e.Handled = true;
         }
+    }
+
+    /// <summary>
+    /// Tuval odaktayken: yön tuşları seçili metni ya da yuvadaki fotoğrafı kaydırır (Shift: büyük adım), + / − yakınlaştırır,
+    /// Home ortalar, Esc konumlandırmayı bitirir. Ctrl'lü kısayollar pencereye kalır (tuval yakınlaştırma).
+    /// </summary>
+    private void OnCanvasKeyDown(object sender, KeyEventArgs e)
+    {
+        if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) || Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
+        {
+            return;
+        }
+
+        var large = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift);
+        e.Handled = e.Key switch
+        {
+            Key.Left => ViewModel.Nudge(-1, 0, large),
+            Key.Right => ViewModel.Nudge(1, 0, large),
+            Key.Up => ViewModel.Nudge(0, -1, large),
+            Key.Down => ViewModel.Nudge(0, 1, large),
+            Key.Add or Key.OemPlus => ViewModel.ZoomSelected(large ? 1.25 : 1.05),
+            Key.Subtract or Key.OemMinus => ViewModel.ZoomSelected(1 / (large ? 1.25 : 1.05)),
+            Key.Home when ViewModel.SelectedSlot is { IsEmpty: false } => Run(() => ViewModel.AlignPhoto("0 0")),
+            Key.Escape when ViewModel.IsPositioning => Run(() => ViewModel.IsPositioning = false),
+            _ => false,
+        };
+    }
+
+    private static bool Run(Action action)
+    {
+        action();
+        return true;
     }
 
     private void OnCanvasDragOver(object sender, DragEventArgs e)

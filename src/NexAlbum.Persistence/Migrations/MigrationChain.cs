@@ -28,7 +28,7 @@ public sealed class MigrationChain
     }
 
     /// <summary>Uygulamanın yerleşik göç adımları, sırayla (v1 → v2: çokgen yuvalar).</summary>
-    public static IReadOnlyList<IMigration> BuiltIn { get; } = [new V1ToV2PolygonSlots()];
+    public static IReadOnlyList<IMigration> BuiltIn { get; } = [new V1ToV2PolygonSlots(), new V2ToV3TextEffects()];
 
     /// <summary>Uygulamanın yerleşik göçleri.</summary>
     public static MigrationChain Default { get; } = new(BuiltIn);

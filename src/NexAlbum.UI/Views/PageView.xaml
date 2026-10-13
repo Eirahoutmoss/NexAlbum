@@ -1,6 +1,7 @@
 <UserControl x:Class="NexAlbum.UI.Views.PageView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:NexAlbum.UI.Controls">
   <!-- Birim: milimetre. Viewbox ekrana ölçekler; koordinatlar taşma payı alanının sol üst köşesine göredir. -->
   <Viewbox Stretch="Uniform">
     <Grid Width="{Binding CanvasWidth}" Height="{Binding CanvasHeight}" Background="{Binding Background}">
@@ -18,7 +19,7 @@
         </ItemsControl.ItemContainerStyle>
       </ItemsControl>
 
-      <!-- Metinler: yuvaların üstünde; sabit satır yüksekliği (PDF ile aynı kural) -->
+      <!-- Metinler: yuvaların üstünde; satır kırma, harf aralığı ve etkiler PDF ile aynı hesaptan (TextLayout) -->
       <ItemsControl ItemsSource="{Binding Texts}" Focusable="False">
         <ItemsControl.ItemsPanel>
           <ItemsPanelTemplate>
@@ -34,10 +35,7 @@
         <ItemsControl.ItemTemplate>
           <DataTemplate>
             <Grid Width="{Binding Width}" Height="{Binding Height}" Background="Transparent" Cursor="SizeAll">
-              <TextBlock Text="{Binding Content}" FontFamily="{Binding FontFamily}" FontSize="{Binding FontSize}" FontWeight="{Binding FontWeight}"
-                         FontStyle="{Binding FontStyle}" Foreground="{Binding Foreground}" TextAlignment="{Binding Alignment}"
-                         VerticalAlignment="{Binding VerticalAlignment}" TextWrapping="Wrap"
-                         LineHeight="{Binding LineHeight}" LineStackingStrategy="BlockLineHeight" />
+              <ui:AlbumTextView Text="{Binding Text}" />
               <Rectangle x:Name="Outline" Stroke="#D4A853" StrokeThickness="0.5" StrokeDashArray="3 2" Margin="-1" IsHitTestVisible="False"
                          Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibility}}" />
             </Grid>
