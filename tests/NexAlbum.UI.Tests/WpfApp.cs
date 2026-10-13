@@ -1,6 +1,7 @@
 using System.Runtime.ExceptionServices;
 using System.Windows;
 using System.Windows.Threading;
+using Xunit;
 
 namespace NexAlbum.UI.Tests;
 
@@ -11,6 +12,12 @@ namespace NexAlbum.UI.Tests;
 /// </summary>
 internal static class WpfApp
 {
+    /// <summary>
+    /// Pencere açan test sınıflarının ortak xUnit koleksiyonu: aynı anda çalışmazlar. (Biri <see cref="Pump"/> ile iç içe ileti
+    /// döngüsündeyken ötekinin işi araya girip kilitlenmeye yol açabiliyordu.)
+    /// </summary>
+    public const string Collection = "WPF";
+
     private static readonly Lazy<Dispatcher> Host = new(Start, LazyThreadSafetyMode.ExecutionAndPublication);
 
     public static void Run(Action action)
@@ -88,4 +95,10 @@ internal static class WpfApp
 
         return dispatcher!;
     }
+}
+
+/// <summary>Pencere testleri koleksiyonu; paralel çalışmaz (bkz. <see cref="WpfApp.Collection"/>).</summary>
+[CollectionDefinition(WpfApp.Collection, DisableParallelization = true)]
+public sealed class WpfCollection
+{
 }

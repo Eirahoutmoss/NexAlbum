@@ -22,6 +22,7 @@ namespace NexAlbum.UI.Tests;
 /// <c>NEXALBUM_EKRAN_KLASORU</c> ortam değişkeni verilirse görüntüler PNG olarak oraya yazılır
 /// (<c>.github/workflows/screenshots.yml</c> bunları <c>ekran/&lt;dal&gt;</c> dalına koyar).
 /// </summary>
+[Collection(WpfApp.Collection)]
 public sealed class ScreenshotTests : IDisposable
 {
     private readonly string dir = Path.Combine(Path.GetTempPath(), "nexalbum-ekran", Guid.NewGuid().ToString("N"));

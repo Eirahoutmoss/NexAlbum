@@ -21,6 +21,7 @@ concurrency:
 jobs:
   ekran:
     runs-on: windows-2025
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-dotnet@v5
@@ -29,7 +30,7 @@ jobs:
       - name: Ekran görüntüleri
         env:
           NEXALBUM_EKRAN_KLASORU: ${{ github.workspace }}\ekran
-        run: dotnet test tests/NexAlbum.UI.Tests -c Release --filter "FullyQualifiedName~ScreenshotTests"
+        run: dotnet test tests/NexAlbum.UI.Tests -c Release --filter "FullyQualifiedName~ScreenshotTests" --blame-hang-timeout 5m
       - name: ekran/<dal> dalına yaz
         shell: bash
         env:
