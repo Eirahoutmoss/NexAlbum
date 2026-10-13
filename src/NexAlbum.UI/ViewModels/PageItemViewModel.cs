@@ -19,6 +19,8 @@ public sealed class PageItemViewModel : ObservableObject
     private Brush background;
     private bool isDropBefore;
     private bool isPhotoDropTarget;
+    private string? chapterLabel;
+    private Brush? chapterColor;
 
     public PageItemViewModel(AlbumPage page, int index, AlbumProject project)
     {
@@ -68,6 +70,28 @@ public sealed class PageItemViewModel : ObservableObject
     {
         get => isDropBefore;
         set => SetProperty(ref isDropBefore, value);
+    }
+
+    /// <summary>Şeritte bölümün ilk sayfasının üstünde bölüm adı; değilse null.</summary>
+    public string? ChapterLabel
+    {
+        get => chapterLabel;
+        set
+        {
+            if (SetProperty(ref chapterLabel, value))
+            {
+                OnPropertyChanged(nameof(HasChapterLabel));
+            }
+        }
+    }
+
+    public bool HasChapterLabel => chapterLabel is not null;
+
+    /// <summary>Sayfanın bölüm rengi (şeritte küçük resmin altında çizgi).</summary>
+    public Brush? ChapterColor
+    {
+        get => chapterColor;
+        set => SetProperty(ref chapterColor, value);
     }
 
     /// <summary>Sürüklenen fotoğraf bu sayfanın boş yuvasına bırakılacak (şeritte altın çerçeve).</summary>

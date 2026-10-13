@@ -30,6 +30,27 @@ internal sealed class ProjectDto
     public SettingsDto? Settings { get; set; }
 
     public HistoryDto? History { get; set; }
+
+    /// <summary>Şema v4: hikâye akışı (bölümler).</summary>
+    public StoryDto? Story { get; set; }
+}
+
+internal sealed class StoryDto
+{
+    public bool? Enabled { get; set; }
+
+    public bool? Openers { get; set; }
+
+    public List<ChapterDto>? Chapters { get; set; }
+}
+
+internal sealed class ChapterDto
+{
+    public string? Id { get; set; }
+
+    public string? Name { get; set; }
+
+    public DateTimeOffset? Start { get; set; }
 }
 
 internal sealed class PageDto

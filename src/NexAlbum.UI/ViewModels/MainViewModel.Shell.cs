@@ -129,6 +129,13 @@ public sealed partial class MainViewModel
         {
             if (SetProperty(ref galleryFilter, value))
             {
+                if (value != GalleryFilter.Chapter && selectedChapter is not null)
+                {
+                    selectedChapter.IsSelected = false;
+                    selectedChapter = null;
+                    OnPropertyChanged(nameof(SelectedChapter));
+                }
+
                 RebuildGallery();
             }
         }
@@ -196,6 +203,7 @@ public sealed partial class MainViewModel
             GalleryFilter.Unused => "Tüm fotoğraflar albümde kullanılıyor.",
             GalleryFilter.Used => "Albümde henüz fotoğraf yok. «Oto Oluştur» ile başlayın.",
             GalleryFilter.Edited => "Rötuşlanmış fotoğraf yok. «Rötuş» ile toplu düzenleyebilirsiniz.",
+            GalleryFilter.Chapter => "Bu bölümde fotoğraf yok.",
             GalleryFilter.Favorites => "Favori yok. Fotoğrafın yıldızına tıklayın ya da seçip F'ye basın;\nfavoriler otomatik yerleşimde önce yerleşir.",
             _ => string.Empty,
         };
@@ -352,6 +360,7 @@ public sealed partial class MainViewModel
         GalleryFilter.Used => item.IsUsed,
         GalleryFilter.Edited => item.IsEdited,
         GalleryFilter.Favorites => item.IsFavorite,
+        GalleryFilter.Chapter => InSelectedChapter(item),
         _ => true,
     };
 
@@ -477,6 +486,9 @@ public sealed partial class MainViewModel
         new("Galeri: kullanılmamışlar", "Galeri", "Icon.Gallery", null, new RelayCommand(() => GalleryFilter = GalleryFilter.Unused), "süzgeç filtre boşta"),
         new("Galeri: albümdekiler", "Galeri", "Icon.Gallery", null, new RelayCommand(() => GalleryFilter = GalleryFilter.Used), "süzgeç filtre kullanılan"),
         new("Galeri: rötuşlananlar", "Galeri", "Icon.Gallery", null, new RelayCommand(() => GalleryFilter = GalleryFilter.Edited), "süzgeç filtre düzenlenen"),
+        new("Hikâye: bölümleri bul", "Hikâye", "Icon.Story", null, DetectStoryCommand, "düğün evre akış kına hazırlık gelin alma nikah dış çekim zaman exif"),
+        new("Hikâye: bölümlere göre albüm oluştur", "Hikâye", "Icon.Story", null, BuildFromStoryCommand, "otomatik akış bölüm"),
+        new("Hikâye: seçili fotoğraftan yeni bölüm", "Hikâye", "Icon.Split", null, SplitStoryHereCommand, "böl ayır başlat"),
         new("Galeri: favoriler", "Galeri", "Icon.Star", null, new RelayCommand(() => GalleryFilter = GalleryFilter.Favorites), "süzgeç filtre yıldız seçilen"),
         new("Favori yap / kaldır", "Galeri", "Icon.Star", "F", ToggleFavoriteCommand, "yıldız beğen seç öne çıkar"),
         new("Galeri: çekim zamanına göre sırala", "Galeri", "Icon.Gallery", null, new RelayCommand(() => SelectedGallerySort = GallerySortOptions[1]), "sırala tarih saat exif"),

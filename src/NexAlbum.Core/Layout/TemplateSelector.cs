@@ -95,6 +95,28 @@ public sealed class TemplateSelector
     }
 
     /// <summary>
+    /// Bölüm açılışı için tek fotoğraflık şablon: tam sayfa (taşma paylı) olan tercih edilir; yoksa tek fotoğraflık herhangi biri.
+    /// </summary>
+    public TemplateChoice SelectOpener(ClassifiedPhoto hero)
+    {
+        ArgumentNullException.ThrowIfNull(hero);
+        var single = templates.Where(t => t.PhotoCount.Accepts(1) && t.Slots.Count >= 1).ToList();
+        if (single.Count == 0)
+        {
+            throw new InvalidOperationException("Bölüm açılışı için tek fotoğraflık şablon yok.");
+        }
+
+        var bleed = single.Where(t => t.Category == TemplateCategory.FullBleed).ToList();
+        var choice = (bleed.Count > 0 ? bleed : single)
+            .Select(t => Evaluate(t, new PageGroup(1, 1), [hero]))
+            .OrderByDescending(c => c.Score)
+            .ThenBy(c => c.Template.Id, StringComparer.Ordinal)
+            .First();
+        history.Add(choice.Template);
+        return choice with { Reason = "bölüm açılışı, " + choice.Reason };
+    }
+
+    /// <summary>
     /// Tekrar kuralları (Karar 10 §10.3). Uygun aday kalmazsa kurallar kademeli gevşetilir:
     /// önce kategori kuralı, sonra şablon penceresi 3 → 2 → 1 sayfaya iner.
     /// </summary>

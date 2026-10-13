@@ -67,6 +67,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         InitializeText();
         InitializeGallery();
         InitializePositioning();
+        InitializeStory();
         InitializeShell();
     }
 
@@ -641,6 +642,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(PhotoSummary));
         OnPropertyChanged(nameof(ProfileSummary));
         OnPropertyChanged(nameof(SelectedPageInfo));
+        RefreshStory(value);
         RefreshDesign(value);
         RefreshCommands();
     }
@@ -665,6 +667,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         RefreshTextCommands();
         RefreshGalleryCommands();
         RefreshPositioningCommands();
+        RefreshStoryCommands();
         RefreshDesignCommands();
         RefreshEditCommands();
     }

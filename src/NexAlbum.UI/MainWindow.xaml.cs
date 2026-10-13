@@ -144,6 +144,17 @@ public partial class MainWindow : Window
     }
 
     /// <summary>Kartın dışına (karartılmış zemine) tıklanınca palet kapanır.</summary>
+    /// <summary>Bölüm adı menüsü sol tıkla açılır (sağ tık beklenmez).</summary>
+    private void OnChapterNamesClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement { ContextMenu: { } menu } button)
+        {
+            menu.PlacementTarget = button;
+            menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+            menu.IsOpen = true;
+        }
+    }
+
     private void OnPaletteBackdropDown(object sender, MouseButtonEventArgs e)
     {
         if (ReferenceEquals(e.OriginalSource, PaletteOverlay))

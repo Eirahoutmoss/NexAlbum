@@ -11,6 +11,7 @@ public sealed class AssetItemViewModel(PhotoAsset asset, bool used) : Observable
     private ImageSource? thumbnail;
     private bool loading;
     private bool isSelected;
+    private Brush? chapterColor;
 
     public PhotoAsset Asset { get; } = asset;
 
@@ -30,6 +31,13 @@ public sealed class AssetItemViewModel(PhotoAsset asset, bool used) : Observable
     public string FileName => Asset.FileName;
 
     public bool IsUsed { get; } = used;
+
+    /// <summary>Hikâye bölümünün rengi (karenin altında ince çizgi); bölüm yoksa null.</summary>
+    public Brush? ChapterColor
+    {
+        get => chapterColor;
+        set => SetProperty(ref chapterColor, value);
+    }
 
     /// <summary>Favori (yıldızlı): otomatik yerleşimde önce yerleşir (Karar 10 §9.5).</summary>
     public bool IsFavorite => Asset.Favorite;

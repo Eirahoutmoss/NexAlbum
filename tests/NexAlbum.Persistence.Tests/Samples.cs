@@ -167,6 +167,15 @@ internal static class Samples
                 },
             },
             History = new HistorySettings { Enabled = true, MaxSteps = 50 },
+            Story = new StoryPlan
+            {
+                Openers = true,
+                Chapters =
+                [
+                    new StoryChapter("chapter-01", "Hazırlık", Now.AddYears(-1).AddHours(-3)),
+                    new StoryChapter("chapter-02", "Gelin Alma", new DateTimeOffset(2025, 10, 12, 14, 30, 0, TimeSpan.FromHours(3))),
+                ],
+            },
         };
     }
 

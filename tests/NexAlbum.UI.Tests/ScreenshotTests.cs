@@ -142,6 +142,15 @@ public sealed class ScreenshotTests : IDisposable
                 Capture(main, "14-konumlandirma-gece").Should().BeTrue();
                 vm.IsPositioning = false;
 
+                vm.DetectStory();
+                vm.Chapters.Should().HaveCount(4);
+                vm.SelectedChapter = vm.Chapters[1];
+                Settle(main);
+                All<ListBox>(main).First(l => ReferenceEquals(l.ItemsSource, vm.Chapters)).BringIntoView();
+                Settle(main);
+                Capture(main, "15-hikaye-gece").Should().BeTrue();
+                vm.IsFilterAll = true;
+
                 var show = new PresentationWindow(new ViewModels.PresentationViewModel(vm.Project!, vm.SelectedPage!.Index, spreads: true)) { WindowState = WindowState.Normal };
                 Capture(Show(show, 1440, 900), "08-sunum").Should().BeTrue();
                 show.Hide();
@@ -305,6 +314,21 @@ public sealed class ScreenshotTests : IDisposable
 
         var project = AlbumProject.Create("Örnek Düğün Albümü", BuiltInProfiles.Find("builtin-30x30")!, now, "0.1.0", Guid.Parse("6d1f8a3e-0000-4000-8000-000000000001"));
         project = new PhotoImporter().ImportFiles(files, project).ApplyTo(project);
+
+        // Düğün günü akışı: örnek dosyalarda EXIF yok; çekim saatleri hikâye sekmesi için verilir.
+        var day = new DateTimeOffset(2026, 6, 13, 0, 0, 0, TimeSpan.FromHours(3));
+        double[] starts = [9.25, 13, 16.5, 21];
+        int[] sizes = [5, 4, 4, 5];
+        var times = new List<DateTimeOffset>();
+        for (var c = 0; c < starts.Length; c++)
+        {
+            for (var k = 0; k < sizes[c]; k++)
+            {
+                times.Add(day.AddHours(starts[c]).AddMinutes(k * 6));
+            }
+        }
+
+        project = project with { Assets = [.. project.Assets.Select((a, i) => a with { CapturedAt = times[Math.Min(i, times.Count - 1)] })] };
         var layout = new AutoLayoutEngine().Layout(LayoutRequest.ForProject(project, BuiltInTemplates.All, new LayoutOptions { Mode = LayoutMode.Balanced }, now));
         project = project.WithPages(layout.Pages);
 

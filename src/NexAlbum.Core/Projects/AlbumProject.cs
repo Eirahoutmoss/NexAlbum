@@ -37,6 +37,9 @@ public sealed record AlbumProject
 
     public HistorySettings? History { get; init; }
 
+    /// <summary>Hikâye akışı: düğünün bölümleri (Karar 10 Rev. 2); yoksa boş.</summary>
+    public StoryPlan Story { get; init => field = value ?? throw new ArgumentNullException(nameof(Story)); } = StoryPlan.Empty;
+
     public string ProfileId => Profile.Id;
 
     /// <summary>Sayfa dikdörtgeni (0,0 köşeli, bitmiş ölçü).</summary>

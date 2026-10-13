@@ -285,6 +285,7 @@
               <ListBox.ContextMenu>
                 <ContextMenu>
                   <MenuItem Header="Favori yap / kaldır" Command="{Binding ToggleFavoriteCommand}" InputGestureText="F" />
+                  <MenuItem Header="Buradan yeni bölüm" Command="{Binding SplitStoryHereCommand}" />
                   <Separator />
                   <MenuItem Header="Düzenleyicide aç" Command="{Binding OpenInEditorCommand}" />
                   <MenuItem Header="Toplu rötuş…" Command="{Binding BatchEditCommand}" />
@@ -341,6 +342,8 @@
                                   Visibility="{Binding IsEdited, Converter={StaticResource BoolToVisibility}}">
                             <ui:NexIcon Data="{StaticResource Icon.Retouch}" Width="12" Height="12" StrokeThickness="2" Foreground="#E0B864" />
                           </Border>
+                          <!-- Hikâye bölümünün rengi -->
+                          <Border Height="3" CornerRadius="1.5" Margin="8,0,30,4" VerticalAlignment="Bottom" Background="{Binding ChapterColor}" IsHitTestVisible="False" />
                           <!-- Favori: yıldız (favoriyse hep, değilse üzerine gelince) -->
                           <Button x:Name="Star" Style="{StaticResource StarButton}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="4"
                                   Command="{Binding DataContext.ToggleFavoriteCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
@@ -1088,6 +1091,152 @@
               </StackPanel>
             </ScrollViewer>
           </TabItem>
+          <TabItem Header="Hikâye" ui:Ui.Icon="{StaticResource Icon.Story}" IsEnabled="{Binding HasProject}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+              <StackPanel Margin="0,0,0,20">
+                <TextBlock Text="DÜĞÜNÜN AKIŞI" Style="{StaticResource PanelHeader}" />
+                <TextBlock Style="{StaticResource Caption}" Margin="16,-2,16,8" TextWrapping="Wrap"
+                           Text="Fotoğraflar çekim saatine göre bölümlere ayrılır: hazırlık, gelin alma, dış çekim, nikâh, düğün… Her bölüm albümde yeni sayfada başlar." />
+                <DockPanel Margin="16,0,16,6">
+                  <TextBlock DockPanel.Dock="Right" Text="{Binding StoryGapMinutes, StringFormat={}{0:0} dk}" Width="46" TextAlignment="Right" VerticalAlignment="Center"
+                             Foreground="{DynamicResource SecondaryTextBrush}" />
+                  <TextBlock Text="Bölüm arası" VerticalAlignment="Center" Width="86" />
+                  <Slider Minimum="10" Maximum="240" Value="{Binding StoryGapMinutes}" SmallChange="5" LargeChange="15" IsSnapToTickEnabled="True" TickFrequency="5"
+                          VerticalAlignment="Center" AutomationProperties.Name="Bölüm arası"
+                          ToolTip="İki fotoğraf arasında bu kadar süre varsa yeni bölüm başlar. Gün değişimi her zaman böler." />
+                </DockPanel>
+                <WrapPanel Margin="16,4,12,0">
+                  <Button Style="{StaticResource AccentButton}" Command="{Binding DetectStoryCommand}" Margin="0,0,8,8" Padding="12,5">
+                    <StackPanel Orientation="Horizontal">
+                      <ui:NexIcon Data="{StaticResource Icon.Sparkles}" Width="15" Height="15" Margin="0,0,6,0" />
+                      <TextBlock Text="Bölümleri bul" />
+                    </StackPanel>
+                  </Button>
+                  <Button Style="{StaticResource OutlineAccentButton}" Command="{Binding BuildFromStoryCommand}" Margin="0,0,8,8" Padding="12,5"
+                          ToolTip="Kilitli olmayan sayfalar bölümlere göre yeniden oluşturulur.">
+                    <StackPanel Orientation="Horizontal">
+                      <ui:NexIcon Data="{StaticResource Icon.Story}" Width="15" Height="15" Margin="0,0,6,0" />
+                      <TextBlock Text="Hikâyeye göre oluştur" />
+                    </StackPanel>
+                  </Button>
+                </WrapPanel>
+                <CheckBox Margin="16,2,16,4" IsChecked="{Binding StoryOpeners}" Content="Her bölüm bir açılış sayfasıyla başlasın"
+                          ToolTip="Bölümün ilk favorisi (yoksa ilk yatay fotoğrafı) tam sayfa, üzerinde bölüm adı." />
+                <CheckBox Margin="16,0,16,8" IsChecked="{Binding StoryEnabled}" Content="«Oto Oluştur» bölümleri kullansın" IsEnabled="{Binding HasStory}" />
+
+                <!-- Boş durum -->
+                <Border Style="{StaticResource Card}" Margin="16,4,16,0" Padding="14,12" Visibility="{Binding HasNoStory, Converter={StaticResource BoolToVisibility}}">
+                  <StackPanel>
+                    <ui:NexIcon Data="{StaticResource Icon.Story}" Width="22" Height="22" Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Left" />
+                    <TextBlock Text="Henüz bölüm yok." Margin="0,8,0,0" />
+                    <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,4,0,0"
+                               Text="«Bölümleri bul» çekim saatlerinden önerir. Galeride bir fotoğrafa sağ tıklayıp «Buradan yeni bölüm» ile elle de başlatabilirsiniz." />
+                  </StackPanel>
+                </Border>
+
+                <StackPanel Visibility="{Binding HasStory, Converter={StaticResource BoolToVisibility}}">
+                  <!-- Zaman çizelgesi: çekim yoğunluğu, bölüm renginde -->
+                  <TextBlock Text="ZAMAN ÇİZELGESİ" Style="{StaticResource PanelHeader}" />
+                  <Border Margin="16,0,16,0" Height="46" CornerRadius="6" Background="{DynamicResource SurfaceHoverBrush}" Padding="6,4">
+                    <ItemsControl ItemsSource="{Binding Timeline}" VerticalAlignment="Bottom">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <UniformGrid Rows="1" />
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                          <Border Height="{Binding Height}" Background="{Binding Color}" CornerRadius="1.5" Margin="0.5,0" VerticalAlignment="Bottom" ToolTip="{Binding ToolTip}" />
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </Border>
+                  <TextBlock Text="{Binding StorySummary}" Style="{StaticResource Caption}" Margin="16,6,16,0" TextWrapping="Wrap" />
+
+                  <DockPanel Margin="0,0,16,0">
+                    <Button DockPanel.Dock="Right" Style="{StaticResource SmallButton}" Content="Bölümleri kaldır" Command="{Binding ClearStoryCommand}" VerticalAlignment="Bottom" />
+                    <TextBlock Text="BÖLÜMLER" Style="{StaticResource PanelHeader}" />
+                  </DockPanel>
+                  <TextBlock Style="{StaticResource Caption}" Margin="16,-2,16,6" TextWrapping="Wrap" Text="Bölüme tıklayınca galeri o bölümün fotoğraflarını gösterir. Adı yazarak ya da listeden seçerek değiştirin." />
+                  <ListBox ItemsSource="{Binding Chapters}" SelectedItem="{Binding SelectedChapter}" Margin="12,0,12,0" Focusable="False"
+                           ScrollViewer.HorizontalScrollBarVisibility="Disabled" AutomationProperties.Name="Bölümler">
+                    <ListBox.ItemContainerStyle>
+                      <Style TargetType="ListBoxItem">
+                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                        <Setter Property="Cursor" Value="Hand" />
+                        <Setter Property="Template">
+                          <Setter.Value>
+                            <ControlTemplate TargetType="ListBoxItem">
+                              <Border x:Name="Bd" CornerRadius="8" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Margin="0,0,0,6" Padding="0,0,8,8"
+                                      Background="Transparent">
+                                <DockPanel>
+                                  <Border DockPanel.Dock="Left" Width="4" CornerRadius="8,0,0,8" Background="{Binding Color}" Margin="0,0,10,-8" />
+                                  <StackPanel Margin="0,8,0,0">
+                                    <DockPanel>
+                                      <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" ui:Ui.Icon="{StaticResource Icon.Merge}" Width="26" Height="26"
+                                              Command="{Binding DataContext.MergeChapterCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
+                                              ToolTip="Öncekiyle birleştir (ilk bölümse sonrakini katar)" AutomationProperties.Name="Öncekiyle birleştir" />
+                                      <TextBlock DockPanel.Dock="Left" Text="{Binding Number}" Width="18" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" />
+                                      <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" ui:Ui.Icon="{StaticResource Icon.ChevronDown}" Width="26" Height="26"
+                                              Margin="2,0,0,0" ToolTip="Hazır adlar" AutomationProperties.Name="Hazır adlar" Click="OnChapterNamesClick">
+                                        <Button.ContextMenu>
+                                          <ContextMenu ItemsSource="{Binding Suggestions}">
+                                            <ContextMenu.ItemContainerStyle>
+                                              <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                                                <Setter Property="Header" Value="{Binding Name}" />
+                                                <Setter Property="Command" Value="{Binding ApplyCommand}" />
+                                              </Style>
+                                            </ContextMenu.ItemContainerStyle>
+                                          </ContextMenu>
+                                        </Button.ContextMenu>
+                                      </Button>
+                                      <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}" Margin="0,0,2,0" VerticalContentAlignment="Center"
+                                               AutomationProperties.Name="Bölüm adı" ToolTip="Bölüm adı (açılış sayfasında başlık olur)" />
+                                    </DockPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="18,6,0,0">
+                                      <ui:NexIcon Data="{StaticResource Icon.Clock}" Width="12" Height="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,5,0" />
+                                      <TextBlock Text="{Binding Summary}" Style="{StaticResource Caption}" />
+                                    </StackPanel>
+                                    <ItemsControl ItemsSource="{Binding Preview}" Margin="18,6,0,0" Focusable="False">
+                                      <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                          <StackPanel Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                      </ItemsControl.ItemsPanel>
+                                      <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                          <Border Width="38" Height="38" CornerRadius="4" Margin="0,0,4,0" Background="{DynamicResource SurfaceHoverBrush}" ClipToBounds="True">
+                                            <Border CornerRadius="4">
+                                              <Border.Background>
+                                                <ImageBrush ImageSource="{Binding Thumbnail}" Stretch="UniformToFill" />
+                                              </Border.Background>
+                                            </Border>
+                                          </Border>
+                                        </DataTemplate>
+                                      </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                  </StackPanel>
+                                </DockPanel>
+                              </Border>
+                              <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                  <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SurfaceHoverBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                  <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                  <Setter TargetName="Bd" Property="Background" Value="{DynamicResource SelectionBrush}" />
+                                </Trigger>
+                              </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                          </Setter.Value>
+                        </Setter>
+                      </Style>
+                    </ListBox.ItemContainerStyle>
+                  </ListBox>
+                </StackPanel>
+              </StackPanel>
+            </ScrollViewer>
+          </TabItem>
         </TabControl>
       </Grid>
 
@@ -1167,6 +1316,15 @@
                       <Grid>
                         <Border x:Name="Frame" BorderThickness="2" CornerRadius="4" Padding="1" BorderBrush="Transparent">
                           <ContentPresenter />
+                        </Border>
+                        <!-- Bölüm başı: bölüm adı ve rengi -->
+                        <Border Height="3" CornerRadius="1.5" Margin="4,0,4,-1" VerticalAlignment="Bottom" Background="{Binding ChapterColor}" IsHitTestVisible="False" />
+                        <Border CornerRadius="3" Padding="5,1" Margin="5,5,5,0" HorizontalAlignment="Left" VerticalAlignment="Top" Background="#D9111113"
+                                IsHitTestVisible="False" Visibility="{Binding HasChapterLabel, Converter={StaticResource BoolToVisibility}}">
+                          <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="6" Height="6" Fill="{Binding ChapterColor}" Margin="0,0,4,0" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding ChapterLabel}" FontSize="9.5" Foreground="#F2EDE4" TextTrimming="CharacterEllipsis" MaxWidth="90" />
+                          </StackPanel>
                         </Border>
                         <!-- Sürükle-bırak: buraya bırakılınca sayfa bu konuma gelir -->
                         <Border x:Name="DropMark" Width="3" CornerRadius="1.5" Margin="-6,0,0,0" HorizontalAlignment="Left"

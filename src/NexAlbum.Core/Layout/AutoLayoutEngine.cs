@@ -42,7 +42,7 @@ public sealed record LayoutRequest
             Profile = project.Profile,
             Templates = templates,
             ExistingPages = project.Pages,
-            Options = options with { Design = project.Settings.Design },
+            Options = options with { Design = project.Settings.Design, Story = options.Story ?? project.Story },
             DefaultSeed = LayoutSeed.FromProjectId(project.Id),
             Now = now,
         };
@@ -114,9 +114,39 @@ public sealed class AutoLayoutEngine : ILayoutEngine
             selector.Remember(lockedTemplate);
         }
 
-        // Aşama 2 — gruplama.
-        var groups = PageGrouper.Group(photos.Count, selector.SupportedCounts(), options, random);
-        var emptySlots = groups.Sum(g => g.EmptySlots);
+        // Aşama 2 — bölümler (hikâye akışı) ve gruplama. Bölüm yoksa tüm fotoğraflar tek akıştır.
+        var story = options.Story is { Enabled: true, HasChapters: true } plan ? plan : null;
+        var byId = photos.ToDictionary(p => p.Asset.Id, StringComparer.Ordinal);
+        List<Segment> segments = story is null
+            ? [new Segment(null, photos)]
+            : [.. story.Distribute(photos.Select(p => p.Asset)).Select(cp => new Segment(cp.Chapter, [.. cp.Photos.Select(a => byId[a.Id])]))];
+        if (story is not null)
+        {
+            explanations.Add(F("Hikâye akışı: {0} bölüm; her bölüm yeni sayfada başlar.", segments.Count(s => s.Chapter is not null)));
+        }
+
+        var groupOptions = story is null ? options : options with { TargetPageCount = null };
+        var plannedGroups = new List<(Segment Segment, ClassifiedPhoto? Hero, IReadOnlyList<PageGroup> Groups, List<ClassifiedPhoto> Remaining)>();
+        foreach (var segment in segments)
+        {
+            ClassifiedPhoto? hero = null;
+            var rest = segment.Photos.ToList();
+            if (story is { Openers: true } && segment.Chapter is not null && rest.Count > 0)
+            {
+                // Açılış fotoğrafı: bölümdeki ilk favori, yoksa ilk yatay, yoksa ilk fotoğraf.
+                hero = rest.FirstOrDefault(p => p.Favorite) ?? rest.FirstOrDefault(p => p.Orientation == PageOrientation.Landscape) ?? rest[0];
+                rest.Remove(hero);
+            }
+
+            var share = options.TargetPageCount is { } t && story is not null && photos.Count > 0
+                ? groupOptions with { TargetPageCount = Math.Max(1, (int)Math.Round((double)t * rest.Count / photos.Count)) }
+                : groupOptions;
+            var segmentGroups = rest.Count == 0 ? [] : PageGrouper.Group(rest.Count, selector.SupportedCounts(), share, random);
+            plannedGroups.Add((segment, hero, segmentGroups, rest));
+        }
+
+        var groupCount = plannedGroups.Sum(g => g.Groups.Count + (g.Hero is null ? 0 : 1));
+        var emptySlots = plannedGroups.Sum(g => g.Groups.Sum(x => x.EmptySlots));
         if (emptySlots > 0)
         {
             issues.Add(new("layout.photos.insufficient", ValidationSeverity.Warning,
@@ -124,27 +154,40 @@ public sealed class AutoLayoutEngine : ILayoutEngine
         }
 
         var targetUnlocked = options.TargetPageCount is { } target ? target - locked.Count : (int?)null;
-        if (targetUnlocked is { } wantedPages && groups.Count != wantedPages)
+        if (targetUnlocked is { } wantedPages && groupCount != wantedPages)
         {
             issues.Add(new("layout.page-count.mismatch", ValidationSeverity.Warning,
-                F("{0} fotoğraf, hedeflenen {1} sayfa için uygun değil; {2} sayfa üretildi.", photos.Count, options.TargetPageCount!.Value, groups.Count + locked.Count)));
+                F("{0} fotoğraf, hedeflenen {1} sayfa için uygun değil; {2} sayfa üretildi.", photos.Count, options.TargetPageCount!.Value, groupCount + locked.Count)));
         }
 
         // Aşama 3–5 — şablon seçimi, eşleştirme, çeşitlilik.
         var reservedIds = locked.Select(x => x.page.Id).ToHashSet(StringComparer.Ordinal);
         var nextId = 1;
-        var generated = new List<AlbumPage>(groups.Count);
-        var offset = 0;
-        foreach (var group in groups)
+        var generated = new List<AlbumPage>(groupCount);
+        foreach (var (segment, hero, segmentGroups, rest) in plannedGroups)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var groupPhotos = photos.GetRange(offset, group.PhotoCount);
-            offset += group.PhotoCount;
+            if (hero is not null && segment.Chapter is { } chapter)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var opener = selector.SelectOpener(hero);
+                var pageId = NextPageId(reservedIds, ref nextId);
+                var page = PageDesigner.Build(pageId, opener.Template, opener.Assignments, options.Design, request.Now);
+                generated.Add(page.AddElement(OpenerTitle(chapter.Name, pageRect)));
+                explanations.Add(F("Sayfa {0}: «{1}» — {2}", generated.Count, chapter.Name, opener.Reason));
+            }
 
-            var choice = selector.Select(group, groupPhotos);
-            var pageId = NextPageId(reservedIds, ref nextId);
-            generated.Add(PageDesigner.Build(pageId, choice.Template, choice.Assignments, options.Design, request.Now));
-            explanations.Add(F("Sayfa {0}: {1}", generated.Count, choice.Reason));
+            var offset = 0;
+            foreach (var group in segmentGroups)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                var groupPhotos = rest.GetRange(offset, group.PhotoCount);
+                offset += group.PhotoCount;
+
+                var choice = selector.Select(group, groupPhotos);
+                var pageId = NextPageId(reservedIds, ref nextId);
+                generated.Add(PageDesigner.Build(pageId, choice.Template, choice.Assignments, options.Design, request.Now));
+                explanations.Add(F("Sayfa {0}: {1}", generated.Count, choice.Reason));
+            }
         }
 
         // Aşama 6 — kilitli sayfaları özgün konumlarına geri koy.
@@ -158,6 +201,14 @@ public sealed class AutoLayoutEngine : ILayoutEngine
         var assetMap = request.Photos.GroupBy(p => p.Id, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
         var validation = LayoutValidator.Validate(pages, assetMap, bleedRect, options.AllowPhotoReuse);
         return new LayoutResult(pages, new ValidationResult(issues).Merge(validation), seed, explanations);
+    }
+
+    /// <summary>Açılış sayfasının başlığı: alt üçte birde, beyaz el yazısı, her fotoğrafta okunsun diye gölgeli.</summary>
+    private static TextElement OpenerTitle(string name, RectMm page)
+    {
+        var preset = TextPresets.Find("title")!;
+        var white = preset with { Font = preset.Font with { Color = Common.RgbaColor.White }, CenterYPercent = 80 };
+        return white.Create("text-001", name, page, PageTextEditor.TextLayer) with { Effect = TextEffect.Readable(Common.RgbaColor.White) };
     }
 
     private static string NextPageId(HashSet<string> reserved, ref int next)
@@ -175,3 +226,6 @@ public sealed class AutoLayoutEngine : ILayoutEngine
 
     private static string F(string format, params object[] args) => string.Format(CultureInfo.CurrentCulture, format, args);
 }
+
+/// <summary>Otomatik yerleşimde bir bölümün (ya da bölümsüz akışın) fotoğrafları.</summary>
+internal sealed record Segment(StoryChapter? Chapter, List<ClassifiedPhoto> Photos);
