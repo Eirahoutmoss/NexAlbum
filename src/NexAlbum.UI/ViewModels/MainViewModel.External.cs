@@ -116,6 +116,7 @@ public sealed partial class MainViewModel : IBatchEditHost
             new(EditScope.Page, "Bu sayfadakiler", page),
             new(EditScope.Album, "Albümde kullanılanlar", album),
             new(EditScope.All, "Tüm fotoğraflar", project.Photos),
+            new(EditScope.Unedited, "Henüz düzenlenmemişler", [.. project.Photos.Where(p => p.Edit is null)]),
         ];
         return new BatchEditViewModel(scopes, project.Settings.Editing.LastRecipe, this);
     }

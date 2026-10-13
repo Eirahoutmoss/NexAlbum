@@ -100,7 +100,7 @@ public sealed partial class MainViewModelTests
         var batch = shown!;
 
         batch.UsePhotoshop.Should().BeFalse("Photoshop kullanılamıyorsa komut satırı seçili gelir");
-        batch.Scopes.Select(s => s.Assets.Count).Should().Equal(0, 1, 1, 1);
+        batch.Scopes.Select(s => s.Assets.Count).Should().Equal(0, 1, 1, 1, 1);
         batch.SelectedScope.Scope.Should().Be(EditScope.Page, "boş kapsam atlanır");
 
         batch.Executable = Path.Combine(Environment.SystemDirectory, "cmd.exe");
@@ -127,6 +127,12 @@ public sealed partial class MainViewModelTests
         await batch.RunAsync(previewOnly: false);
         batch.Progress.Should().Be(1);
         vm.Status.Should().Contain("Kopya Testi");
+
+        BatchEditViewModel? again = null;
+        dialogs.OnBatchEdit = b => again = b;
+        vm.BatchEditCommand.Execute(null);
+        again!.Scopes.Single(s => s.Scope == EditScope.Unedited).Assets.Should().BeEmpty("düzenlenmiş fotoğraf bu kapsamda yer almaz");
+        dialogs.OnBatchEdit = b => shown = b;
 
         batch.ArgumentsText = "{input}";
         batch.Problem.Should().Contain("{output}");

@@ -20,6 +20,9 @@ public enum EditScope
     Page,
     Album,
     All,
+
+    /// <summary>Henüz düzenlenmemiş fotoğraflar: sonradan eklenenlere aynı tarifi uygulamak için.</summary>
+    Unedited,
 }
 
 /// <summary>Kapsam seçeneği ve içerdiği (orijinal) fotoğraflar.</summary>

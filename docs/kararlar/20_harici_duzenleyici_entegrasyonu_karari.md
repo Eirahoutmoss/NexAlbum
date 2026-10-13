@@ -14,10 +14,10 @@ eksiksiz çalışmaya devam eder.
 | Yetenek | Kapsam |
 |---|---|
 | Düzenleyicide aç | Seçili fotoğrafın çalışma kopyası harici düzenleyicide açılır; kaydedilince albüm kendiliğinden yenilenir |
-| Toplu düzenleme | Photoshop action'ı ya da komut satırı aracı; seçili / sayfadaki / albümde kullanılan / tüm fotoğraflar |
+| Toplu düzenleme | Photoshop action'ı ya da komut satırı aracı; seçili / sayfadaki / albümde kullanılan / tüm / henüz düzenlenmemiş fotoğraflar |
 | Önce dene | Toplu işten önce tek fotoğrafta sonuç; önce/sonra karşılaştırması |
 | Önce/sonra | Her fotoğrafta orijinal ↔ düzenlenmiş tek tıkla; düzenleme kaldırılabilir |
-| Tarif | Kullanılan araç ve tarif (ör. "Stüdyo / Sıcak Ton") projede saklanır; yeni eklenen fotoğraflara aynı tarif uygulanabilir |
+| Tarif | Kullanılan araç ve tarif (ör. "Stüdyo / Sıcak Ton") projede saklanır; pencere aynı tarifle açılır, "henüz düzenlenmemişler" kapsamıyla sonradan eklenen fotoğraflara da uygulanır |
 
 2. Değişmez ilkeler
 - **Orijinale dokunulmaz.** Düzenleyiciye her zaman bir kopya verilir; çıktı ayrı dosyadır (Karar 09 §13.1 referans modu).
