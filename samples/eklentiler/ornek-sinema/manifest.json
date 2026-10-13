@@ -1,0 +1,47 @@
+{
+  "format": "nexalbum-extension",
+  "formatVersion": 1,
+  "id": "ornek-sinema",
+  "name": "Örnek Sinema Paketi",
+  "version": "1.0.0",
+  "author": "NexAlbum",
+  "license": "CC0-1.0",
+  "description": "Eklenti biçimini gösteren örnek: üç film stili.",
+  "videoStyles": [
+    {
+      "id": "noir",
+      "name": "Noir",
+      "hint": "Siyah-beyaz, siyaha geçişler, ağır hareket ve vinyet.",
+      "transitions": ["crossfade", "dipToBlack", "focusShift"],
+      "chapterTransition": "dipToBlack",
+      "photoSeconds": 4.2,
+      "transitionSeconds": 1.3,
+      "motion": 0.1,
+      "look": "blackWhite",
+      "vignette": true,
+      "grain": true
+    },
+    {
+      "id": "yaz-esintisi",
+      "name": "Yaz Esintisi",
+      "hint": "Sıcak ton, beyaza açılan geçişler, hafif ve hızlı akış.",
+      "transitions": ["crossfade", "dipToWhite", "pushLeft", "crossfade"],
+      "chapterTransition": "dipToWhite",
+      "photoSeconds": 2.6,
+      "transitionSeconds": 0.8,
+      "motion": 0.09,
+      "look": "warm"
+    },
+    {
+      "id": "ritim",
+      "name": "Ritim",
+      "hint": "Kısa kesmeler ve iris geçişleri; hareketli müziklere.",
+      "transitions": ["cut", "iris", "zoomThrough", "pushUp", "cut"],
+      "chapterTransition": "zoomThrough",
+      "photoSeconds": 1.4,
+      "transitionSeconds": 0.35,
+      "motion": 0.12,
+      "look": "cool"
+    }
+  ]
+}

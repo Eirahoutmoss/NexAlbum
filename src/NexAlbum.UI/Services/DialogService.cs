@@ -122,6 +122,16 @@ public sealed class DialogService(Window owner) : IDialogService
         return dialog.ShowDialog(owner) == true ? dialog.FileName : null;
     }
 
+    public string? AskExtensionPackagePath()
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = "NexAlbum eklenti paketi (*.nexpaket)|*.nexpaket",
+            Title = "Eklenti paketi yükle",
+        };
+        return dialog.ShowDialog(owner) == true ? dialog.FileName : null;
+    }
+
     public void Reveal(string path) =>
         Process.Start(new ProcessStartInfo("explorer.exe", "/select,\"" + path + "\"") { UseShellExecute = true })?.Dispose();
 

@@ -76,7 +76,7 @@
                   <ControlTemplate TargetType="ListBoxItem">
                     <Border x:Name="Bd" CornerRadius="8" BorderThickness="1" BorderBrush="{DynamicResource BorderBrush}" Margin="3" Padding="12,8">
                       <StackPanel>
-                        <TextBlock x:Name="T" Text="{Binding Name}" FontWeight="SemiBold" />
+                        <TextBlock x:Name="T" Text="{Binding DisplayName}" FontWeight="SemiBold" />
                         <TextBlock Text="{Binding Hint}" Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
                       </StackPanel>
                     </Border>

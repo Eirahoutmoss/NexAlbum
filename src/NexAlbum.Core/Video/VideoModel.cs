@@ -74,7 +74,8 @@ public sealed record VideoStyle(
     bool Vignette,
     bool Grain)
 {
-    public static IReadOnlyList<VideoStyle> All { get; } =
+    /// <summary>Uygulamayla gelen stiller.</summary>
+    public static IReadOnlyList<VideoStyle> BuiltIn { get; } =
     [
         new("elegant", "Zarif", "Yumuşak çapraz geçişler, yavaş yaklaşma; her hikâyeye yakışır.",
             [TransitionKind.Crossfade, TransitionKind.Crossfade, TransitionKind.FocusShift], TransitionKind.DipToBlack, 3.6, 1.1, 0.08, VideoLook.Natural, false, false),
@@ -86,7 +87,17 @@ public sealed record VideoStyle(
             [TransitionKind.Crossfade, TransitionKind.DipToWhite, TransitionKind.Crossfade], TransitionKind.DipToWhite, 3.8, 1.2, 0.07, VideoLook.Sepia, true, true),
     ];
 
-    public static VideoStyle Find(string? id) => All.FirstOrDefault(s => s.Id == id) ?? All[0];
+    /// <summary>Kullanılabilir tüm stiller: yerleşikler ve yüklü eklenti paketlerindekiler (<see cref="Extensions.ExtensionCatalog.Current"/>).</summary>
+    public static IReadOnlyList<VideoStyle> All => Extensions.ExtensionCatalog.Current.VideoStyles;
+
+    /// <summary>Stil; bulunamazsa (ör. paketi kaldırılmış) ilk yerleşik stil.</summary>
+    public static VideoStyle Find(string? id) => Extensions.ExtensionCatalog.Current.FindVideoStyle(id);
+
+    /// <summary>Stili getiren eklenti paketinin adı; yerleşikse null.</summary>
+    public string? Package { get; init; }
+
+    /// <summary>Listede gösterilen ad: paket stilinde paket adıyla.</summary>
+    public string DisplayName => Package is null ? Name : Name + " · " + Package;
 }
 
 /// <summary>Bölüm için elle seçilmiş geçiş ve görünüm (otomatiğin yerine geçer; null olan alan stilden gelir).</summary>

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -33,6 +34,17 @@ public partial class App : Application
         DispatcherUnhandledException += OnUnhandledException;
         WpfFontResolver.Register();
         ThemeService.Apply(ThemeService.Parse(new JsonAppSettingsStore().Load().Theme), this);
+
+        // Eklenti paketleri (Karar 22): okunamayan paket atlanır, uygulama açılır.
+        try
+        {
+            ExtensionService.Reload();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Klasör okunamadı: yalnızca yerleşik stiller.
+        }
+
         base.OnStartup(e);
     }
 

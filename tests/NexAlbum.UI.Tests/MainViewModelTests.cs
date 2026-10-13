@@ -539,6 +539,10 @@ public sealed partial class MainViewModelTests : IDisposable
 
         public string? AskProofFeedbackPath() => FeedbackPath;
 
+        public string? ExtensionPackagePath { get; set; }
+
+        public string? AskExtensionPackagePath() => ExtensionPackagePath;
+
         public void Reveal(string path) => Revealed = path;
 
         public void ShowAbout()
