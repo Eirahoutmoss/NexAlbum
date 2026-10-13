@@ -270,10 +270,11 @@ public sealed class FrameRenderer(VideoTimeline timeline, IPhotoSource photos, F
         var cover = Fit(image.Width, image.Height, size, cover: true);
         var sigma = Math.Max(size.Width, size.Height) * 0.035f;
         using (var backdropBlur = SKImageFilter.CreateBlur(sigma, sigma))
-        using (var darken = SKColorFilter.CreateBlendMode(SKColors.Black.WithAlpha(110), SKBlendMode.SrcOver))
+        using (var darken = SKColorFilter.CreateColorMatrix([0.55f, 0, 0, 0, 0, 0, 0.55f, 0, 0, 0, 0, 0, 0.55f, 0, 0, 0, 0, 0, 1, 0]))
         using (var backdrop = new SKPaint { ImageFilter = backdropBlur, ColorFilter = darken })
         {
-            canvas.SaveLayer(backdrop);
+            // Karartma yalnızca rengi ölçekler (saydam alan saydam kalır); katman kare alanıyla sınırlı.
+            canvas.SaveLayer(new SKRect(0, 0, size.Width, size.Height), backdrop);
             canvas.DrawImage(image, new SKRect(0, 0, image.Width, image.Height), cover, sampling);
             canvas.Restore();
         }
