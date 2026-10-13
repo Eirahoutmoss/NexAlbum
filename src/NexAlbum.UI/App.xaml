@@ -37,6 +37,9 @@
             <!-- Boş yuva: altın "+" ve kısa ipucu (birim mm; Viewbox ölçekler) -->
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"
                         Visibility="{Binding ShowEmptyLabel, Converter={StaticResource BoolToVisibility}}">
+              <StackPanel.RenderTransform>
+                <TranslateTransform X="{Binding EmptyOffsetX}" Y="{Binding EmptyOffsetY}" />
+              </StackPanel.RenderTransform>
               <ui:NexIcon Data="{StaticResource Icon.Plus}" Width="{Binding EmptyIconSize}" Height="{Binding EmptyIconSize}"
                           StrokeThickness="1.4" Foreground="#B08A45" HorizontalAlignment="Center" />
               <TextBlock Text="Fotoğraf bırakın" FontSize="{Binding EmptyFontSize}" Foreground="#9C8D74" HorizontalAlignment="Center"

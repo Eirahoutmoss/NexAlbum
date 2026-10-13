@@ -170,3 +170,28 @@ public class PresentationTests
         return project.WithPages(Enumerable.Range(0, pages).Select(i => new AlbumPage { Id = $"p{i}" }));
     }
 }
+
+public class EmptySlotHintTests
+{
+    [Fact]
+    public void PolygonHintSitsOnTheCentroidAndShrinksInNarrowShapes()
+    {
+        var triangle = new List<UnitPoint> { new(0, 0), new(1, 0), new(0, 1) };
+        var large = new Slot { Id = "t", Bounds = new RectMm(0, 0, 90, 90), Shape = SlotShape.Polygon, Polygon = triangle };
+        var vm = new SlotItemViewModel(large, large.Bounds, asset: null, sample: false);
+
+        vm.ShowEmptyLabel.Should().BeTrue();
+        vm.EmptyOffsetX.Should().BeApproximately(-15, 0.01, "üçgenin ağırlık merkezi (30, 30); kutunun ortası (45, 45)");
+        vm.EmptyOffsetY.Should().BeApproximately(-15, 0.01);
+        vm.ShowEmptyHint.Should().BeTrue("iç teğet çemberin çapı ≈ 53 mm");
+
+        var small = large with { Bounds = new RectMm(0, 0, 60, 60) };
+        new SlotItemViewModel(small, small.Bounds, asset: null, sample: false).ShowEmptyHint.Should().BeFalse("dar üçgende yalnızca \"+\"");
+
+        var rect = new Slot { Id = "r", Bounds = new RectMm(0, 0, 80, 50) };
+        var plain = new SlotItemViewModel(rect, rect.Bounds, asset: null, sample: false);
+        plain.EmptyOffsetX.Should().Be(0);
+        plain.EmptyOffsetY.Should().Be(0);
+        plain.ShowEmptyHint.Should().BeTrue();
+    }
+}
