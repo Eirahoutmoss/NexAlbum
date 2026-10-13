@@ -141,6 +141,14 @@ internal abstract class ElementDto
     public int? ZIndex { get; set; }
 }
 
+/// <summary>Çokgen köşesi: yuva kutusu içinde 0–1 (Karar 10 Rev. 1, şema v2).</summary>
+internal sealed class PointDto
+{
+    public double? X { get; set; }
+
+    public double? Y { get; set; }
+}
+
 internal sealed class SlotDto : ElementDto
 {
     public double? X { get; set; }
@@ -164,6 +172,9 @@ internal sealed class SlotDto : ElementDto
     public PlacementDto? Placement { get; set; }
 
     public string? Shape { get; set; }
+
+    /// <summary>Çokgen yuvanın köşeleri (şema v2); yalnızca biçim "polygon" iken anlamlıdır.</summary>
+    public List<PointDto>? Polygon { get; set; }
 
     public double? CornerRadius { get; set; }
 

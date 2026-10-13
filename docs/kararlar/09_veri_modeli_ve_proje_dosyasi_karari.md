@@ -6,6 +6,11 @@ Durum: Kesinleşti
 Tarih: (doldurulacak)
 İlgili kararlar: 03 (Kullanıcı Profilleri), 04 (Tek Kişi), 05 (Zaman), 08 (Teknoloji Yığını)
 
+Revizyon 1 — 13/10/2026 (şema v2)
+Değişiklik: project.json şema sürümü 1 → **2**. Yuvaya isteğe bağlı "polygon" alanı (0–1 normalize köşeler) ve yeni "shape" değerleri (polygon, triangle, diamond, hexagon, octagon, arch, slant) eklendi; şablon dosyasındaki yuvalar da aynı alanları taşır. Ayrıntı: Karar 10 Revizyon 1.
+Göç (§14): `V1ToV2PolygonSlots` — v1 dosyalarında bu alanlar yoktur; yapı değişmez, yalnızca sürüm yükselir; açılışta yedek (.bak-v1) alınır. Sürüm yükseltmenin amacı: eski uygulama v2 dosyayı "bilinmeyen biçim" hatasıyla değil, "daha yeni sürümle kaydedilmiş" uyarısıyla reddeder.
+Doğrulama: köşe sayısı ≥ 3, her köşe 0–1 aralığında; şablon çokgenleri ayrıca dışbükey olmalıdır.
+
 1. Karar Özeti
 NexAlbum'in veri modeli katmanlı, sürümlenmiş, açık ve taşınabilir olacaktır.
 
@@ -239,7 +244,8 @@ cropMode	enum	✅	cover, contain, fill
 minDPI	int	❌	Alt sınır DPI (uyarı)
 targetDPI	int	❌	Hedef DPI
 placement	object	❌	Fotoğraf yerleşimi (boş olabilir)
-shape	enum	❌	rectangle, circle, rounded
+shape	enum	❌	rectangle, circle, rounded [Rev. 1: + polygon, triangle, diamond, hexagon, octagon, arch, slant]
+polygon	array	❌	[Rev. 1, şema v2] Köşeler, yuva kutusu içinde 0–1
 cornerRadius	double	❌	Yuvarlatılmış köşe
 border	object	❌	Çerçeve
 shadow	object	❌	Gölge

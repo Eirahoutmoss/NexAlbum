@@ -36,7 +36,8 @@ public static class PageDesigner
                 // Otomatik yerleşim fotoğrafı asla esnetmez (Karar 10 §9.6): "fill" kaplama olarak kullanılır.
                 CropMode = ts.CropMode == CropMode.Fill ? CropMode.Cover : ts.CropMode,
                 Placement = a.Photo is { } photo ? new PhotoPlacement { AssetId = photo.Asset.Id } : null,
-                Shape = ts.Shape,
+                Shape = ts.EffectiveShape,
+                Polygon = a.Slot.Polygon,
                 CornerRadiusMm = ts.CornerRadiusMm,
             };
             elements.Add(frame.Id == FramePresets.NoneId ? slot : frame.ApplyTo(slot));
@@ -140,8 +141,16 @@ public static class PageDesigner
             var id = SlotId(page.Id, ls.Template.Id);
             var existing = page.FindElement(id) as Slot;
             var slot = existing is null
-                ? new Slot { Id = id, Bounds = ls.Bounds, CropMode = ls.Template.CropMode == CropMode.Fill ? CropMode.Cover : ls.Template.CropMode }
-                : existing with { Bounds = ls.Bounds };
+                ? new Slot
+                {
+                    Id = id,
+                    Bounds = ls.Bounds,
+                    Polygon = ls.Polygon,
+                    Shape = ls.Template.EffectiveShape,
+                    CornerRadiusMm = ls.Template.CornerRadiusMm,
+                    CropMode = ls.Template.CropMode == CropMode.Fill ? CropMode.Cover : ls.Template.CropMode,
+                }
+                : existing with { Bounds = ls.Bounds, Polygon = ls.Polygon };
             var frame = FramePresets.Find(slot.StyleId) ?? (existing is null ? design.Frame : null);
             elements.Add(frame is null ? slot : frame.ApplyTo(slot));
         }
@@ -188,5 +197,5 @@ public static class PageDesigner
 
     private static List<LayoutSlot> LayoutSlots(TemplateDefinition template, AlbumProject project, DesignSettings design) =>
         [.. template.Resolve(AreaFor(template, project), design.GapPercent, design.MarginPercent)
-            .Zip(template.Slots, (r, s) => new LayoutSlot(s, r.Bounds))];
+            .Zip(template.Slots, (r, s) => new LayoutSlot(s, r.Bounds, r.Polygon))];
 }

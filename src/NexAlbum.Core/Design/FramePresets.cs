@@ -26,6 +26,18 @@ public static class FramePresets
         new() { Id = "rounded", Name = "Yuvarlak köşe", CornerRadiusPercent = 6 },
         new() { Id = "rounded-shadow", Name = "Yuvarlak köşe + gölge", CornerRadiusPercent = 6, Shadow = new ShadowStyle(1.0, 3.5, 0.32) },
         new() { Id = "oval", Name = "Oval", Shape = SlotShape.Circle, StrokeWidthMm = 0.6, StrokeColor = RgbaColor.White, Shadow = new ShadowStyle(0.8, 3.0, 0.28) },
+
+        // Biçimli çerçeveler (Karar 10 Rev. 1): yuvayı keser; kaldırılınca şablon biçimi geri gelir.
+        new() { Id = "arch", Name = "Kemer", Shape = SlotShape.Arch, Shadow = new ShadowStyle(0.8, 3.0, 0.26) },
+        new() { Id = "arch-gold", Name = "Kemer + altın", Shape = SlotShape.Arch, StrokeWidthMm = 0.8, StrokeColor = RgbaColor.Parse("#C9A227") },
+        new() { Id = "arch-mat", Name = "Kemer paspartu", Shape = SlotShape.Arch, MatPercent = EdgePercents.Uniform(4), MatColor = RgbaColor.Parse("#F3EAD8") },
+        new() { Id = "hexagon", Name = "Altıgen", Shape = SlotShape.Hexagon, StrokeWidthMm = 0.6, StrokeColor = RgbaColor.White },
+        new() { Id = "hexagon-gold", Name = "Altıgen + altın", Shape = SlotShape.Hexagon, StrokeWidthMm = 0.8, StrokeColor = RgbaColor.Parse("#C9A227") },
+        new() { Id = "diamond", Name = "Elmas", Shape = SlotShape.Diamond, Shadow = new ShadowStyle(0.8, 3.0, 0.26) },
+        new() { Id = "octagon", Name = "Kesik köşe", Shape = SlotShape.Octagon, StrokeWidthMm = 0.35, StrokeColor = RgbaColor.Black },
+        new() { Id = "octagon-mat", Name = "Kesik köşe paspartu", Shape = SlotShape.Octagon, MatPercent = EdgePercents.Uniform(4), StrokeWidthMm = 0.2, StrokeColor = RgbaColor.Parse("#C8C8C8") },
+        new() { Id = "triangle", Name = "Üçgen", Shape = SlotShape.Triangle },
+        new() { Id = "slant", Name = "Eğik", Shape = SlotShape.Slant, Shadow = new ShadowStyle(0.8, 3.0, 0.26) },
     ];
 
     public static FrameStyle? Find(string? id) => id is null ? null : All.FirstOrDefault(f => f.Id == id);

@@ -253,17 +253,24 @@ public static class PdfAlbumExporter
             DrawShadow(gfx, slot, shadow);
         }
 
+        var polygonal = SlotOutline.IsPolygonal(slot);
         if (slot.Mat is { } mat)
         {
-            gfx.DrawPath(new XSolidBrush(ToXColor(mat.Color, 1)), ShapePath(bounds, slot.Shape, slot.CornerRadiusMm));
+            var matPath = polygonal ? PolygonPath(SlotOutline.Outer(slot)) : ShapePath(bounds, slot.Shape, slot.CornerRadiusMm);
+            if (matPath is not null)
+            {
+                gfx.DrawPath(new XSolidBrush(ToXColor(mat.Color, 1)), matPath);
+            }
         }
 
         var area = slot.PhotoArea;
-        if (!area.IsEmpty)
+        var clip = polygonal
+            ? PolygonPath(SlotOutline.Photo(slot))
+            : area.IsEmpty ? null : ShapePath(area, slot.Shape, Math.Max(0, slot.CornerRadiusMm - (slot.Mat?.Edges.Min ?? 0)));
+        if (!area.IsEmpty && clip is not null)
         {
-            var innerRadius = Math.Max(0, slot.CornerRadiusMm - (slot.Mat?.Edges.Min ?? 0));
             var state = gfx.Save();
-            gfx.IntersectClip(ShapePath(area, slot.Shape, innerRadius));
+            gfx.IntersectClip(clip);
             DrawImage(gfx, image, asset, area, placement, slot.CropMode);
             gfx.Restore(state);
         }
@@ -272,11 +279,27 @@ public static class PdfAlbumExporter
         {
             var half = border.WidthMm / 2;
             var inset = bounds.Deflate(EdgesMm.Uniform(half));
-            if (!inset.IsEmpty)
+            var path = polygonal
+                ? PolygonPath(SlotOutline.Offset(slot, half))
+                : inset.IsEmpty ? null : ShapePath(inset, slot.Shape, Math.Max(0, slot.CornerRadiusMm - half));
+            if (path is not null)
             {
-                gfx.DrawPath(new XPen(ToXColor(border.Color, 1), border.WidthMm), ShapePath(inset, slot.Shape, Math.Max(0, slot.CornerRadiusMm - half)));
+                gfx.DrawPath(new XPen(ToXColor(border.Color, 1), border.WidthMm) { LineJoin = XLineJoin.Miter, MiterLimit = 4 }, path);
             }
         }
+    }
+
+    /// <summary>Çokgen yol (Karar 10 Rev. 1); boş ya da çökmüş çokgende null.</summary>
+    private static XGraphicsPath? PolygonPath(IReadOnlyList<PointMm>? points)
+    {
+        if (points is not { Count: >= 3 })
+        {
+            return null;
+        }
+
+        var path = new XGraphicsPath();
+        path.AddPolygon([.. points.Select(p => new XPoint(p.X, p.Y))]);
+        return path;
     }
 
     private static PhotoAsset? Resolve(
@@ -343,10 +366,17 @@ public static class PdfAlbumExporter
         var layerAlpha = 1 - Math.Pow(1 - targetAlpha, 1.0 / layers);
         var color = XColor.FromArgb(Math.Max(1, (int)Math.Round(layerAlpha * 255)), shadow.Color.R, shadow.Color.G, shadow.Color.B);
         var brush = new XSolidBrush(color);
+        var outline = SlotOutline.Outer(slot);
         for (var i = 0; i < layers; i++)
         {
             var spread = shadow.BlurMm * (layers - i) / (2.0 * layers);
-            gfx.DrawPath(brush, ShapePath(shifted.Inflate(EdgesMm.Uniform(spread)), slot.Shape, slot.CornerRadiusMm + spread));
+            var path = outline is not null
+                ? PolygonPath(Polygon.Offset([.. outline.Select(p => new PointMm(p.X + shadow.OffsetXMm, p.Y + shadow.OffsetYMm))], -spread))
+                : ShapePath(shifted.Inflate(EdgesMm.Uniform(spread)), slot.Shape, slot.CornerRadiusMm + spread);
+            if (path is not null)
+            {
+                gfx.DrawPath(brush, path);
+            }
         }
     }
 

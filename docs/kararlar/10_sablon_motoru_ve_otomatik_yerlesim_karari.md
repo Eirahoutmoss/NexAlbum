@@ -1,3 +1,14 @@
+Revizyon 1 — 13/10/2026 (geometrik şablonlar)
+Değişiklik: Yuvalar artık dışbükey çokgen olabilir; "Geometrik" kategori ve biçimli çerçeveler eklendi. İstek: Hasan Güler ("şablonlar çok simetrik ve klişe; üçgen, altıgen gibi biçimler de olsun").
+- §3.3 yuva alanı "shape": rectangle, circle, rounded, **polygon, triangle, diamond, hexagon, octagon, arch, slant**. Yeni alan "polygon": yuva dikdörtgeni içinde 0–1 normalize köşeler (yalnızca dışbükey; şablon yüklenirken denetlenir).
+- §3.5 boşluk: dikdörtgen yuvalarda kural aynıdır. Çokgen yuvada **başka bir yuvayla paylaşılan her kenar** (çaprazlar dahil) boşluğun yarısı kadar içe ötelenir; sayfa kenarına ya da boşluğa bakan kenarlar yerinde kalır. Böylece karşılıklı iki üçgenin hipotenüsleri arasındaki boşluk düz kenarlardakiyle aynıdır ve tek başına duran kemer/elmas küçülmez.
+- Fotoğraf yuvanın sınır kutusunu kaplar (esnetilmez, §9.6 değişmez) ve biçime kırpılır. Paspartu ve kontur çokgenin her kenarından eşit öteleme ile çizilir. Ekran, PDF ve ön kontrol aynı hesabı kullanır (Core: `Polygon`, `SlotOutline`).
+- Kategori **geometric**: 28 şablon (çapraz kesimler, karşılıklı üçgenler + dikdörtgenler, elmas, sekizgen, eğik şeritler, yelpaze, petek, kemer).
+- §10 çeşitlilik: geometrik şablonlar vurgudur; tercih edilmedikçe otomatik yerleşimde **en fazla 5 sayfada bir** seçilir (`TemplateSelector.GeometricRhythm`). Kontrollü modda "geometric" tercih edilirse sınır kalkar.
+- Biçimli çerçeveler (Kemer, Altıgen, Elmas, Kesik köşe, Üçgen, Eğik): yuvayı keser; şablonun çokgeni saklanır, çerçeve kaldırılınca geri gelir.
+Değişmeyenler: yüzde tabanlı ölçüler, determinizm (aynı tohum → aynı albüm), fotoğrafı esnetmeme, kilitli sayfalar.
+Dosya biçimi etkisi: Karar 09 Revizyon 1 (şema v2).
+
 1. Karar Özeti
 NexAlbum'in kalbi şablon motoru ve otomatik yerleşim algoritmasıdır. Bu iki bileşen, ürünün "hızlı, doğru, çeşitli" vaadini gerçekleştirir.
 
@@ -160,7 +171,8 @@ priority	int	Öncelik (1 = en önemli)
 recommendedOrientation	array	Önerilen yönler
 minAspectRatio	double	Minimum en-boy oranı
 maxAspectRatio	double	Maksimum en-boy oranı
-shape	enum	rectangle, circle, rounded
+shape	enum	rectangle, circle, rounded [Rev. 1: + polygon, triangle, diamond, hexagon, octagon, arch, slant]
+polygon	array	[Rev. 1] Dışbükey köşeler, yuva dikdörtgeni içinde 0–1: [{"x":0,"y":0}, …]
 cornerRadius	double	Yuvarlatılmış köşe (mm)
 3.4 Kritik: Yüzde tabanlı ölçüler
 Yuvalar yüzde ile tanımlanır (0-100).

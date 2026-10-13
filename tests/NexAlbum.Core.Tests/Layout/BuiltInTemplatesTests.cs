@@ -35,7 +35,11 @@ public class BuiltInTemplatesTests
             {
                 for (var j = i + 1; j < slots.Count; j++)
                 {
-                    slots[i].Bounds.Intersects(slots[j].Bounds).Should().BeFalse($"{template.Id}: {slots[i].SlotId} ile {slots[j].SlotId}");
+                    // Çokgen yuvaların sınır kutuları çakışabilir (çapraz bölünmüş iki üçgen); gerçek biçimler çakışmamalı.
+                    var overlap = slots[i].Polygon is null && slots[j].Polygon is null
+                        ? slots[i].Bounds.Intersects(slots[j].Bounds)
+                        : ConvexShapes.Overlap(ConvexShapes.Outline(slots[i]), ConvexShapes.Outline(slots[j]));
+                    overlap.Should().BeFalse($"{template.Id}: {slots[i].SlotId} ile {slots[j].SlotId}");
                 }
             }
         }

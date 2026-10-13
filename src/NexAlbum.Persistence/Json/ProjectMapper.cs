@@ -218,6 +218,7 @@ internal static class ProjectMapper
         TargetDpi = s.TargetDpi,
         Placement = s.Placement is { } p ? PlacementToDto(p) : null,
         Shape = Shapes.Format(s.Shape),
+        Polygon = PolygonToDto(s.Polygon),
         CornerRadius = s.CornerRadiusMm,
         Border = s.Border is { } b ? new BorderDto { Width = b.WidthMm, Color = b.Color.ToHex() } : null,
         Shadow = s.Shadow is { } sh ? new ShadowDto { OffsetX = sh.OffsetXMm, OffsetY = sh.OffsetYMm, Blur = sh.BlurMm, Color = sh.Color.ToHex() } : null,
@@ -235,6 +236,7 @@ internal static class ProjectMapper
         TargetDpi = d.TargetDpi,
         Placement = d.Placement is { } p ? PlacementFromDto(p, path + ".placement") : null,
         Shape = Shapes.Parse(d.Shape, path + ".shape", SlotShape.Rectangle),
+        Polygon = PolygonFromDto(d.Polygon, path + ".polygon"),
         CornerRadiusMm = d.CornerRadius ?? 0,
         Border = d.Border is { } b ? new BorderSpec(b.Width ?? 0, Color(b.Color, path + ".border.color") ?? RgbaColor.Black) : null,
         Shadow = d.Shadow is { } sh
@@ -248,6 +250,26 @@ internal static class ProjectMapper
         StyleId = d.StyleId,
         ZIndex = d.ZIndex ?? 0,
     };
+
+    internal static List<PointDto>? PolygonToDto(IReadOnlyList<UnitPoint>? polygon) =>
+        polygon is null ? null : [.. polygon.Select(p => new PointDto { X = p.X, Y = p.Y })];
+
+    internal static List<UnitPoint>? PolygonFromDto(List<PointDto>? polygon, string path)
+    {
+        if (polygon is null)
+        {
+            return null;
+        }
+
+        if (polygon.Count < 3)
+        {
+            throw new FormatException($"'{path}' en az üç köşe içermeli.");
+        }
+
+        return [.. polygon.Select((p, i) => p.X is { } x && p.Y is { } y && x is >= 0 and <= 1 && y is >= 0 and <= 1
+            ? new UnitPoint(x, y)
+            : throw new FormatException($"'{path}[{i}]' 0–1 aralığında x ve y içermeli."))];
+    }
 
     private static PlacementDto PlacementToDto(PhotoPlacement p) => new()
     {

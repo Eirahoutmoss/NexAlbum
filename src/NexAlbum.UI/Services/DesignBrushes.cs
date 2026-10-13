@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 using NexAlbum.Core.Common;
+using NexAlbum.Core.Geometry;
 using NexAlbum.Core.Projects;
 
 namespace NexAlbum.UI.Services;
@@ -47,6 +48,28 @@ public static class DesignBrushes
         Geometry geometry = shape == SlotShape.Circle
             ? new EllipseGeometry(rect)
             : new RectangleGeometry(rect, Math.Max(0, radius), Math.Max(0, radius));
+        geometry.Freeze();
+        return geometry;
+    }
+
+    /// <summary>
+    /// Çokgen yuva biçimi (Karar 10 Rev. 1): köşeler sayfa mm'sinde; (<paramref name="originX"/>, <paramref name="originY"/>)
+    /// yerel sıfır noktası olur. Boş/çökmüş çokgende boş geometri döner (hiçbir şey çizilmez).
+    /// </summary>
+    public static Geometry Polygon(IReadOnlyList<PointMm>? points, double originX, double originY)
+    {
+        if (points is not { Count: >= 3 })
+        {
+            return Geometry.Empty;
+        }
+
+        var geometry = new StreamGeometry();
+        using (var context = geometry.Open())
+        {
+            context.BeginFigure(new Point(points[0].X - originX, points[0].Y - originY), isFilled: true, isClosed: true);
+            context.PolyLineTo([.. points.Skip(1).Select(p => new Point(p.X - originX, p.Y - originY))], isStroked: true, isSmoothJoin: false);
+        }
+
         geometry.Freeze();
         return geometry;
     }

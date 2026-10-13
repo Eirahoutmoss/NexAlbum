@@ -145,8 +145,13 @@ public sealed class SlotItemViewModel : ObservableObject
         PhotoHeight = area.Height;
 
         var radius = slot.CornerRadiusMm;
-        OuterGeometry = DesignBrushes.Shape(slot.Shape, 0, 0, Width, Height, radius);
-        PhotoClip = DesignBrushes.Shape(slot.Shape, 0, 0, PhotoWidth, PhotoHeight, Math.Max(0, radius - (slot.Mat?.Edges.Min ?? 0)));
+        var polygonal = SlotOutline.IsPolygonal(slot);
+        OuterGeometry = polygonal
+            ? DesignBrushes.Polygon(SlotOutline.Outer(slot), slot.Bounds.X, slot.Bounds.Y)
+            : DesignBrushes.Shape(slot.Shape, 0, 0, Width, Height, radius);
+        PhotoClip = polygonal
+            ? DesignBrushes.Polygon(SlotOutline.Photo(slot), area.X, area.Y)
+            : DesignBrushes.Shape(slot.Shape, 0, 0, PhotoWidth, PhotoHeight, Math.Max(0, radius - (slot.Mat?.Edges.Min ?? 0)));
         ShapeFill = slot.Mat is { } mat ? DesignBrushes.Solid(mat.Color) : sample ? DesignBrushes.SamplePhoto : DesignBrushes.EmptySlot;
         Shadow = slot.Shadow is { } shadow ? DesignBrushes.Shadow(shadow) : null;
 
@@ -162,7 +167,9 @@ public sealed class SlotItemViewModel : ObservableObject
             var half = border.WidthMm / 2;
             StrokeThickness = border.WidthMm;
             StrokeBrush = DesignBrushes.Solid(border.Color);
-            StrokeGeometry = DesignBrushes.Shape(slot.Shape, half, half, Width - border.WidthMm, Height - border.WidthMm, Math.Max(0, radius - half));
+            StrokeGeometry = polygonal
+                ? DesignBrushes.Polygon(SlotOutline.Offset(slot, half), slot.Bounds.X, slot.Bounds.Y)
+                : DesignBrushes.Shape(slot.Shape, half, half, Width - border.WidthMm, Height - border.WidthMm, Math.Max(0, radius - half));
         }
     }
 

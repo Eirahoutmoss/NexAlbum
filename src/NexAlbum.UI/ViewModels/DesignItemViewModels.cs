@@ -106,6 +106,11 @@ public sealed class TemplateItemViewModel
         Cells = [.. template.Resolve(area, design.GapPercent, design.MarginPercent).Select(r =>
         {
             var slot = shapes[r.SlotId];
+            if (r.Polygon is { } polygon)
+            {
+                return new TemplateCell(r.Bounds.X, r.Bounds.Y, DesignBrushes.Polygon(Polygon.Map(polygon, r.Bounds), r.Bounds.X, r.Bounds.Y));
+            }
+
             var radius = slot.Shape == SlotShape.Rounded ? Math.Max(slot.CornerRadiusMm, Math.Min(r.Bounds.Width, r.Bounds.Height) * 0.08) : slot.CornerRadiusMm;
             return new TemplateCell(r.Bounds.X, r.Bounds.Y, DesignBrushes.Shape(slot.Shape, 0, 0, r.Bounds.Width, r.Bounds.Height, radius));
         })];

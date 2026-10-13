@@ -4,7 +4,7 @@ using NexAlbum.Core.Templates;
 namespace NexAlbum.Core.Layout;
 
 /// <summary>Sayfaya çözülmüş şablon yuvası.</summary>
-public sealed record LayoutSlot(TemplateSlot Template, RectMm Bounds)
+public sealed record LayoutSlot(TemplateSlot Template, RectMm Bounds, IReadOnlyList<UnitPoint>? Polygon = null)
 {
     public double AspectRatio => Bounds.Width / Bounds.Height;
 
