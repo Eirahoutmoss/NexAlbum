@@ -52,6 +52,7 @@ public sealed partial class MainViewModel
                 RefreshEditCommands();
                 RefreshGalleryCommands();
                 SyncPositioning(value);
+                RefreshAdjustments(value);
             }
         }
     }
@@ -329,6 +330,7 @@ public sealed partial class MainViewModel
         ClearSlotCommand.NotifyCanExecuteChanged();
         CenterPhotoCommand.NotifyCanExecuteChanged();
         ToggleFitCommand.NotifyCanExecuteChanged();
+        RefreshAdjustments(null);
         RefreshExternalCommands();
     }
 

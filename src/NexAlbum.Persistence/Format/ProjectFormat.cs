@@ -15,8 +15,9 @@ public static class ProjectFormat
     /// v3 (Karar 09 Rev. 2): metinlerde "effect" (gölge, hale, kontur, bant, kabartma); "letterSpacing" punto katıdır.
     /// v4 (Karar 09 Rev. 3): projede "story" (hikâye akışı: bölüm adları ve başlangıç zamanları).
     /// v5 (Karar 09 Rev. 4): projede "video" (hikâye filmi ayarları, Karar 21).
+    /// v6 (Karar 09 Rev. 5): yerleşim "filters" alanına "exposure", "temperature", "blackWhite".
     /// </summary>
-    public const int CurrentSchemaVersion = 5;
+    public const int CurrentSchemaVersion = 6;
 
     public const string ManifestEntry = "manifest.json";
     public const string ProjectEntry = "project.json";

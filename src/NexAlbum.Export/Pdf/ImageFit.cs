@@ -58,6 +58,14 @@ public static class ImageFit
                 break;
         }
 
+        // Düzeltme açısı: döndürülen görüntü yuvayı boşluksuz kaplasın diye büyütülür (sığdırmada büyütülmez).
+        if (placement.Rotation != 0 && mode != CropMode.Contain)
+        {
+            var cover = Core.Layout.PhotoEditing.StraightenCover(slot.Width, slot.Height, width, height, placement.Rotation);
+            width *= cover;
+            height *= cover;
+        }
+
         width *= placement.Scale;
         height *= placement.Scale;
 

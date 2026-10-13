@@ -139,6 +139,23 @@ public sealed class PdfExportTests : IDisposable
     }
 
     [Fact]
+    public void AdjustedPhotosAreRenderedWithTheirColorSettings()
+    {
+        var project = Project();
+        var page = project.Pages[1];
+        var slot = (Slot)page.FindElement("s3")!;
+        project = project.ReplacePage(page.ReplaceElement(slot with { Placement = slot.Placement! with { Adjustments = new ImageAdjustments { BlackWhite = true, Exposure = 0.3 } } }));
+        var path = Path.Combine(dir, "ayarli.pdf");
+
+        var result = PdfAlbumExporter.Export(project, path, new PdfExportSettings { Pages = "2" });
+
+        result.Issues.Errors.Should().BeEmpty();
+        var bytes = File.ReadAllBytes(path);
+        IndexOf(bytes, Fixtures.Jpeg[^200..]).Should().BeLessThan(0, "ayarlı fotoğraf yeniden kodlanır; orijinal akış gömülmez");
+        new FileInfo(path).Length.Should().BeGreaterThan(1000);
+    }
+
+    [Fact]
     public void SeparateFilesAndPageSelection()
     {
         var path = Path.Combine(dir, "album.pdf");

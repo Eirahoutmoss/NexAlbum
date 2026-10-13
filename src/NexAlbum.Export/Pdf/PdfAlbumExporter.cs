@@ -248,6 +248,14 @@ public static class PdfAlbumExporter
             return;
         }
 
+        // Fotoğraf ayarları (efekt belgesi §1): ayarlanmış pikseller yeniden kodlanır; yönü uygulanmış olarak gelir.
+        var oriented = false;
+        if (!placement.Adjustments.IsNone && images.GetAdjusted(asset, placement.Adjustments) is { } adjusted)
+        {
+            image = adjusted;
+            oriented = true;
+        }
+
         var bounds = slot.Bounds;
         if (slot.Shadow is { } shadow)
         {
@@ -272,7 +280,7 @@ public static class PdfAlbumExporter
         {
             var state = gfx.Save();
             gfx.IntersectClip(clip);
-            DrawImage(gfx, image, asset, area, placement, slot.CropMode);
+            DrawImage(gfx, image, asset, area, placement, slot.CropMode, oriented);
             gfx.Restore(state);
         }
 
@@ -331,9 +339,9 @@ public static class PdfAlbumExporter
     }
 
     /// <summary>Görüntüyü EXIF yönü, kırpma, ölçek ve döndürmeyle verilen alana çizer (kırpma çağıranın işidir).</summary>
-    private static void DrawImage(XGraphics gfx, XImage image, PhotoAsset asset, RectMm area, PhotoPlacement placement, CropMode mode)
+    private static void DrawImage(XGraphics gfx, XImage image, PhotoAsset asset, RectMm area, PhotoPlacement placement, CropMode mode, bool oriented = false)
     {
-        var orientation = OrientationTransform.FromExif(asset.ExifOrientation);
+        var orientation = OrientationTransform.FromExif(oriented ? null : asset.ExifOrientation);
         var rect = ImageFit.FullImageRect(area, asset.DisplayAspectRatio, placement, mode);
 
         var state = gfx.Save();
@@ -479,6 +487,24 @@ public static class PdfAlbumExporter
     private sealed class ImageCache : IDisposable
     {
         private readonly Dictionary<string, (XImage? Image, string? Problem)> cache = new(StringComparer.Ordinal);
+        private readonly Dictionary<(string, ImageAdjustments), XImage?> adjusted = [];
+
+        /// <summary>Ayarlanmış görüntü (aynı fotoğraf + aynı ayar bir kez kodlanır); çözülemezse null (ayarsız çizilir).</summary>
+        public XImage? GetAdjusted(PhotoAsset asset, ImageAdjustments adjustments)
+        {
+            var key = (asset.Id, adjustments);
+            if (!adjusted.TryGetValue(key, out var image))
+            {
+                var source = asset.Effective();
+                var bytes = source.SourceType == AssetSourceType.Reference && File.Exists(source.SourcePath)
+                    ? Rendering.Photos.PhotoAdjust.AdjustedJpeg(source.SourcePath, adjustments, source.ExifOrientation)
+                    : null;
+                image = bytes is null ? null : XImage.FromStream(new MemoryStream(bytes, 0, bytes.Length, writable: false, publiclyVisible: true));
+                adjusted[key] = image;
+            }
+
+            return image;
+        }
 
         public XImage? Get(PhotoAsset asset, out string? problem)
         {
@@ -499,7 +525,13 @@ public static class PdfAlbumExporter
                 image?.Dispose();
             }
 
+            foreach (var image in adjusted.Values)
+            {
+                image?.Dispose();
+            }
+
             cache.Clear();
+            adjusted.Clear();
         }
 
         private static (XImage? Image, string? Problem) Load(PhotoAsset asset)

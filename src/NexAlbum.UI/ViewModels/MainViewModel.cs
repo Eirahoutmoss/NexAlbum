@@ -62,6 +62,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         AboutCommand = new RelayCommand(dialogs.ShowAbout);
         InitializeDesign();
         InitializeEditing();
+        InitializePhotoAdjust();
         InitializeExternal(settings, photoshop);
         InitializePages();
         InitializeText();

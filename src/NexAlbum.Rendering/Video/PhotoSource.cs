@@ -38,7 +38,8 @@ public sealed class FilePhotoSource(IReadOnlyDictionary<string, PhotoAsset> asse
             }
         }
 
-        var image = Decode(asset.Effective().SourcePath, minLongSide);
+        var effective = asset.Effective();
+        var image = Decode(effective.SourcePath, minLongSide, effective.ExifOrientation);
         if (image is null)
         {
             return null;
@@ -58,7 +59,7 @@ public sealed class FilePhotoSource(IReadOnlyDictionary<string, PhotoAsset> asse
     }
 
     /// <summary>Dosyayı çözer; kodlayıcı destekliyorsa küçük ölçekte (uzun kenar ≥ istenen), sonra EXIF yönü uygulanır.</summary>
-    public static SKImage? Decode(string path, int minLongSide)
+    public static SKImage? Decode(string path, int minLongSide, int? orientation = null)
     {
         try
         {
@@ -68,6 +69,8 @@ public sealed class FilePhotoSource(IReadOnlyDictionary<string, PhotoAsset> asse
                 return null;
             }
 
+            // Projedeki yön (kullanıcı döndürmüş olabilir) dosyadaki EXIF'ten önce gelir.
+            var origin = orientation is { } o ? (SKEncodedOrigin)o : codec.EncodedOrigin;
             var info = codec.Info;
             var longSide = Math.Max(info.Width, info.Height);
             var scale = Math.Clamp((float)minLongSide / longSide, 0.0625f, 1f);
@@ -78,10 +81,10 @@ public sealed class FilePhotoSource(IReadOnlyDictionary<string, PhotoAsset> asse
             {
                 // Kodlayıcı bu ölçeği desteklemiyorsa tam boyut çöz.
                 using var full = SKBitmap.Decode(codec);
-                return full is null ? null : Orient(full, codec.EncodedOrigin);
+                return full is null ? null : Orient(full, origin);
             }
 
-            return Orient(bitmap, codec.EncodedOrigin);
+            return Orient(bitmap, origin);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
         {

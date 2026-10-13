@@ -43,9 +43,21 @@ public sealed record BorderSpec
 /// <summary>Gölge.</summary>
 public sealed record ShadowSpec(double OffsetXMm, double OffsetYMm, double BlurMm, RgbaColor Color);
 
-/// <summary>Tahribatsız basit renk ayarları; -1 ile 1 arası, 0 = değişiklik yok.</summary>
+/// <summary>
+/// Tahribatsız fotoğraf ayarları (efekt belgesi §1, P0): -1 ile 1 arası, 0 = değişiklik yok. Ekran, PDF ve videoda aynı renk
+/// matrisiyle uygulanır (<see cref="Design.ColorMatrix"/>); orijinal dosya değişmez.
+/// </summary>
 public sealed record ImageAdjustments
 {
+    /// <summary>Pozlama: ±1,5 durak.</summary>
+    public double Exposure { get; init => field = Guard.InRange(value, -1, 1, nameof(Exposure)); }
+
+    /// <summary>Renk sıcaklığı: − soğuk (mavi), + sıcak (turuncu).</summary>
+    public double Temperature { get; init => field = Guard.InRange(value, -1, 1, nameof(Temperature)); }
+
+    /// <summary>Siyah-beyaz (doygunluğun yerine geçer).</summary>
+    public bool BlackWhite { get; init; }
+
     public double Brightness { get; init => field = Guard.InRange(value, -1, 1, nameof(Brightness)); }
 
     public double Contrast { get; init => field = Guard.InRange(value, -1, 1, nameof(Contrast)); }
@@ -54,7 +66,7 @@ public sealed record ImageAdjustments
 
     public static ImageAdjustments None { get; } = new();
 
-    public bool IsNone => Brightness == 0 && Contrast == 0 && Saturation == 0;
+    public bool IsNone => Brightness == 0 && Contrast == 0 && Saturation == 0 && Exposure == 0 && Temperature == 0 && !BlackWhite;
 }
 
 /// <summary>Yazı tipi.</summary>

@@ -18,7 +18,7 @@ public sealed class ImageLoader
     public const int DetailWidth = 1600;
 
     private readonly Lock gate = new();
-    private readonly Dictionary<(string Path, int Width), LinkedListNode<CacheEntry>> map = [];
+    private readonly Dictionary<(string Path, int Width, int Orientation), LinkedListNode<CacheEntry>> map = [];
     private readonly LinkedList<CacheEntry> order = new();
     private readonly int capacity;
 
@@ -35,7 +35,7 @@ public sealed class ImageLoader
         ArgumentNullException.ThrowIfNull(asset);
         lock (gate)
         {
-            return map.TryGetValue((asset.SourcePath, decodeWidth), out var node) ? node.Value.Image : null;
+            return map.TryGetValue(Key(asset, decodeWidth), out var node) ? node.Value.Image : null;
         }
     }
 
@@ -57,7 +57,7 @@ public sealed class ImageLoader
     public ImageSource? Load(PhotoAsset asset, int decodeWidth)
     {
         ArgumentNullException.ThrowIfNull(asset);
-        var key = (asset.SourcePath, decodeWidth);
+        var key = Key(asset, decodeWidth);
         lock (gate)
         {
             if (map.TryGetValue(key, out var node))
@@ -125,5 +125,8 @@ public sealed class ImageLoader
         }
     }
 
-    private sealed record CacheEntry((string Path, int Width) Key, ImageSource Image);
+    /// <summary>Önbellek anahtarı yönü de içerir: kullanıcı fotoğrafı döndürünce eski görüntü kullanılmaz.</summary>
+    private static (string Path, int Width, int Orientation) Key(PhotoAsset asset, int width) => (asset.SourcePath, width, asset.ExifOrientation ?? 1);
+
+    private sealed record CacheEntry((string Path, int Width, int Orientation) Key, ImageSource Image);
 }

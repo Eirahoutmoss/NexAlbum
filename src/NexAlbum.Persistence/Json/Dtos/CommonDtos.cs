@@ -98,6 +98,13 @@ internal sealed class FiltersDto
     public double? Contrast { get; set; }
 
     public double? Saturation { get; set; }
+
+    /// <summary>Şema v6: pozlama, sıcaklık, siyah-beyaz.</summary>
+    public double? Exposure { get; set; }
+
+    public double? Temperature { get; set; }
+
+    public bool? BlackWhite { get; set; }
 }
 
 internal sealed class FontDto

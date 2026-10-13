@@ -141,4 +141,7 @@
   <Geometry x:Key="Icon.Download">M 12 15 V 3 M 21 15 v 4 a 2 2 0 0 1 -2 2 H 5 a 2 2 0 0 1 -2 -2 v -4 M 7 10 l 5 5 5 -5</Geometry>
   <!-- sparkles -->
   <Geometry x:Key="Icon.Sparkles">M 11.017 2.814 a 1 1 0 0 1 1.966 0 l 1.051 5.558 a 2 2 0 0 0 1.594 1.594 l 5.558 1.051 a 1 1 0 0 1 0 1.966 l -5.558 1.051 a 2 2 0 0 0 -1.594 1.594 l -1.051 5.558 a 1 1 0 0 1 -1.966 0 l -1.051 -5.558 a 2 2 0 0 0 -1.594 -1.594 l -5.558 -1.051 a 1 1 0 0 1 0 -1.966 l 5.558 -1.051 a 2 2 0 0 0 1.594 -1.594 z M 20 2 v 4 M 22 4 h -4 M 2 20 A 2 2 0 1 0 6 20 A 2 2 0 1 0 2 20 Z</Geometry>
+  <!-- rotate-ccw / rotate-cw -->
+  <Geometry x:Key="Icon.RotateLeft">M 3 12 a 9 9 0 1 0 9 -9 a 9.75 9.75 0 0 0 -6.74 2.74 L 3 8 M 3 3 v 5 h 5</Geometry>
+  <Geometry x:Key="Icon.RotateRight">M 21 12 a 9 9 0 1 1 -9 -9 c 2.52 0 4.93 1 6.74 2.74 L 21 8 M 21 3 v 5 h -5</Geometry>
 </ResourceDictionary>
