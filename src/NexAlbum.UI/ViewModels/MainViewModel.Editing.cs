@@ -53,6 +53,7 @@ public sealed partial class MainViewModel
                 RefreshGalleryCommands();
                 SyncPositioning(value);
                 RefreshAdjustments(value);
+                SyncFrame(value);
             }
         }
     }

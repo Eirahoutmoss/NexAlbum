@@ -268,6 +268,13 @@ public partial class MainWindow
         // Yön tuşları ve +/− tuval odaktayken seçili yuvaya/metne gider (panel kaydırıcılarına değil).
         CanvasArea.Focus();
 
+        // Çerçeve kipi: tutamaç, köşe ya da seçili yuvanın gövdesi sürüklenir.
+        if (BeginFrameDrag(e))
+        {
+            e.Handled = true;
+            return;
+        }
+
         // Metinler yuvaların üstündedir: önce metin aranır. Tıkla: seç · sürükle: taşı · çift tıkla: yazıyı düzenle.
         if (TextAt(e.OriginalSource as DependencyObject, out var origin) is { } text && origin is not null)
         {
@@ -329,6 +336,12 @@ public partial class MainWindow
 
     private void OnCanvasMouseMove(object sender, MouseEventArgs e)
     {
+        if (frameOrigin is not null && e.LeftButton == MouseButtonState.Pressed)
+        {
+            DragFrame(e);
+            return;
+        }
+
         if (pressedText is not null && textOrigin is not null && e.LeftButton == MouseButtonState.Pressed)
         {
             var p = e.GetPosition(textOrigin);
@@ -373,6 +386,12 @@ public partial class MainWindow
 
     private void OnCanvasMouseUp(object sender, MouseButtonEventArgs e)
     {
+        if (frameOrigin is not null)
+        {
+            EndFrameDrag();
+            return;
+        }
+
         if (pressedText is not null)
         {
             var text = pressedText;
@@ -442,6 +461,7 @@ public partial class MainWindow
             Key.Subtract or Key.OemMinus => ViewModel.ZoomSelected(1 / (large ? 1.25 : 1.05)),
             Key.Home when ViewModel.SelectedSlot is { IsEmpty: false } => Run(() => ViewModel.AlignPhoto("0 0")),
             Key.Escape when ViewModel.IsPositioning => Run(() => ViewModel.IsPositioning = false),
+            Key.Escape when ViewModel.IsFrameEditing => Run(() => ViewModel.IsFrameEditing = false),
             _ => false,
         };
     }

@@ -502,6 +502,12 @@
                 <StackPanel Visibility="{Binding HasSelectedSlot, Converter={StaticResource BoolToVisibility}}">
                   <TextBlock Text="SEÇİLİ YUVA" Style="{StaticResource PanelHeader}" />
                   <TextBlock Text="{Binding SelectedSlotInfo}" Style="{StaticResource SectionText}" FontSize="12.5" />
+                  <WrapPanel Margin="16,8,10,0">
+                    <ToggleButton Style="{StaticResource ChipToggle}" Content="{Binding FrameButtonText}" IsChecked="{Binding IsFrameEditing}" Margin="0,0,6,6"
+                                  ToolTip="Yuvayı taşıyın, boyutlandırın; üçgen, altıgen gibi biçimlerde köşeleri sürükleyin. Sayfa ortasına ve diğer öğelere yapışır (Alt: serbest)." />
+                    <Button Style="{StaticResource SmallButton}" Content="Dikdörtgene döndür" Command="{Binding ResetFrameCornersCommand}" Margin="0,0,6,6"
+                            ToolTip="Geometrik yuvayı düz dikdörtgen yapar (çerçeve yerinde kalır)." />
+                  </WrapPanel>
                   <DockPanel Margin="16,10,16,0" IsEnabled="{Binding SelectedSlotHasPhoto}">
                     <TextBlock DockPanel.Dock="Right" Text="{Binding SlotZoomPercent, StringFormat={}%{0:0}}" Width="44" TextAlignment="Right" VerticalAlignment="Center"
                                Foreground="{DynamicResource SecondaryTextBrush}" />
