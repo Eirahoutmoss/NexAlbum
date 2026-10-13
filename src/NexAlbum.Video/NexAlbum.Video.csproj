@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Hikâye filmi (Karar 21, Karar 08 Rev. 5): FFmpeg bulma/izinli kurulum/kodlama, müzik kütüphanesi ve çözümleme. -->
+  <ItemGroup>
+    <ProjectReference Include="..\NexAlbum.Core\NexAlbum.Core.csproj" />
+    <ProjectReference Include="..\NexAlbum.Rendering\NexAlbum.Rendering.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="NexAlbum.Video.Tests" />
+  </ItemGroup>
+</Project>

@@ -17,5 +17,6 @@
     <ProjectReference Include="..\..\src\NexAlbum.Assets\NexAlbum.Assets.csproj" />
     <ProjectReference Include="..\..\src\NexAlbum.Persistence\NexAlbum.Persistence.csproj" />
     <ProjectReference Include="..\..\src\NexAlbum.Integrations\NexAlbum.Integrations.csproj" />
+    <ProjectReference Include="..\..\src\NexAlbum.Video\NexAlbum.Video.csproj" />
   </ItemGroup>
 </Project>

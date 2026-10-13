@@ -25,6 +25,9 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: "10.0.x"
+      - name: FFmpeg (hikâye filmi bütünleşme testi, Karar 21)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
       - name: Test + kapsam
         run: dotnet test NexAlbum.slnx -c Release --collect:"XPlat Code Coverage" --results-directory TestResults --logger "trx" --blame-hang-timeout 5m
       - name: Sonuçları yükle

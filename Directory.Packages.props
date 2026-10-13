@@ -9,6 +9,9 @@
     <PackageVersion Include="MetadataExtractor" Version="2.8.1" />
     <!-- MIT (Karar 08, Karar 11 §3.4): baskı PDF'i; JPEG'ler yeniden sıkıştırılmadan gömülür. -->
     <PackageVersion Include="PDFsharp" Version="6.1.1" />
+    <!-- MIT (Karar 08 §5.1, Rev. 5): hikâye filmi kareleri (Karar 21). Linux yerel kitaplığı testler ve Linux için. -->
+    <PackageVersion Include="SkiaSharp" Version="3.116.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="3.116.1" />
   </ItemGroup>
   <ItemGroup Label="Test">
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />

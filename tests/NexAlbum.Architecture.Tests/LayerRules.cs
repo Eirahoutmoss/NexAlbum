@@ -3,7 +3,7 @@ using FluentAssertions;
 namespace NexAlbum.Architecture.Tests;
 
 /// <summary>
-/// Karar 08 §13.2 (Revizyon 2) — katmanlar arası izin verilen bağımlılıklar.
+/// Karar 08 §13.2 (Revizyon 2, 5) — katmanlar arası izin verilen bağımlılıklar.
 /// </summary>
 internal static class LayerRules
 {
@@ -15,7 +15,8 @@ internal static class LayerRules
         ["NexAlbum.Assets"] = ["NexAlbum.Core"],
         ["NexAlbum.Persistence"] = ["NexAlbum.Core"],
         ["NexAlbum.Integrations"] = ["NexAlbum.Core", "NexAlbum.Assets"],
-        ["NexAlbum.UI"] = ["NexAlbum.Core", "NexAlbum.Rendering", "NexAlbum.Export", "NexAlbum.Assets", "NexAlbum.Persistence", "NexAlbum.Integrations"],
+        ["NexAlbum.Video"] = ["NexAlbum.Core", "NexAlbum.Rendering"],
+        ["NexAlbum.UI"] = ["NexAlbum.Core", "NexAlbum.Rendering", "NexAlbum.Export", "NexAlbum.Assets", "NexAlbum.Persistence", "NexAlbum.Integrations", "NexAlbum.Video"],
     };
 
     /// <summary>Core'un hiçbir koşulda bağlanamayacağı teknoloji derlemeleri.</summary>
