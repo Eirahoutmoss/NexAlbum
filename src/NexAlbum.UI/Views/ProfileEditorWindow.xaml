@@ -3,10 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Baskı profili" Width="560" SizeToContent="Height"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False"
-        FontFamily="Inter, Segoe UI" FontSize="14" Background="{StaticResource BackgroundBrush}">
+        Background="{DynamicResource BackgroundBrush}" Foreground="{DynamicResource TextBrush}" UseLayoutRounding="True">
   <Window.Resources>
-    <Style TargetType="TextBox">
-      <Setter Property="Padding" Value="4,2" />
+    <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+      <Setter Property="Padding" Value="6,3" />
       <Setter Property="Margin" Value="0,0,6,0" />
       <Setter Property="Width" Value="64" />
     </Style>
@@ -15,8 +15,8 @@
       <Setter Property="Margin" Value="0,6,12,6" />
     </Style>
   </Window.Resources>
-  <StackPanel Margin="20">
-    <TextBlock Text="Baskı profili" FontSize="18" FontWeight="SemiBold" />
+  <StackPanel Margin="28,24">
+    <TextBlock Text="Baskı profili" Style="{StaticResource Title}" />
     <TextBlock Style="{StaticResource Caption}" Margin="0,4,0,12"
                Text="Değerleri baskı evinizden alın. Boş bırakılan alan «bilinmiyor» sayılır ve ön kontrolde bildirilir; uygulama hiçbir değeri tahmin etmez. Ölçüler mm." />
 
@@ -78,7 +78,7 @@
       <CheckBox Grid.Row="9" Grid.Column="1" IsChecked="{Binding Verified}" Content="Bu değerleri baskı evimden aldım" VerticalAlignment="Center" />
     </Grid>
 
-    <TextBlock x:Name="Messages" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource ErrorBrush}" />
+    <TextBlock x:Name="Messages" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{DynamicResource ErrorBrush}" />
 
     <DockPanel Margin="0,20,0,0">
       <Button DockPanel.Dock="Left" Content="Dosyaya kaydet…" Padding="12,6" Click="OnExport" ToolTip="Profili başka projelerde kullanmak için JSON dosyası olarak kaydet" />

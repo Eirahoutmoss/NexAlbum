@@ -140,7 +140,8 @@ Aşağıda tüm karar dokümanları listelenmiştir. Her biri bağımsız okunab
 09	Veri Modeli ve Proje Formatı	.albumproj (ZIP + JSON); şema sürümlü	09_veri_modeli_ve_proje_dosyasi_karari.md
 10	Şablon Motoru ve Otomatik Yerleşim	7 aşamalı algoritma; yüzde tabanlı şablonlar; deterministik	10_sablon_motoru_ve_otomatik_yerlesim_karari.md
 11	Çıktı Formatları ve PSD	PDF/JPG/SVG; PSD/CDR ileride	11_cikti_formatlari_ve_psd_karari.md
-12	UI/UX Tasarım	5 bölge; Türkçe öncelikli; klavye dostu	12_ui_ux_tasarim_karari.md
+12	UI/UX Tasarım	5 bölge; Türkçe öncelikli; klavye dostu (Rev. 1: tema → 17)	12_ui_ux_tasarim_karari.md
+17	Marka ve Görsel Kimlik	Altın kurdele "N"; Gece (koyu-altın) varsayılan, Fildişi seçenek; Inter + Lucide	17_marka_karari.md
 6.3 Süreç Kararları
 #	Karar	Özet	Dosya
 13	Test ve Kalite	Test piramidi; CI; kalite kapıları	13_test_ve_kalite_karari.md
@@ -149,7 +150,7 @@ Aşağıda tüm karar dokümanları listelenmiştir. Her biri bağımsız okunab
 #	Karar	Durum
 15	Güvenlik ve Gizlilik	Bekliyor
 16	Sürüm ve Yayın	Bekliyor
-17	Marka ve Kimlik	Bekliyor
+17	Marka ve Kimlik	Yazıldı (13/10/2026) — bkz. 6.2
 18	Bakım ve Uzun Vadeli Sürdürülebilirlik	Bekliyor
 19	KVKK ve Yasal Uyumluluk	Bekliyor
 7. Karar Özetleri (Tek Bakışta)

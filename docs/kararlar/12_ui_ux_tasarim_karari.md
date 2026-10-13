@@ -6,6 +6,17 @@ Durum: Kesinleşti
 Tarih: (doldurulacak)
 İlgili kararlar: 01 (Ücretsiz), 02 (Açık Kaynak), 04 (Tek Kişi), 07 (Rakip Özellikleri), 08 (Teknoloji), 10 (Şablon Motoru), 11 (Çıktı)
 
+Revizyon 1 — 13/10/2026
+Değişiklik: §9 (Tema ve Görsel Kimlik) yerine Karar 17 (Marka) geçer. §9.1 varsayılan tema, §9.2–9.3 renk paletleri, §9.6 ikon seti ve §9.7 logo Geçersiz.
+- Varsayılan tema **Gece** (koyu antrasit + altın); seçenek **Fildişi** (açık + altın); "Sistem" ileride (değişmedi).
+- Vurgu rengi #0066CC yerine altın (Gece #D4A853, Fildişi #C99B48); tüm renkler anlamsal anahtarlarla (Karar 17 §4).
+- §9.4 Tipografi: Inter uygulamaya gömülür (kurulum gerekmez); gövde 14 → 13 px, bölüm başlıkları 11 px büyük harf.
+- §9.6 İkonlar: Lucide (ISC) ince çizgi, WPF geometrisi; Segoe Fluent/MDL2 yazı tipine bağımlılık kalkar.
+- §4 Üst araç çubuğu pencere başlığıyla birleşir (özel pencere çerçevesi, Karar 17 §8); komut paleti (§11) Ctrl+K ile açılır.
+Gerekçe: Karar 17 §2 — koyu nötr zemin fotoğraf renklerini doğru algılatır; albüm seçimi çoğu zaman müşteriyle aynı ekrana bakılarak
+yapılır; altın düğünün kültürel rengidir. "Fotoğraf kahraman, arayüz sessiz" ilkesi (§2) değişmez, koyu zemin onu güçlendirir.
+Değişmeyenler: 5 bölgeli düzen, kısayollar, erişilebilirlik ve kontrast hedefleri, Türkçe öncelik, animasyon ilkeleri.
+
 1. Karar Özeti
 NexAlbum'in arayüzü sade, hızlı, Türkçe öncelikli, klavye dostu ve fotoğraf odaklı olacaktır.
 
@@ -13,7 +24,7 @@ Tasarım ilkesi: "Fotoğraf kahraman, arayüz sessiz."
 
 Ana ekran: 5 bölgeli (üst araç, sol galeri, orta tuval, sağ özellikler, alt sayfa şeridi).
 
-Tema: Açık (varsayılan) + Koyu + Sistem.
+Tema: Açık (varsayılan) + Koyu + Sistem. [Revizyon 1: varsayılan Gece (koyu-altın) + Fildişi (açık); bkz. Karar 17]
 
 Dil: Türkçe (varsayılan) + i18n altyapısı (İngilizce ileride).
 
@@ -463,6 +474,8 @@ Shift + tıkla: aralık.
 Toplu işlemler: sil, çoğalt, kilitle.
 
 9. Tema ve Görsel Kimlik
+[Geçersiz — Revizyon 1: bu bölümün yerine Karar 17 (Marka) geçer. Aşağıdaki metin tarihçe için korunur.]
+
 9.1 Tema seçenekleri
 Tema	Varsayılan
 Açık	✅

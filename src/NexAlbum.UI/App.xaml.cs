@@ -1,15 +1,28 @@
 using System.Globalization;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Threading;
 using NexAlbum.UI.Services;
 
 namespace NexAlbum.UI;
 
 /// <summary>
-/// Uygulama giriş noktası.
+/// Uygulama giriş noktası. Açılış ekranı (Assets/splash.png) derleme eylemiyle otomatik gösterilir (Karar 17 §9).
 /// </summary>
 public partial class App : Application
 {
+    /// <summary>Gömülü Inter; yoksa Segoe UI (Karar 17 §5).</summary>
+    public static readonly FontFamily UiFont = CreateUiFont();
+
+    static App()
+    {
+        // Tüm pencereler (türetilmiş olanlar dahil) aynı yazı tipi ve boyutla başlar; pencereler yalnızca renkleri verir.
+        Control.FontFamilyProperty.OverrideMetadata(typeof(Window), new FrameworkPropertyMetadata(UiFont, FrameworkPropertyMetadataOptions.Inherits));
+        Control.FontSizeProperty.OverrideMetadata(typeof(Window), new FrameworkPropertyMetadata(13.0, FrameworkPropertyMetadataOptions.Inherits));
+        EventManager.RegisterClassHandler(typeof(Window), FrameworkElement.LoadedEvent, new RoutedEventHandler(OnWindowLoaded));
+    }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         // Arayüz Türkçe öncelikli (Karar 12). Dosya formatları ayrıca InvariantCulture kullanır.
@@ -19,7 +32,23 @@ public partial class App : Application
 
         DispatcherUnhandledException += OnUnhandledException;
         WpfFontResolver.Register();
+        ThemeService.Apply(ThemeService.Parse(new JsonAppSettingsStore().Load().Theme), this);
         base.OnStartup(e);
+    }
+
+    private static FontFamily CreateUiFont()
+    {
+        // "pack:" şemasının kayıtlı olduğundan emin ol (Application statik kurucusundan önce çalışabiliriz).
+        _ = System.IO.Packaging.PackUriHelper.UriSchemePack;
+        return new FontFamily(new Uri("pack://application:,,,/"), "/NexAlbum;component/Assets/Fonts/#Inter, Segoe UI");
+    }
+
+    private static void OnWindowLoaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is Window window)
+        {
+            ThemeService.ApplyTitleBar(window);
+        }
     }
 
     /// <summary>Beklenmeyen hata uygulamayı kapatmasın; kullanıcı çalışmasını kaydedebilsin.</summary>

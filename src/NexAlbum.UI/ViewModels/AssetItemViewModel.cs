@@ -10,8 +10,22 @@ public sealed class AssetItemViewModel(PhotoAsset asset, bool used) : Observable
 {
     private ImageSource? thumbnail;
     private bool loading;
+    private bool isSelected;
 
     public PhotoAsset Asset { get; } = asset;
+
+    /// <summary>Galeride seçili mi (ızgara kendi seçimini tutar; bkz. MainViewModel.SelectedAsset).</summary>
+    public bool IsSelected
+    {
+        get => isSelected;
+        set => SetProperty(ref isSelected, value);
+    }
+
+    /// <summary>Izgaradaki ipucu: dosya adı, boyut, çekim zamanı ve durum.</summary>
+    public string ToolTipText => FileName + "\n" + Details
+        + (IsUsed ? "\nAlbümde" : "\nHenüz kullanılmadı")
+        + (IsEdited ? "\n" + EditBadge : string.Empty)
+        + (IsMissing ? "\nDosya bulunamadı" : string.Empty);
 
     public string FileName => Asset.FileName;
 

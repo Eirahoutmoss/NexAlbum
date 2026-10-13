@@ -59,6 +59,12 @@ public sealed class PageItemViewModel : ObservableObject
 
     public int PhotoCount => Slots.Count(s => !s.IsEmpty);
 
+    /// <summary>Sayfa şeridindeki küçük resmin yüksekliği (DIP).</summary>
+    public const double ThumbHeight = 76;
+
+    /// <summary>Küçük resmin genişliği: sayfa oranı korunur (yatay, dikey, kare albümler).</summary>
+    public double ThumbWidth => CanvasHeight > 0 ? Math.Round(ThumbHeight * CanvasWidth / CanvasHeight) : ThumbHeight;
+
     public RectMm Origin { get; }
 
     public double CanvasWidth { get; }

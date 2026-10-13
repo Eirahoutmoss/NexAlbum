@@ -1,0 +1,111 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Marka (Karar 17 §3). Kaynak: docs/marka/nexalbum-logo.svg ve nexalbum-logo-kucuk.svg — çizim değişirse ikisi birlikte güncellenir. -->
+
+  <RadialGradientBrush x:Key="Logo.Disk" Center="0.38,0.3" GradientOrigin="0.38,0.3" RadiusX="0.85" RadiusY="0.85">
+    <GradientStop Offset="0" Color="#2B2A2E" />
+    <GradientStop Offset="0.55" Color="#161618" />
+    <GradientStop Offset="1" Color="#0B0B0C" />
+  </RadialGradientBrush>
+  <LinearGradientBrush x:Key="Logo.Ring" StartPoint="0,0" EndPoint="1,1">
+    <GradientStop Offset="0" Color="#F7DE9A" />
+    <GradientStop Offset="0.35" Color="#C99A44" />
+    <GradientStop Offset="0.65" Color="#E9C77A" />
+    <GradientStop Offset="1" Color="#8F6A2A" />
+  </LinearGradientBrush>
+  <LinearGradientBrush x:Key="Logo.Stem" StartPoint="0,0" EndPoint="0,1">
+    <GradientStop Offset="0" Color="#D9B266" />
+    <GradientStop Offset="1" Color="#7E5B22" />
+  </LinearGradientBrush>
+  <LinearGradientBrush x:Key="Logo.StemRight" StartPoint="0,0" EndPoint="0,1">
+    <GradientStop Offset="0" Color="#F3D58C" />
+    <GradientStop Offset="1" Color="#A57B32" />
+  </LinearGradientBrush>
+  <LinearGradientBrush x:Key="Logo.Diagonal" StartPoint="0,0" EndPoint="1,1">
+    <GradientStop Offset="0" Color="#FFF0C2" />
+    <GradientStop Offset="0.45" Color="#E2B964" />
+    <GradientStop Offset="1" Color="#B0843A" />
+  </LinearGradientBrush>
+
+  <!-- Büyük logo (≥ 40 px): katlanma üçgenleri ve ışık çizgisiyle. -->
+  <DrawingImage x:Key="LogoImage">
+    <DrawingImage.Drawing>
+      <DrawingGroup>
+        <GeometryDrawing Brush="Transparent" Geometry="M0,0 H256 V256 H0 Z" />
+        <GeometryDrawing Brush="{StaticResource Logo.Disk}">
+          <GeometryDrawing.Geometry>
+            <EllipseGeometry Center="128,128" RadiusX="124" RadiusY="124" />
+          </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <GeometryDrawing>
+          <GeometryDrawing.Pen>
+            <Pen Brush="{StaticResource Logo.Ring}" Thickness="4" />
+          </GeometryDrawing.Pen>
+          <GeometryDrawing.Geometry>
+            <EllipseGeometry Center="128,128" RadiusX="114" RadiusY="114" />
+          </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <GeometryDrawing Brush="{StaticResource Logo.Stem}" Geometry="M74,86 L102,70 L102,190 L74,190 Z" />
+        <GeometryDrawing Brush="{StaticResource Logo.StemRight}" Geometry="M154,66 L182,66 L182,170 L154,186 Z" />
+        <GeometryDrawing Brush="#6E4F1C" Geometry="M74,86 L74,62 L102,70 Z" />
+        <GeometryDrawing Brush="#6E4F1C" Geometry="M154,186 L182,170 L182,194 Z" />
+        <!-- Çapraz şeridin gölgesi (SVG'deki feDropShadow yaklaşımı) -->
+        <GeometryDrawing Brush="#59000000" Geometry="M74,89 L102,73 L182,173 L154,189 Z" />
+        <GeometryDrawing Brush="{StaticResource Logo.Diagonal}" Geometry="M74,86 L102,70 L182,170 L154,186 Z" />
+        <GeometryDrawing Geometry="M102,70 L182,170">
+          <GeometryDrawing.Pen>
+            <Pen Brush="#8CFFF6D8" Thickness="1.2" />
+          </GeometryDrawing.Pen>
+        </GeometryDrawing>
+      </DrawingGroup>
+    </DrawingImage.Drawing>
+  </DrawingImage>
+
+  <!-- Küçük logo (≤ 32 px): sadeleştirilmiş, "N" büyütülmüş, halka kalın. -->
+  <DrawingImage x:Key="LogoSmallImage">
+    <DrawingImage.Drawing>
+      <DrawingGroup>
+        <GeometryDrawing Brush="Transparent" Geometry="M0,0 H256 V256 H0 Z" />
+        <GeometryDrawing Brush="{StaticResource Logo.Disk}">
+          <GeometryDrawing.Geometry>
+            <EllipseGeometry Center="128,128" RadiusX="124" RadiusY="124" />
+          </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <GeometryDrawing>
+          <GeometryDrawing.Pen>
+            <Pen Brush="{StaticResource Logo.Ring}" Thickness="9" />
+          </GeometryDrawing.Pen>
+          <GeometryDrawing.Geometry>
+            <EllipseGeometry Center="128,128" RadiusX="112" RadiusY="112" />
+          </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <DrawingGroup Transform="1.18,0,0,1.18,-23.04,-23.04">
+          <GeometryDrawing Brush="{StaticResource Logo.Stem}" Geometry="M74,86 L102,70 L102,190 L74,190 Z" />
+          <GeometryDrawing Brush="{StaticResource Logo.StemRight}" Geometry="M154,66 L182,66 L182,170 L154,186 Z" />
+          <GeometryDrawing Brush="{StaticResource Logo.Diagonal}" Geometry="M74,86 L102,70 L182,170 L154,186 Z" />
+        </DrawingGroup>
+      </DrawingGroup>
+    </DrawingImage.Drawing>
+  </DrawingImage>
+
+  <!-- Yazı markası: "Nex" metin rengi + "Album" altın. Boyut için ContentControl.FontSize verin. -->
+  <LinearGradientBrush x:Key="Wordmark.Gold" StartPoint="0,0" EndPoint="0,1">
+    <GradientStop Offset="0" Color="#F2D58E" />
+    <GradientStop Offset="0.6" Color="#C99A44" />
+    <GradientStop Offset="1" Color="#DDB565" />
+  </LinearGradientBrush>
+  <Style x:Key="Wordmark" TargetType="ContentControl">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="IsTabStop" Value="False" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ContentControl">
+          <TextBlock FontSize="{TemplateBinding FontSize}" FontWeight="{TemplateBinding FontWeight}">
+            <Run Text="Nex" Foreground="{DynamicResource TextBrush}" /><Run Text="Album" Foreground="{StaticResource Wordmark.Gold}" />
+          </TextBlock>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+</ResourceDictionary>

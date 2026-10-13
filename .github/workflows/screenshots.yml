@@ -1,0 +1,45 @@
+name: ekran-goruntuleri
+
+# Arayüzün iki temadaki ekran görüntülerini üretir (tests/NexAlbum.UI.Tests/ScreenshotTests.cs) ve
+# "ekran/<dal>" dalına yazar. Görsel gözden geçirme ve README için; ürün dalına hiçbir şey yazılmaz.
+on:
+  push:
+    branches: ["**", "!ekran/**"]
+    paths:
+      - "src/NexAlbum.UI/**"
+      - "tests/NexAlbum.UI.Tests/**"
+      - ".github/workflows/screenshots.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ekran-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ekran:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+      - name: Ekran görüntüleri
+        env:
+          NEXALBUM_EKRAN_KLASORU: ${{ github.workspace }}\ekran
+        run: dotnet test tests/NexAlbum.UI.Tests -c Release --filter "FullyQualifiedName~ScreenshotTests"
+      - name: ekran/<dal> dalına yaz
+        shell: bash
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          branch="ekran/${GITHUB_REF_NAME//\//-}"
+          cd ekran
+          printf '# Ekran görüntüleri\n\nKaynak: `%s` @ `%s`\n' "$GITHUB_REF_NAME" "${GITHUB_SHA::7}" > README.md
+          git init -q
+          git checkout -q -b "$branch"
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "Ekran görüntüleri: ${GITHUB_SHA::7}"
+          git push -f -q "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$branch"

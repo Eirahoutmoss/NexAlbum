@@ -7,7 +7,7 @@ using NexAlbum.UI.Services;
 
 namespace NexAlbum.UI.Views;
 
-/// <summary>Bu bilgisayara özgü ayarlar: harici düzenleyici ve düzenlenmiş dosyaların klasörü (Karar 20).</summary>
+/// <summary>Bu bilgisayara özgü ayarlar: tema (Karar 17), harici düzenleyici ve düzenlenmiş dosyaların klasörü (Karar 20).</summary>
 public partial class SettingsWindow : Window
 {
     private readonly AppSettings settings;
@@ -18,6 +18,9 @@ public partial class SettingsWindow : Window
         this.settings = settings ?? throw new ArgumentNullException(nameof(settings));
         EditorBox.Text = settings.EditorPath ?? string.Empty;
         FolderBox.Text = settings.EditsFolder ?? EditFolders.DefaultRoot;
+        var dark = ThemeService.Parse(settings.Theme) == AppTheme.Gece;
+        GeceTheme.IsChecked = dark;
+        FildisiTheme.IsChecked = !dark;
         var photoshop = PhotoshopLocator.FindExecutable();
         DetectedText.Text = photoshop is null ? "Bu bilgisayarda Photoshop bulunamadı." : "Bulunan Photoshop: " + photoshop;
     }
@@ -56,6 +59,7 @@ public partial class SettingsWindow : Window
         {
             EditorPath = editor.Length == 0 ? null : editor,
             EditsFolder = folder.Length == 0 || string.Equals(folder, EditFolders.DefaultRoot, StringComparison.OrdinalIgnoreCase) ? null : folder,
+            Theme = ThemeService.ToSetting(FildisiTheme.IsChecked == true ? AppTheme.Fildisi : AppTheme.Gece),
         };
         DialogResult = true;
     }
