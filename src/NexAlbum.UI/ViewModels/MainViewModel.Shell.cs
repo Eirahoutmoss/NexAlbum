@@ -142,6 +142,8 @@ public sealed partial class MainViewModel
     /// <summary>Tuvalin altındaki gezinme: "3 / 20"; kitap görünümünde "3–4 / 20".</summary>
     public string PageNavText => SelectedPage is null
         ? string.Empty
+        : SelectedPage.IsCover
+        ? "Kapak"
         : isBookView && spreadLeft is not null
             ? spreadRight is null
                 ? string.Format(CultureInfo.CurrentCulture, "{0} / {1}", spreadLeft.Number, Pages.Count)
