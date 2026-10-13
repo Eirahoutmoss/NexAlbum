@@ -1,6 +1,6 @@
 # Kaldığımız yer (devir notu)
 
-Son güncelleme: 13 Ekim 2026 (Faz 1 — premium arayüz). Başka bilgisayarda devam etmek için önce bunu okuyun.
+Son güncelleme: 13 Ekim 2026 (geometrik şablonlar, kitap görünümü, sunum modu). Başka bilgisayarda devam etmek için önce bunu okuyun.
 
 ## Yeni bilgisayarda kurulum
 1. Git ve .NET SDK 10 (10.0.1xx veya üstü) kurun: `dotnet --list-sdks`
@@ -24,7 +24,12 @@ Son güncelleme: 13 Ekim 2026 (Faz 1 — premium arayüz). Başka bilgisayarda d
 | **Marka (Karar 17)** | Altın kurdele "N" logosu (SVG + XAML), çok boyutlu `.ico`, açılış ekranı, yazı markası; kaynaklar `docs/marka/`, üretim `tools/marka/uret.py` |
 | **Arayüz (Karar 12 Rev. 1)** | Gece (varsayılan) / Fildişi teması, çalışırken değişir (başlıktaki güneş/ay, Ayarlar). Marka başlık çubuğu (WindowChrome), ikonlu araç çubuğu, galeri ızgarası + süzgeçler (Tümü/Kullanılmamış/Albümde/Rötuşlu), tuval yakınlaştırma (Ctrl+tekerlek, Ctrl±, Ctrl+0 = %100 baskı boyutu, Ctrl+F sığdır), sekmeli sağ panel, sayfa şeridi, başlangıç ekranı + son projeler, komut paleti (Ctrl+K; "on kontrol" → "Ön kontrol") |
 
-Testler: Windows 496, Ubuntu 438 — hepsi geçiyor. CI: `build.yml`, `test.yml` ve `screenshots.yml`
+| **Geometrik şablonlar (Karar 10 Rev. 1)** | Çokgen yuvalar (üçgen, elmas, altıgen, sekizgen/kesik köşe, kemer, eğik); 28 geometrik şablon (çapraz ikili, karşılıklı üçgenler + üçlü, elmas merkez, petek, eğik bantlar, yelpaze, kemerler); çapraz kenarlarda da eşit boşluk; otomatik yerleşimde en fazla 5 sayfada bir geometrik sayfa; `.albumproj` şema v2 + göç |
+| **Biçimli çerçeveler** | Kemer, altıgen, elmas, kesik köşe, üçgen, eğik (+ altın/paspartu çeşitleri); Tasarım sekmesinde ayrı bölüm |
+| **Şablon galerisi** | Biçim süzgeci (Tümü/Geometrik/Kolaj/Izgara/Sade); önizlemeler seçili sayfanın kendi fotoğraflarıyla |
+| **Kitap görünümü / sunum** | Ctrl+B karşılıklı sayfalar (cilt gölgesi); F5 tam ekran sunum (kırpılmış, kılavuzsuz, çift sayfa) |
+
+Testler: Windows 530, Ubuntu 465 — hepsi geçiyor. CI: `build.yml`, `test.yml` ve `screenshots.yml`
 (her dalda iki temada ekran görüntüsü üretir ve `ekran/<dal>` dalına yazar; ör. `ekran/main`).
 
 ## Elle denenmesi gerekenler
@@ -35,6 +40,9 @@ Otomatik test edilemeyenler:
 - **Açılış ekranı** uygulama açılırken görünüp soluyor mu? Görev çubuğu/Alt+Tab simgesi altın "N" mi?
 - Fare/sürükle-bırak: Gezgin'den galeriye bırakma, galeri karesinden yuvaya sürükleme, yuvalar arası taşıma, Ctrl+sürükle kaydırma,
   tekerlekle yuva yakınlaştırma, Ctrl+tekerlekle tuval yakınlaştırma; galeri karesine tıklayıp sağ tık menüsü.
+- **Kitap görünümü:** karşı sayfadaki yuvaya tıklama/galeriden bırakma o sayfayı seçip oraya uygulanmalı.
+- **Sunum (F5):** ← → / boşluk / tıklama ile gezinme, Esc ile çıkış, birkaç saniye sonra alt bilginin ve imlecin gizlenmesi; çok monitörde doğru ekranda açılması.
+- **Geometrik sayfaların PDF'i:** çapraz kenarlardaki boşluk ekranla aynı mı (baskı evine göndermeden önce bir sayfa basıp bakın).
 - Photoshop CI'da yok: "Rötuş → Action'ları yükle", "Önce bir fotoğrafta dene", "Düzenleyicide aç → kaydet → albüm yenilendi mi".
 
 ## Sıradaki işler (öncelik sırasıyla)
@@ -42,7 +50,7 @@ Otomatik test edilemeyenler:
    geri al / yinele (Ctrl+Z / Ctrl+Y — proje değişmez kayıt olduğundan anlık görüntü yığını); metin öğeleri (model hazır; arayüz ve PDF
    çizimi yok); fotoğrafa yıldız/favori; kapak ve sırt (Karar 03 sırt genişliği); JPG/PNG çıktı (Karar 11).
 2. **Faz 3 — farklılaştırıcılar:** hikâye akışı (EXIF saatine göre düğün evreleri: hazırlık, gelin alma, nikâh, dış çekim, düğün → bölümler);
-   çift için çevrimdışı HTML prova (beğeni/not, geri içe aktarma); sunum modu (Karar 17 §10); çift sayfa (spread) görünümü.
+   çift için çevrimdışı HTML prova (beğeni/not, geri içe aktarma); geometrik yuvalarda elle köşe düzenleme.
 3. Rötuş: Photoshop UXP paneli (isteğe bağlı), yüz/cilt odaklı hazır action paketi önerileri, rötuşçuya iş listesi devretme (Karar 20 §1).
 
 ## Notlar

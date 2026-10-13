@@ -541,7 +541,35 @@
                 <TextBlock Text="{Binding DesignScopeHint}" Style="{StaticResource Caption}" Margin="16,2,16,0" />
 
                 <TextBlock Text="ÇERÇEVE" Style="{StaticResource PanelHeader}" />
-                <ItemsControl ItemsSource="{Binding Frames}" Margin="12,0">
+                <ItemsControl ItemsSource="{Binding ClassicFrames}" Margin="12,0">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <WrapPanel />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Button Style="{StaticResource SwatchButton}" ToolTip="{Binding Name}" CommandParameter="{Binding}"
+                              Command="{Binding DataContext.ApplyFrameCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                        <StackPanel Width="92">
+                          <Border CornerRadius="4" Background="#F7F4EE">
+                            <Viewbox Width="92" Height="66">
+                              <Border Padding="7">
+                                <ContentControl Content="{Binding Sample}" ContentTemplate="{StaticResource SlotTemplate}" Focusable="False" />
+                              </Border>
+                            </Viewbox>
+                          </Border>
+                          <TextBlock Text="{Binding Name}" FontSize="11" TextAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,4,0,1" />
+                        </StackPanel>
+                      </Button>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Text="BİÇİMLİ ÇERÇEVELER" Style="{StaticResource PanelHeader}" />
+                <TextBlock Text="Yuvanın biçimini değiştirir: kemer, altıgen, elmas, kesik köşe, üçgen, eğik. «Çerçevesiz» şablonun biçimine döndürür."
+                           Style="{StaticResource Caption}" Margin="16,-2,16,6" />
+                <ItemsControl ItemsSource="{Binding ShapedFrames}" Margin="12,0">
                   <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                       <WrapPanel />

@@ -77,6 +77,8 @@ public sealed class ScreenshotTests : IDisposable
                 tabs.SelectedIndex = 1;
                 vm.IsBookView = true;
                 Settle(main);
+                All<ItemsControl>(main).First(c => c.Items.OfType<ViewModels.FrameItemViewModel>().Any(f => f.Frame.OverridesShape)).BringIntoView();
+                Settle(main);
                 Capture(main, "04-kitap-gece").Should().BeTrue();
 
                 vm.Palette.Open();
@@ -121,21 +123,37 @@ public sealed class ScreenshotTests : IDisposable
         });
     }
 
-    /// <summary>Seçili sayfaya geometrik bir şablon uygulanmış olsun (ekran görüntüsünde yeni biçimler görünsün).</summary>
+    /// <summary>
+    /// Fotoğrafı en çok olan sayfaya "Karşılıklı Üçgenler + Üçlü" uygulanır: hipotenüsleri karşılıklı iki üçgen ve
+    /// yanında üç dikdörtgen (geometrik şablonların tipik örneği).
+    /// </summary>
     private static void ShowGeometricPage(ViewModels.MainViewModel vm)
     {
-        var page = vm.Pages.FirstOrDefault(p => p.TemplateId is { } id && BuiltInTemplates.Find(id)?.Category == TemplateCategory.Geometric);
-        if (page is not null)
-        {
-            vm.SelectedPage = page;
-            return;
-        }
-
+        vm.SelectedPage = vm.Pages.OrderByDescending(p => p.PhotoCount).ThenBy(p => p.Index).First();
+        vm.SelectedTemplateCount = vm.TemplateCounts[0];
         vm.SelectedTemplateStyle = vm.TemplateStyles.Single(t => t.Style == ViewModels.TemplateStyle.Geometric);
-        var photos = vm.SelectedPage!.PhotoCount;
-        var template = vm.Templates.FirstOrDefault(t => t.Template.PhotoCount.Accepts(photos)) ?? vm.Templates.First();
+        var template = vm.Templates.Single(t => t.Id == "geo-triangles-3");
         vm.ApplyTemplateCommand.Execute(template);
         vm.SelectedTemplateStyle = vm.TemplateStyles[0];
+        vm.Project!.Pages[vm.SelectedPage!.Index].TemplateId.Should().Be("geo-triangles-3");
+    }
+
+    private static IEnumerable<T> All<T>(DependencyObject root)
+        where T : DependencyObject
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            if (child is T match)
+            {
+                yield return match;
+            }
+
+            foreach (var nested in All<T>(child))
+            {
+                yield return nested;
+            }
+        }
     }
 
     private static T Find<T>(DependencyObject root)

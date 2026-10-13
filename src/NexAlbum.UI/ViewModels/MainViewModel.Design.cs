@@ -37,6 +37,12 @@ public sealed partial class MainViewModel
 
     public IReadOnlyList<FrameItemViewModel> Frames { get; } = [.. FramePresets.All.Select(f => new FrameItemViewModel(f))];
 
+    /// <summary>Dikdörtgen yuvayı koruyan çerçeveler (çizgi, paspartu, gölge, polaroid…).</summary>
+    public IReadOnlyList<FrameItemViewModel> ClassicFrames => [.. Frames.Where(f => !f.Frame.OverridesShape)];
+
+    /// <summary>Yuvanın biçimini değiştiren çerçeveler: kemer, altıgen, elmas, kesik köşe, üçgen, eğik, yuvarlak, oval.</summary>
+    public IReadOnlyList<FrameItemViewModel> ShapedFrames => [.. Frames.Where(f => f.Frame.OverridesShape)];
+
     public IReadOnlyList<BackgroundItemViewModel> BackgroundColors { get; } = [.. BackgroundPresets.Colors.Select(p => new BackgroundItemViewModel(p))];
 
     public IReadOnlyList<BackgroundItemViewModel> BackgroundGradients { get; } = [.. BackgroundPresets.Gradients.Select(p => new BackgroundItemViewModel(p))];

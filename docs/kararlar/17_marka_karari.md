@@ -110,14 +110,20 @@ Kurallar:
 - İçerik yalnızca logo, yazı markası, slogan ve "Ücretsiz ve açık kaynak · GPL-3.0". Sürüm numarası pencerede gösterilir, görselde değil.
 - Kaynak: `tools/marka/` (HTML + Inter); yeniden üretim adımları oradaki README'de.
 
-10. Kapsam dışı (ileride)
+10. Sunum ve kitap görünümü (Revizyon 1 — 13/10/2026)
+- **Sunum modu (F5):** arayüz tamamen çekilir; koyu sahnede yalnızca sayfalar (karşılıklı çift sayfa, ortada cilt gölgesi).
+  Taşma payı kırpılır, kesim/güvenli alan kılavuzları gizlenir: çift albümü baskıdaki gibi görür. Sayfa geçişinde 260 ms solma
+  (yalnızca sunumda; düzenleyicide sayfa değişimi animasyonsuzdur, Karar 12 §17.3). Hareketsizlikte alt bilgi ve imleç gizlenir.
+  Gerekçe: §2 — albüm seçimi stüdyoda, çiftle aynı ekrana bakılarak yapılır.
+- **Kitap görünümü (Ctrl+B):** düzenleyicide karşılıklı iki sayfa (1–2, 3–4…); albüm açık kitap olarak değerlendirilir.
+- **Boş yuva:** sıcak kâğıt tonu, altın "+" ve "Fotoğraf bırakın" ipucu (yalnızca ekranda; PDF'e çizilmez).
+
+11. Kapsam dışı (ileride)
 - "Sistem" teması (Windows açık/koyu ayarını izleme) — Karar 12 §9.1'de zaten "ileride".
 - Yüksek kontrast teması (Karar 12 §15) — Windows yüksek kontrast açıksa WPF sistem renklerine düşülmesi ayrıca ele alınacak.
-- **Sunum modu**: çiftle birlikte bakılırken arayüzün tamamen çekildiği, yalnızca sayfaların görüldüğü tam ekran görünüm (§2'deki
-  "ekranı müşteri de görür" gözleminin doğal devamı).
 - Web sitesi, sosyal medya ve baskı materyalleri.
 
-11. Kararın diğer kararlarla ilişkisi
+12. Kararın diğer kararlarla ilişkisi
 - 12 UI/UX: §9 (Tema ve Görsel Kimlik) bu kararla değişir — Karar 12 Revizyon 1.
 - 08 Teknoloji: yeni NuGet bağımlılığı yok; gömülü varlıklar (Inter, Lucide) lisans matrisine eklendi — Karar 08 Revizyon 3.
 - 01/02: Tüm varlıklar ücretsiz ve GPL-3.0-or-later ile uyumludur (OFL yazı tipleri yazılımla birlikte dağıtılabilir; ISC izin verici).
