@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Media;
 using CommunityToolkit.Mvvm.Input;
 using NexAlbum.Core.Common;
+using NexAlbum.Core.Geometry;
 using NexAlbum.Core.Layout;
 using NexAlbum.Core.Projects;
 using NexAlbum.UI.Services;
@@ -289,10 +290,41 @@ public sealed partial class MainViewModel
         text.Y = startY + deltaYMm;
     }
 
+    /// <summary>
+    /// Sürüklerken akıllı hizalama: kutu sayfa ortasına, kenarlara, güvenli alana ve diğer öğelere yapışır; kılavuz çizgileri
+    /// gösterilir. <paramref name="snap"/> false iken (Alt basılı) serbest taşınır.
+    /// </summary>
+    public void DragText(TextItemViewModel text, double startX, double startY, double deltaXMm, double deltaYMm, double toleranceMm, bool snap = true)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        PreviewMoveText(text, startX, startY, deltaXMm, deltaYMm);
+        if (SelectedPage is not { } page)
+        {
+            return;
+        }
+
+        if (!snap || toleranceMm <= 0)
+        {
+            page.ShowSnapLines([]);
+            return;
+        }
+
+        var others = page.Slots.Select(s => new RectMm(s.X, s.Y, s.Width, s.Height))
+            .Concat(page.Texts.Where(t => !ReferenceEquals(t, text)).Select(t => new RectMm(t.X, t.Y, t.Width, t.Height)));
+        var result = SnapGuides.Snap(new RectMm(text.X, text.Y, text.Width, text.Height), page.PageArea, page.SafeArea, others, toleranceMm);
+        text.X = result.X;
+        text.Y = result.Y;
+        page.ShowSnapLines(result.Guides);
+    }
+
+    /// <summary>Sürükleme bitti ya da iptal edildi: hizalama çizgileri kalkar.</summary>
+    public void EndTextDrag() => SelectedPage?.ShowSnapLines([]);
+
     /// <summary>Sürükleme bitince yeni konum projeye yazılır (taşma payı alanı içinde kalır).</summary>
     public void CommitTextMove(TextItemViewModel text)
     {
         ArgumentNullException.ThrowIfNull(text);
+        EndTextDrag();
         if (SelectedPage is not { } page)
         {
             return;

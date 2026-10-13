@@ -4,6 +4,7 @@ using System.Windows.Media;
 using System.Windows.Media.Effects;
 using CommunityToolkit.Mvvm.ComponentModel;
 using NexAlbum.Core.Geometry;
+using NexAlbum.Core.Layout;
 using NexAlbum.Core.Projects;
 using NexAlbum.Export.Pdf;
 using NexAlbum.UI.Services;
@@ -158,6 +159,27 @@ public sealed class PageItemViewModel : ObservableObject
 
     /// <summary>Tuvalin proje koordinatlarındaki yeri (taşma payı dahil): metin bunun dışına taşınamaz.</summary>
     public RectMm CanvasBounds => Origin;
+
+    /// <summary>Sürüklerken gösterilen akıllı hizalama çizgileri (tuval koordinatı, mm).</summary>
+    public ObservableCollection<SnapLineViewModel> SnapLines { get; } = [];
+
+    /// <summary>Kılavuzları değiştirir; boş liste çizgileri kaldırır.</summary>
+    public void ShowSnapLines(IReadOnlyList<SnapGuide> guides)
+    {
+        ArgumentNullException.ThrowIfNull(guides);
+        if (guides.Count == 0 && SnapLines.Count == 0)
+        {
+            return;
+        }
+
+        SnapLines.Clear();
+        foreach (var g in guides)
+        {
+            SnapLines.Add(g.Vertical
+                ? new SnapLineViewModel(g.Position, 0, g.Position, CanvasHeight, g.Kind)
+                : new SnapLineViewModel(0, g.Position, CanvasWidth, g.Position, g.Kind));
+        }
+    }
 
     /// <summary>Tuvalde gösterilirken yüksek çözünürlüklü önizleme yüklenir; ayrılınca bırakılır (bellek).</summary>
     public void SetDetail(bool detail)
@@ -492,4 +514,10 @@ public sealed class SlotItemViewModel : ObservableObject
         assign(image);
         OnPropertyChanged(nameof(Image));
     }
+}
+
+/// <summary>Bir hizalama çizgisi (mm). Sayfa ortası altın, diğerleri mavi.</summary>
+public sealed record SnapLineViewModel(double X1, double Y1, double X2, double Y2, SnapKind Kind)
+{
+    public bool IsCenter => Kind == SnapKind.PageCenter;
 }

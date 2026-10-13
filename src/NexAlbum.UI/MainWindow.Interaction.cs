@@ -335,7 +335,9 @@ public partial class MainWindow
             if (textMoved || Moved(textOrigin.PointToScreen(textStart), textOrigin.PointToScreen(p)))
             {
                 textMoved = true;
-                MainViewModel.PreviewMoveText(pressedText, textStartX, textStartY, p.X - textStart.X, p.Y - textStart.Y);
+                // Yapışma toleransı ekranda ~8 piksel: yakınlaştırmaya göre mm'ye çevrilir. Alt basılıyken serbest taşınır.
+                var tolerance = Math.Abs(textOrigin.PointFromScreen(new Point(8, 0)).X - textOrigin.PointFromScreen(new Point(0, 0)).X);
+                ViewModel.DragText(pressedText, textStartX, textStartY, p.X - textStart.X, p.Y - textStart.Y, tolerance, snap: !Keyboard.Modifiers.HasFlag(ModifierKeys.Alt));
             }
 
             return;
@@ -380,6 +382,10 @@ public partial class MainWindow
             if (textMoved)
             {
                 ViewModel.CommitTextMove(text);
+            }
+            else
+            {
+                ViewModel.EndTextDrag();
             }
 
             return;

@@ -43,6 +43,25 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
 
+      <!-- Akıllı hizalama çizgileri (yalnızca sürüklerken) -->
+      <ItemsControl ItemsSource="{Binding SnapLines}" Focusable="False" IsHitTestVisible="False">
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <Canvas />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <Line x:Name="L" X1="{Binding X1}" Y1="{Binding Y1}" X2="{Binding X2}" Y2="{Binding Y2}" Stroke="#3B9EFF" StrokeThickness="0.35" />
+            <DataTemplate.Triggers>
+              <DataTrigger Binding="{Binding IsCenter}" Value="True">
+                <Setter TargetName="L" Property="Stroke" Value="#E0B252" />
+              </DataTrigger>
+            </DataTemplate.Triggers>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+
       <!-- Kesim çizgisi (bitmiş ölçü) ve güvenli alan -->
       <Canvas IsHitTestVisible="False">
         <Rectangle Canvas.Left="{Binding PageArea.X}" Canvas.Top="{Binding PageArea.Y}"

@@ -148,9 +148,17 @@ public sealed class ScreenshotTests : IDisposable
                 vm.AdjustContrast = 20;
                 vm.Straighten = 3;
                 Settle(main);
-                All<TextBlock>(main).First(t => t.Text == "FOTOĞRAF AYARLARI").BringIntoView();
+                All<TextBlock>(main).First(t => t.Text.StartsWith("Orijinal dosya değişmez", StringComparison.Ordinal)).BringIntoView();
                 Settle(main);
                 Capture(main, "17-fotograf-ayarlari-gece").Should().BeTrue();
+
+                // Akıllı hizalama: başlık sürüklenirken sayfa ortasına yapışır, kılavuz çizgisi görünür.
+                var title = vm.SelectedPage!.Texts[0];
+                vm.DragText(title, title.X, title.Y, 1.2, 0, toleranceMm: 3);
+                Settle(main);
+                vm.SelectedPage!.SnapLines.Should().NotBeEmpty();
+                Capture(main, "18-hizalama-gece").Should().BeTrue();
+                vm.EndTextDrag();
 
                 vm.DetectStory();
                 vm.Chapters.Should().HaveCount(4);
@@ -334,7 +342,7 @@ public sealed class ScreenshotTests : IDisposable
             files.Add(path);
         }
 
-        var project = AlbumProject.Create("Örnek Düğün Albümü", BuiltInProfiles.Find("builtin-30x30")!, now, "0.1.0", Guid.Parse("6d1f8a3e-0000-4000-8000-000000000001"));
+        var project = AlbumProject.Create("Aile Albümü 2026", BuiltInProfiles.Find("builtin-30x30")!, now, "0.1.0", Guid.Parse("6d1f8a3e-0000-4000-8000-000000000001"));
         project = new PhotoImporter().ImportFiles(files, project).ApplyTo(project);
 
         // Düğün günü akışı: örnek dosyalarda EXIF yok; çekim saatleri hikâye sekmesi için verilir.
@@ -354,7 +362,7 @@ public sealed class ScreenshotTests : IDisposable
         var layout = new AutoLayoutEngine().Layout(LayoutRequest.ForProject(project, BuiltInTemplates.All, new LayoutOptions { Mode = LayoutMode.Balanced }, now));
         project = project.WithPages(layout.Pages);
 
-        var file = Path.Combine(dir, "Örnek Düğün Albümü.albumproj");
+        var file = Path.Combine(dir, "Aile Albümü 2026.albumproj");
         ProjectPackageWriter.Save(file, project, new SaveOptions { AppVersion = "0.1.0" });
         return file;
     }
