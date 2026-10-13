@@ -50,6 +50,10 @@ public sealed class ChapterItemViewModel(MainViewModel owner, StoryChapter chapt
 
     public bool CanMerge => owner.Chapters.Count > 1;
 
+    /// <summary>Hazır bölüm adları (menüden tek tıkla).</summary>
+    public IReadOnlyList<ChapterNameSuggestion> Suggestions { get; } =
+        [.. StoryDetector.PhaseNames.Select(n => new ChapterNameSuggestion(n, new RelayCommand(() => owner.RenameChapter(chapter.Id, n))))];
+
     /// <summary>Seçili bölüm galeride süzülür.</summary>
     public bool IsSelected
     {
@@ -57,6 +61,9 @@ public sealed class ChapterItemViewModel(MainViewModel owner, StoryChapter chapt
         set => SetProperty(ref isSelected, value);
     }
 }
+
+/// <summary>Hazır bölüm adı ve uygulama komutu.</summary>
+public sealed record ChapterNameSuggestion(string Name, IRelayCommand ApplyCommand);
 
 /// <summary>Zaman çizelgesi çubuğu: 15 dakikalık dilimdeki fotoğraf sayısı, bölüm renginde.</summary>
 public sealed record TimelineBin(double Height, Brush Color, string ToolTip);

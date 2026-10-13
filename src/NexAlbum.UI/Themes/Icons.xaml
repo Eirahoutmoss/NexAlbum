@@ -127,6 +127,8 @@
   <Geometry x:Key="Icon.Merge">M 8 6 l 4 -4 4 4 M 12 2 v 10.3 a 4 4 0 0 1 -1.172 2.872 L 4 22 M 20 22 l -5 -5</Geometry>
   <!-- split -->
   <Geometry x:Key="Icon.Split">M 16 3 h 5 v 5 M 8 3 H 3 v 5 M 12 22 v -8.3 a 4 4 0 0 0 -1.172 -2.872 L 3 3 M 15 9 l 6 -6</Geometry>
+  <!-- chevron-down -->
+  <Geometry x:Key="Icon.ChevronDown">M 6 9 l 6 6 6 -6</Geometry>
   <!-- sparkles -->
   <Geometry x:Key="Icon.Sparkles">M 11.017 2.814 a 1 1 0 0 1 1.966 0 l 1.051 5.558 a 2 2 0 0 0 1.594 1.594 l 5.558 1.051 a 1 1 0 0 1 0 1.966 l -5.558 1.051 a 2 2 0 0 0 -1.594 1.594 l -1.051 5.558 a 1 1 0 0 1 -1.966 0 l -1.051 -5.558 a 2 2 0 0 0 -1.594 -1.594 l -5.558 -1.051 a 1 1 0 0 1 0 -1.966 l 5.558 -1.051 a 2 2 0 0 0 1.594 -1.594 z M 20 2 v 4 M 22 4 h -4 M 2 20 A 2 2 0 1 0 6 20 A 2 2 0 1 0 2 20 Z</Geometry>
 </ResourceDictionary>

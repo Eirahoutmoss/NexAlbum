@@ -77,6 +77,7 @@ ICONS = {
     "Story": "book-heart",
     "Merge": "merge",
     "Split": "split",
+    "ChevronDown": "chevron-down",
     "Sparkles": "sparkles",
 }
 

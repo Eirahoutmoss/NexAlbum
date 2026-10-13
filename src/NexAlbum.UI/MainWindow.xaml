@@ -1177,8 +1177,21 @@
                                               Command="{Binding DataContext.MergeChapterCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}"
                                               ToolTip="Öncekiyle birleştir (ilk bölümse sonrakini katar)" AutomationProperties.Name="Öncekiyle birleştir" />
                                       <TextBlock DockPanel.Dock="Left" Text="{Binding Number}" Width="18" VerticalAlignment="Center" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" />
-                                      <ComboBox IsEditable="True" Text="{Binding Name, UpdateSourceTrigger=LostFocus}" ItemsSource="{Binding DataContext.ChapterNameSuggestions, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                Margin="0,0,6,0" AutomationProperties.Name="Bölüm adı" />
+                                      <Button DockPanel.Dock="Right" Style="{StaticResource IconButton}" ui:Ui.Icon="{StaticResource Icon.ChevronDown}" Width="26" Height="26"
+                                              Margin="2,0,0,0" ToolTip="Hazır adlar" AutomationProperties.Name="Hazır adlar" Click="OnChapterNamesClick">
+                                        <Button.ContextMenu>
+                                          <ContextMenu ItemsSource="{Binding Suggestions}">
+                                            <ContextMenu.ItemContainerStyle>
+                                              <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+                                                <Setter Property="Header" Value="{Binding Name}" />
+                                                <Setter Property="Command" Value="{Binding ApplyCommand}" />
+                                              </Style>
+                                            </ContextMenu.ItemContainerStyle>
+                                          </ContextMenu>
+                                        </Button.ContextMenu>
+                                      </Button>
+                                      <TextBox Text="{Binding Name, UpdateSourceTrigger=LostFocus}" Margin="0,0,2,0" VerticalContentAlignment="Center"
+                                               AutomationProperties.Name="Bölüm adı" ToolTip="Bölüm adı (açılış sayfasında başlık olur)" />
                                     </DockPanel>
                                     <StackPanel Orientation="Horizontal" Margin="18,6,0,0">
                                       <ui:NexIcon Data="{StaticResource Icon.Clock}" Width="12" Height="12" Foreground="{DynamicResource SecondaryTextBrush}" Margin="0,0,5,0" />

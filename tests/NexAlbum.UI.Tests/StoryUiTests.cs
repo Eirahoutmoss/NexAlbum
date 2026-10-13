@@ -65,6 +65,20 @@ public sealed partial class MainViewModelTests
     }
 
     [Fact]
+    public void ReadyNamesAreAppliedFromTheMenu()
+    {
+        using var vm = new MainViewModel(new FakeDialogs(), settings: new MemoryAppSettingsStore());
+        vm.Open(WeddingProject());
+        vm.DetectStory();
+        vm.Chapters[0].Suggestions.Select(x => x.Name).Should().Contain("Kına Gecesi");
+
+        vm.Chapters[0].Suggestions.Single(x => x.Name == "Kına Gecesi").ApplyCommand.Execute(null);
+
+        vm.Chapters[0].Name.Should().Be("Kına Gecesi");
+        vm.UndoToolTip.Should().Contain("Bölüm adı");
+    }
+
+    [Fact]
     public void StoryNeedsCaptureTimes()
     {
         using var vm = new MainViewModel(new FakeDialogs(), settings: new MemoryAppSettingsStore());
