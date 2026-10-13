@@ -35,8 +35,9 @@ Son güncelleme: 13 Ekim 2026 (geri al / yinele, sayfa yönetimi). Başka bilgis
 | **Galeri ve taşıma** | Favori yıldızı (karede, F, sağ tık, palet) + Favoriler süzgeci (otomatik yerleşimde önce yerleşir); eklenme/çekim zamanı/dosya adı sıralaması (IMG_2 < IMG_10); fotoğrafı şeritteki sayfaya bırak (galeriden kopyalar, tuvalden taşır; oranına en uygun boş yuva); kitap görünümünde karşı sayfanın yuvasına taşı/yer değiştir |
 | **Yazı etkileri** | Gölge, Hale, Kontur, Bant, Kabartma (renk + güç, kendi yazı tipiyle önizlemeli), «Okunur yap», harf aralığı; ekran ve PDF ortak `TextLayout`; şema v3 |
 | **Fotoğraf konumlandırma** | Tekerlek imlecin olduğu noktaya yakınlaşır; çift tık = konumlandırma kipi (düz sürükle kaydırır, kırpılan kısım soluk görünür, Esc biter); yön tuşları (Shift ×10), + / −, Home; 3×3 hizalama ızgarası; yön tuşları seçili metni de taşır |
+| **Hikâye akışı (Karar 10 Rev. 2)** | Hikâye sekmesi: çekim saatinden bölümler (ara ayarlı, gün değişimi böler, küçükler birleşir), Türkçe evre adı önerisi (Kına Gecesi, Hazırlık, Gelin Alma, Dış Çekim, Nikâh, Düğün…), ad/hazır ad menüsü, birleştir, galeriden «Buradan yeni bölüm»; zaman çizelgesi; galeride bölüm süzgeci ve renk çizgisi; şeritte bölüm etiketleri; «Hikâyeye göre oluştur» (her bölüm yeni sayfada, isteğe bağlı tam sayfa açılış + okunur başlık); şema v4 |
 
-Testler: Windows 577, Ubuntu 488 — hepsi geçiyor. Takılan test 5 dakikada kesilir (`--blame-hang-timeout`). CI: `build.yml`, `test.yml` ve `screenshots.yml`
+Testler: Windows 586, Ubuntu 494 — hepsi geçiyor. Takılan test 5 dakikada kesilir (`--blame-hang-timeout`). CI: `build.yml`, `test.yml` ve `screenshots.yml`
 (her dalda iki temada ekran görüntüsü üretir ve `ekran/<dal>` dalına yazar; ör. `ekran/main`).
 
 ## Elle denenmesi gerekenler
@@ -51,6 +52,7 @@ Otomatik test edilemeyenler:
 - **Kitap görünümü:** karşı sayfadaki yuvaya tıklama/galeriden bırakma o sayfayı seçip oraya uygulanmalı.
 - **Sunum (F5):** ← → / boşluk / tıklama ile gezinme, Esc ile çıkış, birkaç saniye sonra alt bilginin ve imlecin gizlenmesi; çok monitörde doğru ekranda açılması.
 - **Şeride bırakma:** galeriden ve tuvalden şeritteki küçük resme sürükleyince altın çerçeve çıkıyor mu; dolu/kilitli sayfada bırakma reddediliyor mu.
+- **Hikâye:** gerçek bir düğün klasöründe «Bölümleri bul» makul mü (fotoğrafçıların saatleri farklıysa: iki makine saati kaymışsa bölümler bölünür — ileride «makine saat farkı düzeltme»); açılış sayfasında başlık okunuyor mu.
 - **Konumlandırma:** yuvaya çift tık → sürükleyince fotoğraf kayıyor mu, soluk taşan kısım doğru mu; tekerlek imlecin altındaki noktaya mı yakınlaşıyor; yön tuşları panel kaydırıcısına değil fotoğrafa mı gidiyor (önce tuvale tıklayın).
 - **Yazı etkileri PDF'te:** hale/gölge ekrandaki kadar yumuşak mı; kontur ince harflerde (el yazısı) kalın durmuyor mu.
 - **Metinler:** el yazısı yazı tiplerinde Türkçe harfler (ğ, ş, İ, ı) PDF'te doğru mu; çift tıklayınca yazı kutusu odaklanıyor mu; sürüklerken kaymıyor mu.
@@ -58,8 +60,8 @@ Otomatik test edilemeyenler:
 - Photoshop CI'da yok: "Rötuş → Action'ları yükle", "Önce bir fotoğrafta dene", "Düzenleyicide aç → kaydet → albüm yenilendi mi".
 
 ## Sıradaki işler (öncelik sırasıyla)
-1. Metin ve yuvalarda hizalama kılavuzları (sayfa ortasına / birbirine yapışma).
-2. **Hikâye akışı:** EXIF saatine göre düğün evreleri (hazırlık, gelin alma, nikâh, dış çekim, düğün) → bölümler.
+1. **Makine saat farkı düzeltme:** iki fotoğrafçı/iki makine varsa saatler kayar; makine modeline göre (EXIF) saat kaydırma, hikâye bölümleri bunu kullanır.
+2. Metin ve yuvalarda hizalama kılavuzları (sayfa ortasına / birbirine yapışma).
 3. Kapak ve sırt (Karar 03 sırt genişliği); JPG/PNG çıktı (Karar 11).
 4. Çift için çevrimdışı HTML prova (beğeni/not, geri içe aktarma); geometrik yuvalarda elle köşe düzenleme.
 5. Rötuş: Photoshop UXP paneli, hazır action paketi önerileri, rötuşçuya iş listesi (Karar 20 §1).
