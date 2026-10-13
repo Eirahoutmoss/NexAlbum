@@ -29,8 +29,8 @@ public sealed partial class MainViewModelTests
         };
         project = project.WithProfile(profile).WithPages(
         [
-            new AlbumPage { Id = "p1", Elements = [new Slot { Id = "s", Bounds = new RectMm(20, 20, 100, 100), Placement = new PhotoPlacement { AssetId = "asset-0001" } }] },
-            new AlbumPage { Id = "p2", Elements = [new Slot { Id = "s", Bounds = new RectMm(20, 20, 100, 100), Placement = new PhotoPlacement { AssetId = "asset-0002" } }] },
+            new AlbumPage { Id = "p1", Elements = [new Slot { Id = "s", Bounds = new RectMm(20, 20, 100, 100) }] },
+            new AlbumPage { Id = "p2", Elements = [new Slot { Id = "s", Bounds = new RectMm(20, 20, 100, 100) }] },
         ]);
         ProjectPackageWriter.Save(path, project, new SaveOptions { AppVersion = project.AppVersion });
         return path;
@@ -59,6 +59,7 @@ public sealed partial class MainViewModelTests
         vm.DeletePageCommand.CanExecute(null).Should().BeFalse("kapak sayfa gibi silinmez");
         vm.DuplicatePageCommand.CanExecute(null).Should().BeFalse();
 
+        // Örnek fotoğrafların dosyası yok (ön kontrolde hata olmasın diye sayfalarda kullanılmaz).
         // Kapaktaki başlık iç sayfadaki gibi düzenlenir; kapak seçili kalır.
         vm.SelectText(vm.SelectedPage.Texts.Single());
         vm.TextContent = "Bizim Yaz";
