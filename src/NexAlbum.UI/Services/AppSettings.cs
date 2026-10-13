@@ -16,7 +16,16 @@ public sealed record AppSettings
 
     /// <summary>Komut satırı araçlarının son kullanılan yolları (hazır ayar kimliği → yol).</summary>
     public Dictionary<string, string> ToolPaths { get; init; } = new(StringComparer.Ordinal);
+
+    /// <summary>Arayüz teması: "Gece" (varsayılan) ya da "Fildisi" (Karar 17). Null ya da tanınmayan değer = Gece.</summary>
+    public string? Theme { get; init; }
+
+    /// <summary>Son açılan/kaydedilen projeler, en yenisi başta (başlangıç ekranı).</summary>
+    public IReadOnlyList<RecentProject> RecentProjects { get; init; } = [];
 }
+
+/// <summary>Başlangıç ekranındaki son proje kaydı.</summary>
+public sealed record RecentProject(string Path, string Name, DateTimeOffset OpenedAt);
 
 /// <summary>Ayarların okunup yazıldığı yer; testte bellek içi kullanılır.</summary>
 public interface IAppSettingsStore

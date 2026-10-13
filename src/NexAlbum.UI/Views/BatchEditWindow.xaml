@@ -3,17 +3,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Toplu düzenleme (rötuş)" Width="860" Height="720" MinWidth="720" MinHeight="560"
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
-        FontFamily="Inter, Segoe UI" FontSize="14" Background="{StaticResource BackgroundBrush}">
-  <DockPanel Margin="20">
+        Background="{DynamicResource BackgroundBrush}" Foreground="{DynamicResource TextBrush}" UseLayoutRounding="True">
+  <DockPanel Margin="24">
     <TextBlock DockPanel.Dock="Top" Style="{StaticResource Caption}" Margin="0,0,0,12"
                Text="Kendi Photoshop action'larınızı ya da ücretsiz araçları (darktable, RawTherapee…) fotoğraflara toplu uygulayın. Orijinaller değişmez; her fotoğrafta «Orijinali göster» ile karşılaştırabilir, düzenlemeyi kaldırabilirsiniz." />
 
     <!-- Alt: ilerleme ve düğmeler -->
     <StackPanel DockPanel.Dock="Bottom" Margin="0,12,0,0">
-      <ProgressBar Height="8" Minimum="0" Maximum="1" Value="{Binding Progress, Mode=OneWay}" />
+      <ProgressBar Height="6" Minimum="0" Maximum="1" Value="{Binding Progress, Mode=OneWay}" />
       <TextBlock Text="{Binding ProgressText}" Style="{StaticResource Caption}" Margin="0,4,0,0" />
       <TextBlock Text="{Binding ResultText}" TextWrapping="Wrap" Margin="0,4,0,0" />
-      <TextBlock Text="{Binding Problem}" Foreground="{StaticResource WarningBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+      <TextBlock Text="{Binding Problem}" Foreground="{DynamicResource WarningBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
       <ItemsControl ItemsSource="{Binding Failures}" MaxHeight="90">
         <ItemsControl.Template>
           <ControlTemplate>
@@ -24,7 +24,7 @@
         </ItemsControl.Template>
         <ItemsControl.ItemTemplate>
           <DataTemplate>
-            <TextBlock FontSize="12" Foreground="{StaticResource ErrorBrush}" TextWrapping="Wrap">
+            <TextBlock FontSize="12" Foreground="{DynamicResource ErrorBrush}" TextWrapping="Wrap">
               <Run Text="{Binding FileName, Mode=OneWay}" FontWeight="SemiBold" />
               <Run Text=": " />
               <Run Text="{Binding Reason, Mode=OneWay}" />
@@ -78,7 +78,7 @@
             </DockPanel>
             <TextBlock Text="Bağımsız değişkenler (her satıra bir tane)" Margin="0,8,0,2" />
             <TextBox Text="{Binding ArgumentsText, UpdateSourceTrigger=PropertyChanged}" AcceptsReturn="True" Height="110"
-                     FontFamily="Consolas" VerticalScrollBarVisibility="Auto" />
+                     FontFamily="Consolas, Cascadia Mono" VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top" />
             <TextBlock Text="{Binding PresetHint}" Style="{StaticResource Caption}" Margin="0,4,0,0" />
           </StackPanel>
 
@@ -108,11 +108,11 @@
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TextBlock Text="Önce" FontWeight="SemiBold" />
-        <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" Margin="0,4,0,8">
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" CornerRadius="8" Margin="0,4,0,8">
           <Image Source="{Binding BeforeImage}" Stretch="Uniform" />
         </Border>
         <TextBlock Grid.Row="2" Text="Sonra" FontWeight="SemiBold" />
-        <Border Grid.Row="3" Background="{StaticResource SurfaceBrush}" Margin="0,4,0,0">
+        <Border Grid.Row="3" Background="{DynamicResource SurfaceBrush}" CornerRadius="8" Margin="0,4,0,0">
           <Grid>
             <Image Source="{Binding AfterImage}" Stretch="Uniform" />
             <TextBlock Text="«Önce bir fotoğrafta dene» ile sonucu burada görün." Style="{StaticResource Caption}"

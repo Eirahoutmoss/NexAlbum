@@ -20,6 +20,18 @@ public sealed class IssueItemViewModel(ValidationIssue issue, int? pageNumber)
 
     public bool HasSuggestion => !string.IsNullOrEmpty(Issue.Suggestion);
 
+    public bool IsError => Issue.Severity == ValidationSeverity.Error;
+
+    public bool IsWarning => Issue.Severity == ValidationSeverity.Warning;
+
+    /// <summary>Tema renkleriyle çizilen ikon (Themes/Icons.xaml).</summary>
+    public string IconKey => Issue.Severity switch
+    {
+        ValidationSeverity.Error => "Icon.Error",
+        ValidationSeverity.Warning => "Icon.Warning",
+        _ => "Icon.Info",
+    };
+
     public string Symbol => Issue.Severity switch
     {
         ValidationSeverity.Error => "✖",

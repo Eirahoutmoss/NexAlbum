@@ -4,124 +4,50 @@
              xmlns:converters="clr-namespace:NexAlbum.UI.Converters"
              StartupUri="MainWindow.xaml">
   <Application.Resources>
-    <!-- Karar 12 §9.2 açık tema paleti -->
-    <SolidColorBrush x:Key="BackgroundBrush" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="SurfaceBrush" Color="#F5F5F5" />
-    <SolidColorBrush x:Key="BorderBrush" Color="#E0E0E0" />
-    <SolidColorBrush x:Key="TextBrush" Color="#212121" />
-    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#757575" />
-    <SolidColorBrush x:Key="AccentBrush" Color="#0066CC" />
-    <SolidColorBrush x:Key="SuccessBrush" Color="#2E7D32" />
-    <SolidColorBrush x:Key="WarningBrush" Color="#F57C00" />
-    <SolidColorBrush x:Key="ErrorBrush" Color="#C62828" />
-    <SolidColorBrush x:Key="SelectionBrush" Color="#E3F2FD" />
-    <SolidColorBrush x:Key="CanvasBackgroundBrush" Color="#D6D6D6" />
-    <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <!-- İlk sözlük renk paletidir; ThemeService onu Gece ↔ Fildişi arasında değiştirir (Karar 17 §4). -->
+        <ResourceDictionary Source="/NexAlbum;component/Themes/Gece.xaml" />
+        <ResourceDictionary Source="/NexAlbum;component/Themes/Icons.xaml" />
+        <ResourceDictionary Source="/NexAlbum;component/Themes/Brand.xaml" />
+        <ResourceDictionary Source="/NexAlbum;component/Themes/Controls.xaml" />
+      </ResourceDictionary.MergedDictionaries>
 
-    <Style TargetType="Window">
-      <Setter Property="FontFamily" Value="Inter, Segoe UI" />
-      <Setter Property="FontSize" Value="14" />
-    </Style>
+      <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+      <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility" />
+      <converters:ResourceKeyConverter x:Key="ResourceKey" />
 
-    <Style x:Key="ToolButton" TargetType="Button">
-      <Setter Property="Margin" Value="2,0" />
-      <Setter Property="Padding" Value="10,4" />
-      <Setter Property="MinHeight" Value="34" />
-      <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderThickness" Value="0" />
-      <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-      <Setter Property="Cursor" Value="Hand" />
-      <Style.Triggers>
-        <Trigger Property="IsMouseOver" Value="True">
-          <Setter Property="Background" Value="{StaticResource SelectionBrush}" />
-        </Trigger>
-        <Trigger Property="IsEnabled" Value="False">
-          <Setter Property="Opacity" Value="0.45" />
-        </Trigger>
-      </Style.Triggers>
-    </Style>
-
-    <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource ToolButton}">
-      <Setter Property="Background" Value="{StaticResource AccentBrush}" />
-      <Setter Property="Foreground" Value="White" />
-      <Setter Property="FontWeight" Value="SemiBold" />
-    </Style>
-
-    <Style x:Key="PanelHeader" TargetType="TextBlock">
-      <Setter Property="FontSize" Value="16" />
-      <Setter Property="FontWeight" Value="SemiBold" />
-      <Setter Property="Margin" Value="12,10,12,6" />
-      <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-    </Style>
-
-    <Style x:Key="Caption" TargetType="TextBlock">
-      <Setter Property="FontSize" Value="12" />
-      <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
-      <Setter Property="TextWrapping" Value="Wrap" />
-    </Style>
-
-    <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
-    <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility" />
-
-    <!-- Fotoğraf yuvası (birim mm): gölgeli biçim + paspartu, biçime kırpılmış fotoğraf, üstte kontur. PDF ile aynı sıra. -->
-    <DataTemplate x:Key="SlotTemplate">
-      <Canvas Width="{Binding Width}" Height="{Binding Height}">
-        <Path Data="{Binding OuterGeometry}" Fill="{Binding ShapeFill}" Effect="{Binding Shadow}" />
-        <Grid Canvas.Left="{Binding PhotoX}" Canvas.Top="{Binding PhotoY}"
-              Width="{Binding PhotoWidth}" Height="{Binding PhotoHeight}"
-              Clip="{Binding PhotoClip}" Background="{Binding PhotoBackground}">
-          <Canvas>
-            <Image Source="{Binding Image}" Stretch="Fill"
-                   Canvas.Left="{Binding ImageX}" Canvas.Top="{Binding ImageY}"
-                   Width="{Binding ImageWidth}" Height="{Binding ImageHeight}" RenderTransformOrigin="0.5,0.5">
-              <Image.RenderTransform>
-                <RotateTransform Angle="{Binding ImageRotation}" />
-              </Image.RenderTransform>
-            </Image>
-          </Canvas>
-          <TextBlock Text="Boş yuva" FontSize="6" Foreground="#9E9E9E"
-                     HorizontalAlignment="Center" VerticalAlignment="Center"
-                     Visibility="{Binding ShowEmptyLabel, Converter={StaticResource BoolToVisibility}}" />
-          <TextBlock Text="Dosya bulunamadı" FontSize="6" Foreground="#C62828"
-                     HorizontalAlignment="Center" VerticalAlignment="Center"
-                     Visibility="{Binding IsMissing, Converter={StaticResource BoolToVisibility}}" />
-        </Grid>
-        <Path Data="{Binding StrokeGeometry}" Stroke="{Binding StrokeBrush}" StrokeThickness="{Binding StrokeThickness}" />
-        <!-- Seçim ve bırakma vurgusu (yalnızca ekranda) -->
-        <Path Data="{Binding OuterGeometry}" Stroke="{StaticResource AccentBrush}" StrokeThickness="1.2" StrokeDashArray="3 1.5"
-              IsHitTestVisible="False" Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibility}}" />
-        <Path Data="{Binding OuterGeometry}" Stroke="{StaticResource WarningBrush}" StrokeThickness="2" Fill="#330066CC"
-              IsHitTestVisible="False" Visibility="{Binding IsDropTarget, Converter={StaticResource BoolToVisibility}}" />
-      </Canvas>
-    </DataTemplate>
-
-    <!-- Seçilebilir küçük önizleme kutusu (çerçeve, fon, şablon galerileri) -->
-    <Style x:Key="SwatchButton" TargetType="Button">
-      <Setter Property="Margin" Value="3" />
-      <Setter Property="Padding" Value="2" />
-      <Setter Property="Background" Value="White" />
-      <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
-      <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="Cursor" Value="Hand" />
-      <Setter Property="Template">
-        <Setter.Value>
-          <ControlTemplate TargetType="Button">
-            <Border x:Name="Box" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}" CornerRadius="3">
-              <ContentPresenter />
-            </Border>
-            <ControlTemplate.Triggers>
-              <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
-                <Setter TargetName="Box" Property="BorderThickness" Value="2" />
-              </Trigger>
-              <Trigger Property="IsEnabled" Value="False">
-                <Setter Property="Opacity" Value="0.45" />
-              </Trigger>
-            </ControlTemplate.Triggers>
-          </ControlTemplate>
-        </Setter.Value>
-      </Setter>
-    </Style>
+      <!-- Fotoğraf yuvası (birim mm): gölgeli biçim + paspartu, biçime kırpılmış fotoğraf, üstte kontur. PDF ile aynı sıra. -->
+      <DataTemplate x:Key="SlotTemplate">
+        <Canvas Width="{Binding Width}" Height="{Binding Height}">
+          <Path Data="{Binding OuterGeometry}" Fill="{Binding ShapeFill}" Effect="{Binding Shadow}" />
+          <Grid Canvas.Left="{Binding PhotoX}" Canvas.Top="{Binding PhotoY}"
+                Width="{Binding PhotoWidth}" Height="{Binding PhotoHeight}"
+                Clip="{Binding PhotoClip}" Background="{Binding PhotoBackground}">
+            <Canvas>
+              <Image Source="{Binding Image}" Stretch="Fill"
+                     Canvas.Left="{Binding ImageX}" Canvas.Top="{Binding ImageY}"
+                     Width="{Binding ImageWidth}" Height="{Binding ImageHeight}" RenderTransformOrigin="0.5,0.5">
+                <Image.RenderTransform>
+                  <RotateTransform Angle="{Binding ImageRotation}" />
+                </Image.RenderTransform>
+              </Image>
+            </Canvas>
+            <TextBlock Text="Boş yuva" FontSize="6" Foreground="#9E9E9E"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Visibility="{Binding ShowEmptyLabel, Converter={StaticResource BoolToVisibility}}" />
+            <TextBlock Text="Dosya bulunamadı" FontSize="6" Foreground="#C62828"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Visibility="{Binding IsMissing, Converter={StaticResource BoolToVisibility}}" />
+          </Grid>
+          <Path Data="{Binding StrokeGeometry}" Stroke="{Binding StrokeBrush}" StrokeThickness="{Binding StrokeThickness}" />
+          <!-- Seçim ve bırakma vurgusu (yalnızca ekranda; sayfa içeriği değildir) -->
+          <Path Data="{Binding OuterGeometry}" Stroke="{DynamicResource AccentBrush}" StrokeThickness="1.4" StrokeDashArray="3 1.5"
+                IsHitTestVisible="False" Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibility}}" />
+          <Path Data="{Binding OuterGeometry}" Stroke="{DynamicResource AccentHoverBrush}" StrokeThickness="2" Fill="#40D4A853"
+                IsHitTestVisible="False" Visibility="{Binding IsDropTarget, Converter={StaticResource BoolToVisibility}}" />
+        </Canvas>
+      </DataTemplate>
+    </ResourceDictionary>
   </Application.Resources>
 </Application>

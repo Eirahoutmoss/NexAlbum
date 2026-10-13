@@ -9,19 +9,20 @@ namespace NexAlbum.UI.Tests;
 
 /// <summary>
 /// Tüm pencereler gerçekten oluşturulur: XAML ayrıştırma, kaynak anahtarları ve tür adları çalışma anında denetlenir.
-/// (Application tek örneklidir; bu yüzden tek test içinde.)
+/// (Application tek örneklidir; tüm pencere testleri <see cref="WpfApp"/> iş parçacığında çalışır.)
 /// </summary>
 public class XamlSmokeTests
 {
     [Fact]
     public void AllWindowsLoadTheirXaml()
     {
-        Sta.Run(() =>
+        WpfApp.Run(() =>
         {
-            var app = Application.Current as App ?? new App();
-            app.InitializeComponent();
+            Application.Current.Should().BeOfType<App>();
+            Application.Current.TryFindResource("LogoImage").Should().NotBeNull("marka kaynakları yüklenmeli (Karar 17)");
+            Application.Current.TryFindResource("Icon.Save").Should().NotBeNull("ikon geometrileri yüklenmeli");
 
-            var main = new MainWindow();
+            var main = new MainWindow(new Services.MemoryAppSettingsStore());
             main.DataContext.Should().BeOfType<MainViewModel>();
             main.ViewModel.HasNoProject.Should().BeTrue();
 

@@ -1,30 +1,68 @@
 <Window x:Class="NexAlbum.UI.Views.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Ayarlar" Width="620" SizeToContent="Height"
+        Title="Ayarlar" Width="640" SizeToContent="Height"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize" ShowInTaskbar="False"
-        FontFamily="Inter, Segoe UI" FontSize="14" Background="{StaticResource BackgroundBrush}">
-  <StackPanel Margin="20">
-    <TextBlock Text="Harici düzenleyici" FontSize="16" FontWeight="SemiBold" />
-    <TextBlock Style="{StaticResource Caption}" Margin="0,4,0,8"
+        Background="{DynamicResource BackgroundBrush}" Foreground="{DynamicResource TextBrush}" UseLayoutRounding="True">
+  <StackPanel Margin="28,24">
+    <TextBlock Text="Ayarlar" Style="{StaticResource Title}" />
+    <TextBlock Text="Bu bilgisayara özgüdür; proje dosyasına yazılmaz." Style="{StaticResource Caption}" Margin="0,2,0,0" />
+
+    <!-- Tema (Karar 17) -->
+    <TextBlock Text="GÖRÜNÜM" Style="{StaticResource PanelHeader}" Margin="0,22,0,8" />
+    <UniformGrid Columns="2">
+      <RadioButton x:Name="GeceTheme" Style="{StaticResource ThemeCard}" GroupName="Theme" Margin="0,0,6,0">
+        <DockPanel>
+          <Border DockPanel.Dock="Left" Width="84" Height="56" CornerRadius="6" Background="#111113" BorderBrush="#2C2C31" BorderThickness="1">
+            <Grid Margin="8">
+              <Border Height="6" Width="34" CornerRadius="3" Background="#3E3E45" HorizontalAlignment="Left" VerticalAlignment="Top" />
+              <Border Height="6" Width="22" CornerRadius="3" Background="#D4A853" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,12,0,0" />
+              <Border Width="26" Height="18" CornerRadius="2" Background="#ECE8E1" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+            </Grid>
+          </Border>
+          <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+            <TextBlock Text="Gece" FontWeight="SemiBold" />
+            <TextBlock Text="Koyu antrasit ve altın. Fotoğraf renkleri en doğru bu zeminde algılanır." Style="{StaticResource Caption}" Margin="0,2,0,0" />
+          </StackPanel>
+        </DockPanel>
+      </RadioButton>
+      <RadioButton x:Name="FildisiTheme" Style="{StaticResource ThemeCard}" GroupName="Theme" Margin="6,0,0,0">
+        <DockPanel>
+          <Border DockPanel.Dock="Left" Width="84" Height="56" CornerRadius="6" Background="#F4F0E8" BorderBrush="#E3DACA" BorderThickness="1">
+            <Grid Margin="8">
+              <Border Height="6" Width="34" CornerRadius="3" Background="#CFC3AD" HorizontalAlignment="Left" VerticalAlignment="Top" />
+              <Border Height="6" Width="22" CornerRadius="3" Background="#C99B48" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,12,0,0" />
+              <Border Width="26" Height="18" CornerRadius="2" Background="#FFFFFF" BorderBrush="#E3DACA" BorderThickness="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+            </Grid>
+          </Border>
+          <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+            <TextBlock Text="Fildişi" FontWeight="SemiBold" />
+            <TextBlock Text="Açık krem ve altın. Aydınlık ortamlarda ve sunumlarda." Style="{StaticResource Caption}" Margin="0,2,0,0" />
+          </StackPanel>
+        </DockPanel>
+      </RadioButton>
+    </UniformGrid>
+
+    <TextBlock Text="HARİCİ DÜZENLEYİCİ" Style="{StaticResource PanelHeader}" Margin="0,24,0,6" />
+    <TextBlock Style="{StaticResource Caption}" Margin="0,0,0,8"
                Text="«Düzenleyicide aç» bu programı kullanır. Boş bırakılırsa Photoshop aranır; o da yoksa Windows'un «Düzenle» eylemi kullanılır." />
     <DockPanel>
-      <Button DockPanel.Dock="Right" Content="Gözat…" Click="OnBrowseEditor" Padding="10,2" Margin="6,0,0,0" />
-      <TextBox x:Name="EditorBox" VerticalContentAlignment="Center" />
+      <Button DockPanel.Dock="Right" Content="Gözat…" Click="OnBrowseEditor" Padding="12,2" Margin="8,0,0,0" />
+      <TextBox x:Name="EditorBox" />
     </DockPanel>
-    <TextBlock x:Name="DetectedText" Style="{StaticResource Caption}" Margin="0,4,0,0" />
+    <TextBlock x:Name="DetectedText" Style="{StaticResource Caption}" Margin="0,6,0,0" />
 
-    <TextBlock Text="Düzenlenmiş dosyalar" FontSize="16" FontWeight="SemiBold" Margin="0,18,0,0" />
-    <TextBlock Style="{StaticResource Caption}" Margin="0,4,0,8"
+    <TextBlock Text="DÜZENLENMİŞ DOSYALAR" Style="{StaticResource PanelHeader}" Margin="0,22,0,6" />
+    <TextBlock Style="{StaticResource Caption}" Margin="0,0,0,8"
                Text="Rötuşlanmış kopyalar burada, her proje için ayrı klasörde tutulur. Orijinal fotoğraflarınıza hiç yazılmaz." />
     <DockPanel>
-      <Button DockPanel.Dock="Right" Content="Gözat…" Click="OnBrowseFolder" Padding="10,2" Margin="6,0,0,0" />
-      <TextBox x:Name="FolderBox" VerticalContentAlignment="Center" />
+      <Button DockPanel.Dock="Right" Content="Gözat…" Click="OnBrowseFolder" Padding="12,2" Margin="8,0,0,0" />
+      <TextBox x:Name="FolderBox" />
     </DockPanel>
 
-    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-      <Button Content="Kaydet" Click="OnSave" IsDefault="True" Style="{StaticResource AccentButton}" Padding="18,4" Margin="0,0,8,0" />
-      <Button Content="İptal" IsCancel="True" Padding="18,4" />
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,26,0,0">
+      <Button Content="İptal" IsCancel="True" Padding="18,6" Margin="0,0,8,0" />
+      <Button Content="Kaydet" Click="OnSave" IsDefault="True" Style="{StaticResource AccentButton}" Padding="22,6" />
     </StackPanel>
   </StackPanel>
 </Window>

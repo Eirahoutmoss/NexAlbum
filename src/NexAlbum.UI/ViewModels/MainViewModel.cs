@@ -38,7 +38,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     /// <param name="dialogs">Pencereler ve dış eylemler.</param>
     /// <param name="clock">Saat (test için).</param>
-    /// <param name="settings">Uygulama ayarları deposu; null ise %APPDATA%/NexAlbum/settings.json.</param>
+    /// <param name="settings">Uygulama ayarları deposu; null ise bellek içi (testler). Uygulama <see cref="JsonAppSettingsStore"/> verir.</param>
     /// <param name="photoshop">Photoshop kapısı; null ise COM (Windows).</param>
     public MainViewModel(IDialogService dialogs, TimeProvider? clock = null, IAppSettingsStore? settings = null, Integrations.Photoshop.IPhotoshopHost? photoshop = null)
     {
@@ -63,6 +63,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         InitializeDesign();
         InitializeEditing();
         InitializeExternal(settings, photoshop);
+        InitializeShell();
     }
 
     public IReadOnlyList<LayoutModeOption> LayoutModes { get; } =
@@ -175,6 +176,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                 OnPropertyChanged(nameof(LockButtonText));
                 OnDesignPageChanged(value);
                 RestoreSlotSelection(value);
+                OnShellPageChanged(value);
                 RefreshCommands();
             }
         }
@@ -260,6 +262,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
         var refreshed = AssetFiles.RefreshMissing(loaded.Project);
         SetProject(refreshed, path, dirty: loaded.Migrated || !ReferenceEquals(refreshed, loaded.Project));
+        RememberRecent(path, refreshed.Name);
         var missing = AssetFiles.Missing(refreshed).Count;
         Status = missing > 0
             ? string.Format(CultureInfo.CurrentCulture, "Proje açıldı. {0} fotoğraf bulunamadı; ön kontrolde listelenir.", missing)
@@ -314,6 +317,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
 
         IsDirty = false;
+        RememberRecent(path, project!.Name);
         Status = "Kaydedildi: " + Path.GetFileName(path);
         return true;
     }
@@ -593,6 +597,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             Assets.Add(new AssetItemViewModel(asset, used.Contains(asset.Id)));
         }
 
+        RebuildGallery();
+
         // Değişmeyen sayfaların görünüm modelleri (ve yüklenmiş görüntüleri) korunur; düzenlemede titreme olmaz.
         var reusable = previousProject is not null && ReferenceEquals(previousProject.Assets, value.Assets) && ReferenceEquals(previousProject.Profile, value.Profile)
             ? Pages.ToDictionary(p => p.Page, (IEqualityComparer<AlbumPage>)ReferenceEqualityComparer.Instance)
@@ -637,6 +643,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         ToggleLockCommand.NotifyCanExecuteChanged();
         PreviousPageCommand.NotifyCanExecuteChanged();
         NextPageCommand.NotifyCanExecuteChanged();
+        RefreshShellCommands();
         RefreshDesignCommands();
         RefreshEditCommands();
     }

@@ -42,8 +42,11 @@ public sealed partial class MainViewModel : IBatchEditHost
         get => selectedAsset;
         set
         {
+            var previous = selectedAsset;
             if (SetProperty(ref selectedAsset, value))
             {
+                previous?.IsSelected = false;
+                value?.IsSelected = true;
                 RefreshExternalCommands();
             }
         }
@@ -248,6 +251,7 @@ public sealed partial class MainViewModel : IBatchEditHost
         if (dialogs.EditAppSettings(appSettings) is { } updated)
         {
             SaveSettings(updated);
+            SetTheme(ThemeService.Parse(updated.Theme), save: false);
             Status = "Ayarlar kaydedildi.";
         }
     }
@@ -255,7 +259,7 @@ public sealed partial class MainViewModel : IBatchEditHost
     private void InitializeExternal(IAppSettingsStore? store, IPhotoshopHost? host)
     {
         uiContext = SynchronizationContext.Current;
-        settingsStore = store ?? new JsonAppSettingsStore();
+        settingsStore = store ?? new MemoryAppSettingsStore();
         appSettings = settingsStore.Load();
         photoshopHost = host;
         OpenInEditorCommand = new RelayCommand(() => OpenInEditor(), () => HasProject && !IsBusy && (SelectedSlotAsset is not null || SelectedAsset is not null));

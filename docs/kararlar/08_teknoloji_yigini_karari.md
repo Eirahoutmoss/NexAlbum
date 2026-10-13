@@ -16,6 +16,10 @@ Revizyon 2 — 13/10/2026
 Değişiklik: Yeni katman `NexAlbum.Integrations` (harici düzenleyiciler: Photoshop COM, komut satırı araçları, dosya izleme). Bağımlılık: Integrations → Core, Assets; UI → Integrations. Ayrıntı: Karar 20.
 Gerekçe: Dış süreç ve COM erişimi Core'a ve Assets'e sızmasın; özellik isteğe bağlı kalsın. Yeni NuGet bağımlılığı yoktur.
 
+Revizyon 3 — 13/10/2026
+Değişiklik: Uygulamaya iki gömülü varlık eklendi (NuGet paketi değil, kaynak dosya): Inter yazı tipi (SIL OFL 1.1) ve Lucide ikonları (ISC). Ayrıntı: Karar 17.
+Gerekçe: Görünüm kurulu yazı tiplerine ve Windows sürümüne (Segoe Fluent Icons yalnızca Windows 11) bağlı kalmasın. Lisans metinleri `THIRD-PARTY-NOTICES.md`'de.
+
 1. Karar Özeti
 NexAlbum'in teknoloji yığını, Windows öncelikli, ücretsiz, açık kaynak (GPL uyumlu), tek geliştirici tarafından sürdürülebilir ve yüksek performanslı olacak şekilde seçilmiştir.
 
@@ -604,6 +608,8 @@ xUnit	Apache 2.0	✅	Onaylı
 Moq	MIT	✅	Onaylı
 FluentAssertions	Apache 2.0	✅	Onaylı
 CommunityToolkit.Mvvm	MIT	✅	Onaylı
+Inter (yazı tipi, gömülü)	SIL OFL 1.1	✅	Onaylı (Revizyon 3)
+Lucide (ikonlar, gömülü)	ISC	✅	Onaylı (Revizyon 3)
 JsonSchema.Net	MIT	✅	Onaylı
 QuestPDF	Hibrit	⚠️	Reddedildi
 iText	AGPL/Ticari	❌	Reddedildi

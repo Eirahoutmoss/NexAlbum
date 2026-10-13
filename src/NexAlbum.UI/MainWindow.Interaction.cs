@@ -49,6 +49,25 @@ public partial class MainWindow
         ClearDropTarget();
     }
 
+    /// <summary>Sürüklemeye dönüşmeyen tıklama fotoğrafı seçer (sağ tık menüsü ve "Düzenleyicide aç" bunun üzerinde çalışır).</summary>
+    private void OnGalleryMouseUp(object sender, MouseButtonEventArgs e)
+    {
+        if (galleryItem is { } item)
+        {
+            ViewModel.SelectedAsset = item;
+        }
+
+        galleryItem = null;
+    }
+
+    private void OnGalleryRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if ((e.OriginalSource as FrameworkElement)?.DataContext is AssetItemViewModel item)
+        {
+            ViewModel.SelectedAsset = item;
+        }
+    }
+
     private void OnGalleryDoubleClick(object sender, MouseButtonEventArgs e)
     {
         if ((e.OriginalSource as FrameworkElement)?.DataContext is AssetItemViewModel item)
@@ -146,6 +165,14 @@ public partial class MainWindow
 
     private void OnCanvasMouseWheel(object sender, MouseWheelEventArgs e)
     {
+        // Ctrl + tekerlek: tuvali yakınlaştır (Karar 12 §10.3); düz tekerlek yuvadaki fotoğrafı yakınlaştırır.
+        if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+        {
+            ViewModel.Zoom.ZoomBy(e.Delta > 0 ? 1.1 : 1 / 1.1);
+            e.Handled = true;
+            return;
+        }
+
         if (SlotAt(e.OriginalSource as DependencyObject, out _) is { IsEmpty: false } slot)
         {
             ViewModel.ZoomSlot(slot, e.Delta > 0 ? 1.1 : 1 / 1.1);
