@@ -103,6 +103,18 @@
   <Geometry x:Key="Icon.Redo">M 15 14 l 5 -5 -5 -5 M 20 9 H 9.5 A 5.5 5.5 0 0 0 4 14.5 A 5.5 5.5 0 0 0 9.5 20 H 13</Geometry>
   <!-- file-plus-2 -->
   <Geometry x:Key="Icon.PagePlus">M 11.35 22 H 6 a 2 2 0 0 1 -2 -2 V 4 a 2 2 0 0 1 2 -2 h 8 a 2.4 2.4 0 0 1 1.706 0.706 l 3.588 3.588 A 2.4 2.4 0 0 1 20 8 v 5.35 M 14 2 v 5 a 1 1 0 0 0 1 1 h 5 M 14 19 h 6 M 17 16 v 6</Geometry>
+  <!-- type -->
+  <Geometry x:Key="Icon.Type">M 12 4 v 16 M 4 7 V 5 a 1 1 0 0 1 1 -1 h 14 a 1 1 0 0 1 1 1 v 2 M 9 20 h 6</Geometry>
+  <!-- align-left -->
+  <Geometry x:Key="Icon.AlignLeft">M 21 5 H 3 M 15 12 H 3 M 17 19 H 3</Geometry>
+  <!-- align-center -->
+  <Geometry x:Key="Icon.AlignCenter">M 21 5 H 3 M 17 12 H 7 M 19 19 H 5</Geometry>
+  <!-- align-right -->
+  <Geometry x:Key="Icon.AlignRight">M 21 5 H 3 M 21 12 H 9 M 21 19 H 7</Geometry>
+  <!-- bold -->
+  <Geometry x:Key="Icon.Bold">M 6 12 h 9 a 4 4 0 0 1 0 8 H 7 a 1 1 0 0 1 -1 -1 V 5 a 1 1 0 0 1 1 -1 h 7 a 4 4 0 0 1 0 8</Geometry>
+  <!-- italic -->
+  <Geometry x:Key="Icon.Italic">M 19 4 L 10 4 M 14 20 L 5 20 M 15 4 L 9 20</Geometry>
   <!-- plus -->
   <Geometry x:Key="Icon.Plus">M 5 12 h 14 M 12 5 v 14</Geometry>
   <!-- shapes -->

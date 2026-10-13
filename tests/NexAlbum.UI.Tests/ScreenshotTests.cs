@@ -102,6 +102,18 @@ public sealed class ScreenshotTests : IDisposable
                 Capture(main, "07-yakinlastirma-fildisi").Should().BeTrue();
 
                 ThemeService.Apply(AppTheme.Gece);
+                vm.GalleryFilter = ViewModels.GalleryFilter.All;
+                vm.AddPageCommand.Execute(null);
+                vm.AddText(Core.Projects.TextPresets.Find("names"));
+                vm.TextContent = "Ayşe & Mert";
+                vm.AddText(Core.Projects.TextPresets.Find("title"));
+                vm.AddText(Core.Projects.TextPresets.Find("date"));
+                vm.AddText(Core.Projects.TextPresets.Find("quote"));
+                vm.Zoom.FitCommand.Execute(null);
+                Settle(main);
+                vm.SelectedPage!.Texts.Should().HaveCount(4);
+                Capture(main, "12-metin-gece").Should().BeTrue();
+
                 var show = new PresentationWindow(new ViewModels.PresentationViewModel(vm.Project!, vm.SelectedPage!.Index, spreads: true)) { WindowState = WindowState.Normal };
                 Capture(Show(show, 1440, 900), "08-sunum").Should().BeTrue();
                 show.Hide();

@@ -154,6 +154,21 @@ public partial class MainWindow : Window
 
     private void OnPaletteCardDown(object sender, MouseButtonEventArgs e) => e.Handled = true;
 
+    // ── Metin ───────────────────────────────────────────────────────────
+
+    /// <summary>Tuvalde metne çift tıklanınca «Metin» sekmesindeki yazı kutusuna odaklanılır, yazının tamamı seçilir.</summary>
+    private void FocusTextEditor()
+    {
+        ViewModel.PanelTabIndex = MainViewModel.TextTabIndex;
+        _ = Dispatcher.InvokeAsync(
+            () =>
+            {
+                TextContentBox.Focus();
+                TextContentBox.SelectAll();
+            },
+            DispatcherPriority.Input);
+    }
+
     // ── Galeri ızgarası ve tuval ölçüsü ─────────────────────────────────
 
     private void OnGallerySizeChanged(object sender, SizeChangedEventArgs e)

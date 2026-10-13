@@ -7,7 +7,8 @@ using PdfSharp.Fonts;
 namespace NexAlbum.UI.Services;
 
 /// <summary>
-/// PDF çıktısı için yazı tipi çözümleyici: WPF'in font motoruyla sistemdeki font dosyasını bulur ve PDF'e gömer
+/// PDF çıktısı için yazı tipi çözümleyici: önce uygulamaya gömülü albüm yazı tipleri, sonra WPF'in font motoruyla sistemdeki
+/// font dosyası bulunur ve PDF'e gömülür
 /// (Karar 11 §3.7). Font bulunamazsa WPF'in yedek fontu kullanılır; ön kontrol eksik fontu ayrıca uyarır.
 /// </summary>
 public sealed class WpfFontResolver : IFontResolver
@@ -25,6 +26,12 @@ public sealed class WpfFontResolver : IFontResolver
 
     public FontResolverInfo? ResolveTypeface(string familyName, bool bold, bool italic)
     {
+        // Önce uygulamaya gömülü albüm yazı tipleri (kurulu olmasa da PDF'e gömülür).
+        if (AlbumFonts.Resolve(familyName, bold, italic) is { } bundled)
+        {
+            return new FontResolverInfo(bundled.Face, bundled.SimulateBold, bundled.SimulateItalic);
+        }
+
         var typeface = new Typeface(
             new FontFamily(familyName),
             italic ? FontStyles.Italic : FontStyles.Normal,
@@ -43,5 +50,5 @@ public sealed class WpfFontResolver : IFontResolver
     }
 
     public byte[]? GetFont(string faceName) =>
-        files.GetOrAdd(faceName, path => File.Exists(path) ? File.ReadAllBytes(path) : []) is { Length: > 0 } bytes ? bytes : null;
+        files.GetOrAdd(faceName, face => AlbumFonts.Load(face) ?? (File.Exists(face) ? File.ReadAllBytes(face) : [])) is { Length: > 0 } bytes ? bytes : null;
 }

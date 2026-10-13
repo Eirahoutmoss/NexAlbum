@@ -4,7 +4,7 @@ Karar no: 17
 Konu: Logo, yazı markası, renk sistemi (Gece ve Fildişi temaları), tipografi, ikonlar, uygulama simgesi ve açılış ekranı
 Durum: Kesinleşti
 Tarih: 13/10/2026
-İlgili kararlar: 01 (Ücretsiz), 02 (Açık kaynak), 08 (Teknoloji, Revizyon 3), 12 (UI/UX, Revizyon 1)
+İlgili kararlar: 01 (Ücretsiz), 02 (Açık kaynak), 08 (Teknoloji, Revizyon 4), 12 (UI/UX, Revizyon 1)
 Kaynak: `docs/marka/nexalbum-marka-konsepti.png` ve `docs/NexAlbum_ Düğün Albümü Tasarım Stüdyosu.png` (Hasan Güler, 13/10/2026)
 
 1. Karar Özeti
@@ -118,12 +118,25 @@ Kurallar:
 - **Kitap görünümü (Ctrl+B):** düzenleyicide karşılıklı iki sayfa (1–2, 3–4…); albüm açık kitap olarak değerlendirilir.
 - **Boş yuva:** sıcak kâğıt tonu, altın "+" ve "Fotoğraf bırakın" ipucu (yalnızca ekranda; PDF'e çizilmez).
 
-11. Kapsam dışı (ileride)
+11. Albüm yazıları (Revizyon 2 — 13/10/2026)
+- Sayfaya başlık, isimler, tarih, alıntı ve serbest metin eklenir (Metin sekmesi, Ctrl+T). Metin yuvaların üstündeki katmandadır;
+  sürüklenerek taşınır, çift tıkla düzenlenir, Del ile silinir; tüm değişiklikler geri alınabilir.
+- Gömülü albüm yazı tipleri (hepsi SIL OFL 1.1, Google Fonts): el yazısı **Great Vibes, Pinyon Script, Parisienne, Allura**;
+  serif **Cormorant Garamond, Playfair Display**; sans **Montserrat** (ve arayüzün Inter'i). Kurulum gerekmez: ekran WPF kaynak
+  yazı tipini, PDF aynı dosyayı gömer — stüdyo ile baskı evinde sonuç aynıdır. Sistemde kurulu başka yazı tipleri de seçilebilir
+  (ön kontrol eksik yazı tipini bildirir).
+- Varsayılan renkler: sıcak mürekkep #2B2620 (saf siyah yerine) ve altın #A9843F. Baskıdaki CMYK karşılığı profile göre değişir;
+  değer uydurulmaz (Karar 03).
+- Satır kaydırma ekran ve PDF'te aynı kuralla yapılır (`TextLines`: sözcük sınırında, sabit satır yüksekliği = punto × aralık).
+- Lisans metni ve telif satırları: `src/NexAlbum.UI/Assets/AlbumFonts/OFL.txt`; ayrıca `THIRD-PARTY-NOTICES.md`.
+
+12. Kapsam dışı (ileride)
 - "Sistem" teması (Windows açık/koyu ayarını izleme) — Karar 12 §9.1'de zaten "ileride".
 - Yüksek kontrast teması (Karar 12 §15) — Windows yüksek kontrast açıksa WPF sistem renklerine düşülmesi ayrıca ele alınacak.
 - Web sitesi, sosyal medya ve baskı materyalleri.
 
-12. Kararın diğer kararlarla ilişkisi
+13. Kararın diğer kararlarla ilişkisi
 - 12 UI/UX: §9 (Tema ve Görsel Kimlik) bu kararla değişir — Karar 12 Revizyon 1.
-- 08 Teknoloji: yeni NuGet bağımlılığı yok; gömülü varlıklar (Inter, Lucide) lisans matrisine eklendi — Karar 08 Revizyon 3.
+- 08 Teknoloji: yeni NuGet bağımlılığı yok; gömülü varlıklar (Inter, Lucide) lisans matrisine eklendi — Karar 08 Revizyon 3;
+  albüm yazı tipleri — Karar 08 Revizyon 4.
 - 01/02: Tüm varlıklar ücretsiz ve GPL-3.0-or-later ile uyumludur (OFL yazı tipleri yazılımla birlikte dağıtılabilir; ISC izin verici).

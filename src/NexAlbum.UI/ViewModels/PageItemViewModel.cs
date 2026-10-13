@@ -38,6 +38,8 @@ public sealed class PageItemViewModel : ObservableObject
         // Etkin kaynak: düzenlenmiş sürüm varsa ekranda o görünür (PDF ve ön kontrolle aynı, Karar 20 §4).
         var assets = project.Assets.ToDictionary(a => a.Id, a => a.Effective(), StringComparer.Ordinal);
         Slots = [.. page.Slots.OrderBy(s => s.ZIndex).Select(s => new SlotItemViewModel(s, Offset(s.Bounds), s.Placement is { } p && assets.TryGetValue(p.AssetId, out var a) ? a : null))];
+        Texts = [.. page.Elements.OfType<TextElement>().OrderBy(t => t.ZIndex).Select(t => new TextItemViewModel(t, Offset(t.Bounds)))];
+        PageBounds = pageRect;
 
         background = DesignBrushes.Fill(page.Background);
         if (page.Background is { Mode: BackgroundMode.Image, ImageAssetId: { } id } fill && assets.TryGetValue(id, out var image))
@@ -102,6 +104,15 @@ public sealed class PageItemViewModel : ObservableObject
     }
 
     public ObservableCollection<SlotItemViewModel> Slots { get; }
+
+    /// <summary>Sayfadaki metinler (yuvaların üstünde çizilir).</summary>
+    public ObservableCollection<TextItemViewModel> Texts { get; }
+
+    /// <summary>Bitmiş sayfa alanı proje koordinatlarında (mm): yeni metinler buna göre konumlanır.</summary>
+    public RectMm PageBounds { get; }
+
+    /// <summary>Tuvalin proje koordinatlarındaki yeri (taşma payı dahil): metin bunun dışına taşınamaz.</summary>
+    public RectMm CanvasBounds => Origin;
 
     /// <summary>Tuvalde gösterilirken yüksek çözünürlüklü önizleme yüklenir; ayrılınca bırakılır (bellek).</summary>
     public void SetDetail(bool detail)

@@ -99,6 +99,9 @@ public sealed partial class MainViewModel
     /// <summary>Tuvalde tıklanan yuvayı seçer (null: seçimi kaldırır).</summary>
     public void SelectSlot(SlotItemViewModel? slot)
     {
+        // Yuva seçimi (ya da boş tuvale tıklama) metin seçimini kaldırır.
+        selectedTextId = null;
+        SelectedText = null;
         selectedSlotId = slot?.Id;
         SelectedSlot = slot;
     }
