@@ -66,20 +66,24 @@ public class VideoRenderingTests
         mid.Blue.Should().BeInRange(60, 200);
     }
 
+    public static TheoryData<TransitionKind> AllKinds()
+    {
+        var data = new TheoryData<TransitionKind>();
+        foreach (var kind in Enum.GetValues<TransitionKind>())
+        {
+            data.Add(kind);
+        }
+
+        return data;
+    }
+
     [Theory]
-    [InlineData(TransitionKind.DipToBlack)]
-    [InlineData(TransitionKind.DipToWhite)]
-    [InlineData(TransitionKind.Iris)]
-    [InlineData(TransitionKind.PushLeft)]
-    [InlineData(TransitionKind.PushUp)]
-    [InlineData(TransitionKind.ZoomThrough)]
-    [InlineData(TransitionKind.FocusShift)]
-    [InlineData(TransitionKind.Cut)]
+    [MemberData(nameof(AllKinds))]
     public void EveryTransitionStartsWithTheFirstAndEndsWithTheSecond(TransitionKind kind)
     {
         var renderer = new FrameRenderer(Timeline(kind), new ColorPhotos());
 
-        using (var start = renderer.RenderBitmap(320, 180, 2.02))
+        using (var start = renderer.RenderBitmap(320, 180, 2.0))
         {
             start.GetPixel(80, 45).Red.Should().BeGreaterThan(150, kind + ": başta ilk fotoğraf");
         }
@@ -90,6 +94,131 @@ public class VideoRenderingTests
             var white = Center(renderer, 2.5);
             (white.Red + white.Green + white.Blue).Should().BeGreaterThan(700, "ortada beyaz");
         }
+
+        // Ortada iki fotoğraf da bir yerde görünür ya da (karartma/flaş) bilinçli olarak örtülüdür.
+        using var middle = renderer.RenderBitmap(320, 180, 2.5);
+        var reds = 0;
+        var blues = 0;
+        for (var y = 2; y < 180; y += 8)
+        {
+            for (var x = 2; x < 320; x += 8)
+            {
+                var c = middle.GetPixel(x, y);
+                reds += c.Red > 120 && c.Blue < 100 ? 1 : 0;
+                blues += c.Blue > 120 && c.Red < 100 ? 1 : 0;
+            }
+        }
+
+        if (kind is not (TransitionKind.DipToBlack or TransitionKind.DipToWhite or TransitionKind.Flash))
+        {
+            (reds + blues).Should().BeGreaterThan(0, kind + ": ortada en az bir fotoğraf görünür");
+        }
+    }
+
+    [Theory]
+    [InlineData(TransitionKind.Aperture)]
+    [InlineData(TransitionKind.Curtain)]
+    [InlineData(TransitionKind.DiamondReveal)]
+    public void MaskedTransitionsShowBothPhotosAtOnce(TransitionKind kind)
+    {
+        var renderer = new FrameRenderer(Timeline(kind), new ColorPhotos());
+        using var middle = renderer.RenderBitmap(320, 180, 2.55);
+        var colors = new HashSet<string>(StringComparer.Ordinal);
+        for (var y = 2; y < 180; y += 6)
+        {
+            for (var x = 2; x < 320; x += 6)
+            {
+                var c = middle.GetPixel(x, y);
+                if (c.Red > 150 && c.Blue < 80)
+                {
+                    colors.Add("red");
+                }
+                else if (c.Blue > 150 && c.Red < 80)
+                {
+                    colors.Add("blue");
+                }
+            }
+        }
+
+        colors.Should().BeEquivalentTo(["red", "blue"], kind + ": maskenin içi yeni, dışı eski fotoğraf");
+    }
+
+    [Fact]
+    public void ScenesAndTheBookOpeningRender()
+    {
+        static VideoTimeline One(VideoClip clip) => new(Hd, 30, [clip], clip.Duration + 2, false, false, 0, []);
+        static (int Red, int Blue) Count(SKBitmap bitmap, int x0, int x1)
+        {
+            int red = 0, blue = 0;
+            for (var y = 0; y < bitmap.Height; y += 4)
+            {
+                for (var x = x0; x < x1; x += 4)
+                {
+                    var c = bitmap.GetPixel(x, y);
+                    red += c.Red > 150 && c.Blue < 90 ? 1 : 0;
+                    blue += c.Blue > 150 && c.Red < 90 ? 1 : 0;
+                }
+            }
+
+            return (red, blue);
+        }
+
+        // Galeri: başta ilk kart (kırmızı) ortada net, sonda son kart (mavi).
+        var gallery = new FrameRenderer(One(new GalleryClip(0, 6, TransitionKind.Cut, 0, VideoLook.Natural, ["red", "red", "blue"], "Sabah")), new ColorPhotos());
+        Center(gallery, 0.7).Red.Should().BeGreaterThan(200);
+        Center(gallery, 5.95).Blue.Should().BeGreaterThan(200);
+
+        // Kolaj: sonunda dört hücre dolu.
+        var collage = new FrameRenderer(One(new CollageClip(0, 6, TransitionKind.Cut, 0, VideoLook.Natural, ["red", "blue", "blue", "red"])), new ColorPhotos());
+        using (var full = collage.RenderBitmap(320, 180, 5.9))
+        {
+            var (red, blue) = Count(full, 0, 320);
+            red.Should().BeGreaterThan(20);
+            blue.Should().BeGreaterThan(20);
+        }
+
+        // Albüm açılışı: başta kapalı kapak (fotoğraf yok), sonda çift sayfa kareyi doldurur (solda mavi, sağda kırmızı).
+        var book = new FrameRenderer(One(new BookClip(0, 4, TransitionKind.Cut, 0, VideoLook.Natural, "Albüm", "2026", "blue", "red")), new ColorPhotos());
+        using (var closed = book.RenderBitmap(320, 180, 0.9))
+        {
+            var (red, blue) = Count(closed, 0, 320);
+            (red + blue).Should().Be(0, "kapak kapalıyken fotoğraflar görünmez");
+        }
+
+        using (var open = book.RenderBitmap(320, 180, 3.98))
+        {
+            Count(open, 0, 140).Blue.Should().BeGreaterThan(20, "sol sayfa");
+            Count(open, 180, 320).Red.Should().BeGreaterThan(20, "sağ sayfa");
+        }
+    }
+
+    [Theory]
+    [InlineData(TitleAnimation.Rise)]
+    [InlineData(TitleAnimation.Handwriting)]
+    [InlineData(TitleAnimation.BlurWords)]
+    public void AnimatedTitlesStartHiddenAndEndReadable(TitleAnimation animation)
+    {
+        var timeline = new VideoTimeline(Hd, 30, [new TitleClip(0, 3, TransitionKind.Cut, 0, VideoLook.Natural, "Yaz Akşamı", null) { Animation = animation }], 3, false, false, 0, []);
+        var renderer = new FrameRenderer(timeline, new ColorPhotos());
+
+        static int Bright(SKBitmap b)
+        {
+            var n = 0;
+            for (var y = 0; y < b.Height; y += 2)
+            {
+                for (var x = 0; x < b.Width; x += 2)
+                {
+                    n += b.GetPixel(x, y).Red > 150 ? 1 : 0;
+                }
+            }
+
+            return n;
+        }
+
+        using var early = renderer.RenderBitmap(320, 180, 0.4);
+        using var late = renderer.RenderBitmap(320, 180, 2.5);
+        Bright(late).Should().BeGreaterThan(5);
+        Bright(early).Should().BeLessThan(Bright(late), animation + ": yazı zamanla belirir");
     }
 
     [Fact]

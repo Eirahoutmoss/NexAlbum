@@ -287,7 +287,10 @@ public static class VideoText
         ArgumentNullException.ThrowIfNull(timeline);
         var sb = new StringBuilder();
         sb.Append(CultureInfo.CurrentCulture, $"{timeline.Format.Width}×{timeline.Format.Height} · {timeline.Fps} kare/sn · {Duration(timeline.Duration)}");
-        sb.Append(CultureInfo.CurrentCulture, $" · {timeline.Clips.OfType<PhotoClip>().Count()} fotoğraf");
+        var photos = timeline.Clips.OfType<PhotoClip>().Count()
+            + timeline.Clips.OfType<GalleryClip>().Sum(g => g.AssetIds.Count)
+            + timeline.Clips.OfType<CollageClip>().Sum(c => c.AssetIds.Count);
+        sb.Append(CultureInfo.CurrentCulture, $" · {photos} fotoğraf");
         return sb.ToString();
     }
 }

@@ -1,4 +1,5 @@
 using System.Globalization;
+using NexAlbum.Core.Effects;
 using NexAlbum.Core.Layout;
 using NexAlbum.Core.Projects;
 
@@ -62,7 +63,16 @@ public static class VideoPlanner
         {
             var first = pool.Where(p => p.CapturedAt is not null).Select(p => p.CapturedAt!.Value).DefaultIfEmpty().Min();
             var subtitle = first == default ? null : first.DateTime.ToString("d MMMM yyyy", tr).ToUpper(tr);
-            items.Add((new TitleClip(0, 0, TransitionKind.Cut, 0, style.Look, project.Name, subtitle), TitleSeconds, true));
+            var opening = OrderForFilm(pool);
+            if (style.Intro == VideoIntro.Book && opening.Count >= 2)
+            {
+                // Albüm açılışı: kapakta albüm adı, açılınca ilk iki fotoğraf çift sayfa olarak.
+                items.Add((new BookClip(0, 0, TransitionKind.Cut, 0, style.Look, project.Name, subtitle, opening[0].Id, opening[1].Id), TitleSeconds * 1.7, true));
+            }
+            else
+            {
+                items.Add((new TitleClip(0, 0, TransitionKind.Cut, 0, style.Look, project.Name, subtitle) { Animation = style.Title }, TitleSeconds, true));
+            }
         }
 
         foreach (var group in groups)
@@ -74,11 +84,37 @@ public static class VideoPlanner
             {
                 var range = group.Photos.Where(p => p.CapturedAt is not null).Select(p => p.CapturedAt!.Value.DateTime).ToList();
                 var sub = range.Count > 0 ? range.Min().ToString("HH:mm", tr) : null;
-                items.Add((new TitleClip(0, 0, chapterOverride?.Transition ?? style.ChapterTransition, 0, look, chapter.Name, sub), TitleSeconds * 0.85, true));
+                items.Add((new TitleClip(0, 0, chapterOverride?.Transition ?? style.ChapterTransition, 0, look, chapter.Name, sub) { Animation = style.Title }, TitleSeconds * 0.85, true));
                 startOfChapter = false;
             }
 
-            foreach (var photo in group.Photos)
+            // Sahne stillerinde fotoğraflar gruplanır (galeri 5'li, kolaj 4'lü); 3'ten az kalanlar tek tek gösterilir.
+            var singles = group.Photos.ToList();
+            if (style.Scene != VideoScene.None && !settings.ReduceMotion && group.Photos.Count >= 3)
+            {
+                var size = style.Scene == VideoScene.FocusGallery ? 5 : 4;
+                singles = [];
+                for (var start = 0; start < group.Photos.Count; start += size)
+                {
+                    var chunk = group.Photos.Skip(start).Take(size).ToList();
+                    if (chunk.Count < 3)
+                    {
+                        singles.AddRange(chunk);
+                        continue;
+                    }
+
+                    var transition = startOfChapter && items.Count > 0
+                        ? chapterOverride?.Transition ?? style.ChapterTransition
+                        : chapterOverride?.Transition ?? style.Transitions[random.Next(style.Transitions.Count)];
+                    var ids = chunk.Select(p => p.Id).ToList();
+                    items.Add(style.Scene == VideoScene.FocusGallery
+                        ? ((VideoClip)new GalleryClip(0, 0, transition, 0, look, ids, group.Chapter?.Name), style.PhotoSeconds * chunk.Count * 0.75, startOfChapter)
+                        : ((VideoClip)new CollageClip(0, 0, transition, 0, look, ids), style.PhotoSeconds * 2.2, startOfChapter));
+                    startOfChapter = false;
+                }
+            }
+
+            foreach (var photo in singles)
             {
                 var transition = startOfChapter && items.Count > 0
                     ? chapterOverride?.Transition ?? style.ChapterTransition
@@ -107,7 +143,7 @@ public static class VideoPlanner
         {
             var (template, length, _) = items[i];
             var kind = settings.ReduceMotion ? Calm(template.TransitionIn) : template.TransitionIn;
-            var transition = i == 0 || kind == TransitionKind.Cut ? 0 : Math.Min(style.TransitionSeconds, length * 0.45);
+            var transition = i == 0 || kind == TransitionKind.Cut ? 0 : Math.Min(style.TransitionSeconds * TransitionEffects.DurationFactor(kind), length * 0.45);
             var start = Math.Max(0, cut - (transition / 2));
             var nextCut = cut + length;
             if (beats is not null && i < items.Count - 1)
@@ -116,7 +152,7 @@ public static class VideoPlanner
             }
 
             var nextTransition = i + 1 < items.Count && items[i + 1].Template.TransitionIn != TransitionKind.Cut
-                ? Math.Min(style.TransitionSeconds, items[i + 1].Length * 0.45)
+                ? Math.Min(style.TransitionSeconds * TransitionEffects.DurationFactor(settings.ReduceMotion ? Calm(items[i + 1].Template.TransitionIn) : items[i + 1].Template.TransitionIn), items[i + 1].Length * 0.45)
                 : 0;
             var end = i == items.Count - 1 ? nextCut : nextCut + (nextTransition / 2);
             clips.Add(template with { Start = start, Duration = Math.Max(0.2, end - start), TransitionIn = i == 0 ? TransitionKind.Cut : kind, TransitionSeconds = transition });

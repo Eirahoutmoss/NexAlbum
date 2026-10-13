@@ -38,6 +38,31 @@ public enum TransitionKind
     PushRight,
     PushUp,
     ZoomThrough,
+
+    // Pro efektler (Karar 23): hesap Core'da (Effects.TransitionEffects), video, sunum ve HTML provada aynı.
+    Aperture,
+    Diaphragm,
+    DoubleIris,
+    DiamondReveal,
+    RackFocus,
+    TiltShift,
+    DepthFocus,
+    LightLeak,
+    FilmBurn,
+    Flash,
+    Projector,
+    Curtain,
+    Blinds,
+    DiagonalWipe,
+    Mosaic,
+    Honeycomb,
+    InkBlot,
+    Split,
+    Parallax,
+    WhipPan,
+    CardStack,
+    PolaroidDevelop,
+    PageTurn,
 }
 
 /// <summary>Videodaki görünüm (yalnızca video; baskıyı etkilemez).</summary>
@@ -48,6 +73,45 @@ public enum VideoLook
     Cool,
     BlackWhite,
     Sepia,
+}
+
+/// <summary>Başlık kartında yazının girişi (Karar 23).</summary>
+public enum TitleAnimation
+{
+    /// <summary>Yavaş yaklaşma (varsayılan).</summary>
+    Fade,
+
+    /// <summary>Satırlar maskenin altından yükselir.</summary>
+    Rise,
+
+    /// <summary>Yazı kalemle yazılıyormuş gibi soldan sağa belirir.</summary>
+    Handwriting,
+
+    /// <summary>Kelimeler sırayla bulanıktan netleşir.</summary>
+    BlurWords,
+}
+
+/// <summary>Birden çok fotoğrafı bir arada gösteren sahne (Karar 23).</summary>
+public enum VideoScene
+{
+    /// <summary>Her fotoğraf ayrı kare.</summary>
+    None,
+
+    /// <summary>Odak galerisi: yatay şerit kayar, ortadaki net, yanlar bulanık.</summary>
+    FocusGallery,
+
+    /// <summary>Kolaj akışı: ızgara hücreleri sırayla dolar.</summary>
+    Collage,
+}
+
+/// <summary>Filmin açılışı.</summary>
+public enum VideoIntro
+{
+    /// <summary>Başlık kartı.</summary>
+    Title,
+
+    /// <summary>Albüm açılışı: kapak açılır, ilk çift sayfa görünür.</summary>
+    Book,
 }
 
 /// <summary>Fotoğraf üzerindeki hareket.</summary>
@@ -85,7 +149,51 @@ public sealed record VideoStyle(
             [TransitionKind.PushLeft, TransitionKind.ZoomThrough, TransitionKind.Cut, TransitionKind.PushUp, TransitionKind.Iris, TransitionKind.PushRight], TransitionKind.ZoomThrough, 1.8, 0.45, 0.12, VideoLook.Natural, false, false),
         new("nostalgia", "Nostalji", "Sepya, film greni ve vinyet; beyaza geçişlerle hatıra hissi.",
             [TransitionKind.Crossfade, TransitionKind.DipToWhite, TransitionKind.Crossfade], TransitionKind.DipToWhite, 3.8, 1.2, 0.07, VideoLook.Sepia, true, true),
+
+        // Pro efekt stilleri (Karar 23).
+        new("aperture", "Aperture", "Objektif irisi gibi açılan geçişler, kenarda ince halka; başlıklar maskeden yükselir.",
+            [TransitionKind.Aperture, TransitionKind.Aperture, TransitionKind.RackFocus, TransitionKind.DoubleIris], TransitionKind.Diaphragm, 3.8, 1.1, 0.09, VideoLook.Natural, true, false)
+        { Title = TitleAnimation.Rise },
+        new("objektif", "Objektif", "Netlik kaydırma, derinlikten gelen kareler ve tilt-shift; sakin ve sinematik.",
+            [TransitionKind.RackFocus, TransitionKind.DepthFocus, TransitionKind.TiltShift, TransitionKind.RackFocus], TransitionKind.Diaphragm, 3.6, 1.2, 0.08, VideoLook.Natural, false, false)
+        { Title = TitleAnimation.BlurWords },
+        new("odak-galerisi", "Odak Galerisi", "Bölümün fotoğrafları yatay şeritte akar; ortadaki net, yanlar bulanık.",
+            [TransitionKind.RackFocus, TransitionKind.Crossfade], TransitionKind.Aperture, 3.4, 1.1, 0.06, VideoLook.Natural, false, false)
+        { Title = TitleAnimation.Rise, Scene = VideoScene.FocusGallery },
+        new("isik", "Işık", "Sıcak ışık sızıntıları, yanıklar ve flaşlar; yaz ve kutlama filmleri için.",
+            [TransitionKind.LightLeak, TransitionKind.Crossfade, TransitionKind.LightLeak, TransitionKind.Flash], TransitionKind.FilmBurn, 3.4, 1.2, 0.1, VideoLook.Warm, true, false)
+        { Title = TitleAnimation.Handwriting },
+        new("analog", "Analog", "Projektör titremesi, Polaroid banyosu ve film yanığı; gren ve vinyetle.",
+            [TransitionKind.Projector, TransitionKind.PolaroidDevelop, TransitionKind.FilmBurn, TransitionKind.Crossfade], TransitionKind.Projector, 3.6, 1.1, 0.07, VideoLook.Warm, true, true)
+        { Title = TitleAnimation.Handwriting },
+        new("geometri", "Geometri", "Petek, mozaik, elmas ve panjur; geometrik şablonlarla uyumlu modern akış.",
+            [TransitionKind.Honeycomb, TransitionKind.Mosaic, TransitionKind.DiamondReveal, TransitionKind.Blinds, TransitionKind.DiagonalWipe], TransitionKind.Honeycomb, 3.2, 1.0, 0.08, VideoLook.Natural, false, false)
+        { Title = TitleAnimation.Rise },
+        new("kolaj", "Kolaj Akışı", "Fotoğraflar dörtlü ızgaralarda sırayla yerleşir; albüm sayfası gibi.",
+            [TransitionKind.Curtain, TransitionKind.DiagonalWipe], TransitionKind.Curtain, 3.4, 1.0, 0.05, VideoLook.Natural, false, false)
+        { Title = TitleAnimation.Rise, Scene = VideoScene.Collage },
+        new("sahne", "Sahne", "Perde ve yarıktan açılan kareler, paralaks kayma; tiyatro havası.",
+            [TransitionKind.Curtain, TransitionKind.Split, TransitionKind.Parallax], TransitionKind.Curtain, 3.6, 1.1, 0.08, VideoLook.Natural, true, false)
+        { Title = TitleAnimation.Rise },
+        new("album", "Albüm", "Albüm kapağı açılarak başlar; sayfa çevirme, kart yığını ve Polaroid.",
+            [TransitionKind.PageTurn, TransitionKind.CardStack, TransitionKind.PolaroidDevelop, TransitionKind.Crossfade], TransitionKind.PageTurn, 3.8, 1.2, 0.07, VideoLook.Warm, false, false)
+        { Title = TitleAnimation.Handwriting, Intro = VideoIntro.Book },
+        new("murekkep", "Mürekkep", "Organik mürekkep lekeleri ve çift iris; yumuşak ve sanatsal.",
+            [TransitionKind.InkBlot, TransitionKind.DoubleIris, TransitionKind.Crossfade], TransitionKind.InkBlot, 3.8, 1.3, 0.08, VideoLook.Natural, false, false)
+        { Title = TitleAnimation.BlurWords },
+        new("hiz", "Hız", "Hızlı kaydırma, flaş ve yakınlaşma; kısa sosyal medya klipleri için.",
+            [TransitionKind.WhipPan, TransitionKind.ZoomThrough, TransitionKind.Flash, TransitionKind.PushLeft, TransitionKind.Cut], TransitionKind.WhipPan, 1.6, 0.4, 0.12, VideoLook.Natural, false, false)
+        { Title = TitleAnimation.Rise },
     ];
+
+    /// <summary>Başlık kartlarında yazının girişi.</summary>
+    public TitleAnimation Title { get; init; } = TitleAnimation.Fade;
+
+    /// <summary>Çok fotoğraflı sahne (galeri, kolaj); yoksa her fotoğraf ayrı.</summary>
+    public VideoScene Scene { get; init; } = VideoScene.None;
+
+    /// <summary>Açılış: başlık kartı ya da albüm açılışı.</summary>
+    public VideoIntro Intro { get; init; } = VideoIntro.Title;
 
     /// <summary>Kullanılabilir tüm stiller: yerleşikler ve yüklü eklenti paketlerindekiler (<see cref="Extensions.ExtensionCatalog.Current"/>).</summary>
     public static IReadOnlyList<VideoStyle> All => Extensions.ExtensionCatalog.Current.VideoStyles;
@@ -175,6 +283,44 @@ public sealed record TitleClip(
     VideoLook Look,
     string Title,
     string? Subtitle)
+    : VideoClip(Start, Duration, TransitionIn, TransitionSeconds, Look)
+{
+    /// <summary>Yazının girişi.</summary>
+    public TitleAnimation Animation { get; init; } = TitleAnimation.Fade;
+}
+
+/// <summary>Odak galerisi: fotoğraflar yatay şeritte kayar; ortadaki net (Karar 23).</summary>
+public sealed record GalleryClip(
+    double Start,
+    double Duration,
+    TransitionKind TransitionIn,
+    double TransitionSeconds,
+    VideoLook Look,
+    IReadOnlyList<string> AssetIds,
+    string? Caption)
+    : VideoClip(Start, Duration, TransitionIn, TransitionSeconds, Look);
+
+/// <summary>Kolaj akışı: ızgara hücreleri sırayla dolar (Karar 23).</summary>
+public sealed record CollageClip(
+    double Start,
+    double Duration,
+    TransitionKind TransitionIn,
+    double TransitionSeconds,
+    VideoLook Look,
+    IReadOnlyList<string> AssetIds)
+    : VideoClip(Start, Duration, TransitionIn, TransitionSeconds, Look);
+
+/// <summary>Albüm açılışı: kapak (albüm adı) açılır, ilk çift sayfa görünür ve kareyi doldurur (Karar 23).</summary>
+public sealed record BookClip(
+    double Start,
+    double Duration,
+    TransitionKind TransitionIn,
+    double TransitionSeconds,
+    VideoLook Look,
+    string Title,
+    string? Subtitle,
+    string? LeftAssetId,
+    string? RightAssetId)
     : VideoClip(Start, Duration, TransitionIn, TransitionSeconds, Look);
 
 /// <summary>Planlanmış video: öğeler (her öğe öncekiyle geçiş süresi kadar örtüşür), müzik başlangıcı, toplam süre.</summary>

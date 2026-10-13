@@ -70,12 +70,11 @@ public sealed partial class VideoViewModel : ObservableObject, IDisposable
 {
     public const int PreviewLongSide = 560;
 
+    /// <summary>Elle seçilebilen geçişler: «Otomatik» ve tüm pro efektler (grup adıyla; Karar 23).</summary>
     public static readonly IReadOnlyList<Choice<TransitionKind>> TransitionChoices =
     [
-        new(null, "Otomatik"), new(TransitionKind.Crossfade, "Çapraz geçiş"), new(TransitionKind.DipToBlack, "Siyaha geçiş"),
-        new(TransitionKind.DipToWhite, "Beyaza geçiş"), new(TransitionKind.FocusShift, "Odak kaydırma"), new(TransitionKind.Iris, "Dairesel iris"),
-        new(TransitionKind.PushLeft, "Sola itme"), new(TransitionKind.PushRight, "Sağa itme"), new(TransitionKind.PushUp, "Yukarı itme"),
-        new(TransitionKind.ZoomThrough, "Yakınlaşarak"), new(TransitionKind.Cut, "Kesme"),
+        new(null, "Otomatik"),
+        .. Core.Effects.TransitionEffects.All.Select(e => new Choice<TransitionKind>(e.Kind, e.Name + " · " + e.Group)),
     ];
 
     public static readonly IReadOnlyList<Choice<VideoLook>> LookChoices =
