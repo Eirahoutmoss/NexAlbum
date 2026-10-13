@@ -23,12 +23,6 @@ public sealed record AlbumFont(string Family, string Kind, string Regular, strin
 /// </summary>
 public static class AlbumFonts
 {
-    static AlbumFonts()
-    {
-        // "pack:" şeması uygulama başlamadan (ör. testlerde) de tanınsın.
-        _ = System.IO.Packaging.PackUriHelper.UriSchemePack;
-    }
-
     /// <summary>Gömülü dosyaların klasörü (pack URI).</summary>
     public const string Folder = "/NexAlbum;component/Assets/AlbumFonts/";
 
@@ -37,6 +31,10 @@ public static class AlbumFonts
 
     /// <summary>PDF çözümleyicisinde gömülü dosya yüzlerinin öneki.</summary>
     public const string FacePrefix = "nexalbum:";
+
+    // "pack:" şeması uygulama başlamadan (ör. testlerde) da tanınsın. Statik alanlar yazım sırasıyla başlatılır:
+    // bu satır, pack URI kullanan All listesinden önce kalmalıdır.
+    private static readonly string PackScheme = System.IO.Packaging.PackUriHelper.UriSchemePack;
 
     public static IReadOnlyList<AlbumFont> All { get; } =
     [
@@ -91,7 +89,7 @@ public static class AlbumFonts
             return null;
         }
 
-        var info = Application.GetResourceStream(new Uri("pack://application:,,," + face[FacePrefix.Length..]));
+        var info = Application.GetResourceStream(new Uri(PackScheme + "://application:,,," + face[FacePrefix.Length..]));
         if (info is null)
         {
             return null;

@@ -59,10 +59,15 @@ public class PageTextEditorTests
         b.Y.Should().Be(Canvas.Y);
         PageTextEditor.Move(page, "text-001", 20, 20, Canvas, Later).Should().BeSameAs(page);
 
+        var narrow = PageTextEditor.Resize(page, "text-001", 60, Canvas, Later);
+        var n = ((TextElement)narrow.FindElement("text-001")!).Bounds;
+        n.Width.Should().Be(60);
+        (n.X + (n.Width / 2)).Should().BeApproximately(70, 1e-6, "orta korunur");
+
         var wide = PageTextEditor.Resize(page, "text-001", 160, Canvas, Later);
         var w = ((TextElement)wide.FindElement("text-001")!).Bounds;
         w.Width.Should().Be(160);
-        (w.X + (w.Width / 2)).Should().BeApproximately(70, 1e-6, "orta korunur");
+        w.X.Should().Be(Canvas.X, "ortadan genişleyen kutu tuvalin soluna taşarsa içeri itilir");
 
         PageTextEditor.Remove(page, "text-001", Later).Elements.Should().BeEmpty();
         var missing = () => PageTextEditor.Remove(page, "yok", Later);
