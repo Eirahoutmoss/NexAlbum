@@ -40,6 +40,9 @@ public sealed record AlbumProject
     /// <summary>Hikâye akışı: düğünün bölümleri (Karar 10 Rev. 2); yoksa boş.</summary>
     public StoryPlan Story { get; init => field = value ?? throw new ArgumentNullException(nameof(Story)); } = StoryPlan.Empty;
 
+    /// <summary>Hikâye filmi ayarları (Karar 21 §6).</summary>
+    public global::NexAlbum.Core.Video.VideoSettings Video { get; init => field = value ?? throw new ArgumentNullException(nameof(Video)); } = global::NexAlbum.Core.Video.VideoSettings.Default;
+
     public string ProfileId => Profile.Id;
 
     /// <summary>Sayfa dikdörtgeni (0,0 köşeli, bitmiş ölçü).</summary>

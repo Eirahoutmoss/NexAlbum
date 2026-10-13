@@ -20,6 +20,7 @@
     <ProjectReference Include="..\NexAlbum.Assets\NexAlbum.Assets.csproj" />
     <ProjectReference Include="..\NexAlbum.Persistence\NexAlbum.Persistence.csproj" />
     <ProjectReference Include="..\NexAlbum.Integrations\NexAlbum.Integrations.csproj" />
+    <ProjectReference Include="..\NexAlbum.Video\NexAlbum.Video.csproj" />
   </ItemGroup>
   <ItemGroup>
     <!-- Gömülü yazı tipi (Inter, SIL OFL 1.1) ve pencere simgesi; çalışma anında kurulum gerekmez. -->

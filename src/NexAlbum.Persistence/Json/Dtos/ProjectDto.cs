@@ -33,6 +33,37 @@ internal sealed class ProjectDto
 
     /// <summary>Şema v4: hikâye akışı (bölümler).</summary>
     public StoryDto? Story { get; set; }
+
+    /// <summary>Şema v5: hikâye filmi ayarları.</summary>
+    public VideoDto? Video { get; set; }
+}
+
+internal sealed class VideoDto
+{
+    public string? Format { get; set; }
+
+    public string? Style { get; set; }
+
+    public int? Fps { get; set; }
+
+    public double? TargetSeconds { get; set; }
+
+    public string? Music { get; set; }
+
+    public bool? ReduceMotion { get; set; }
+
+    public bool? ChapterTitles { get; set; }
+
+    public List<VideoOverrideDto>? Overrides { get; set; }
+}
+
+internal sealed class VideoOverrideDto
+{
+    public string? Chapter { get; set; }
+
+    public string? Transition { get; set; }
+
+    public string? Look { get; set; }
 }
 
 internal sealed class StoryDto

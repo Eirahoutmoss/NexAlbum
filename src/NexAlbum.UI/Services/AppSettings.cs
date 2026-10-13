@@ -25,6 +25,12 @@ public sealed record AppSettings
 
     /// <summary>Son açılan/kaydedilen projeler, en yenisi başta (başlangıç ekranı).</summary>
     public IReadOnlyList<RecentProject> RecentProjects { get; init; } = [];
+
+    /// <summary>Hikâye filmi için müzik klasörleri (Karar 21 §4).</summary>
+    public IReadOnlyList<string> MusicFolders { get; init; } = [];
+
+    /// <summary>FFmpeg yolu (dosya ya da klasör); null ise araç klasörü ve PATH aranır (Karar 21 §5).</summary>
+    public string? FfmpegPath { get; init; }
 }
 
 /// <summary>Başlangıç ekranındaki son proje kaydı.</summary>

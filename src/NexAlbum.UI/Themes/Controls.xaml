@@ -260,6 +260,14 @@
   </Style>
 
   <!-- Fon, çerçeve ve şablon galerilerindeki seçilebilir önizleme kutusu -->
+  <!-- Küçük metin düğmesi (panellerde ikincil eylemler) -->
+  <Style x:Key="SmallButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Padding" Value="10,3" />
+      <Setter Property="MinHeight" Value="28" />
+      <Setter Property="Margin" Value="0,0,6,6" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+
   <!-- Galeri karesindeki favori yıldızı: Tag=true iken altın dolu, değilse boş çizgi. Karanlık rozet her fotoğrafta okunur. -->
   <Style x:Key="StarButton" TargetType="Button">
     <Setter Property="Width" Value="22" />

@@ -20,6 +20,10 @@ Revizyon 3 — 13/10/2026
 Değişiklik: Uygulamaya iki gömülü varlık eklendi (NuGet paketi değil, kaynak dosya): Inter yazı tipi (SIL OFL 1.1) ve Lucide ikonları (ISC). Ayrıntı: Karar 17.
 Gerekçe: Görünüm kurulu yazı tiplerine ve Windows sürümüne (Segoe Fluent Icons yalnızca Windows 11) bağlı kalmasın. Lisans metinleri `THIRD-PARTY-NOTICES.md`'de.
 
+Revizyon 5 — 13/10/2026
+Değişiklik: Yeni katman `NexAlbum.Video` (Karar 21): Video → Core, Rendering; UI → Video. `NexAlbum.Rendering` SkiaSharp ile kare çizer (SkiaSharp zaten onaylı; Linux testleri için SkiaSharp.NativeAssets.Linux.NoDependencies, MIT). FFmpeg (GPL) uygulamaya gömülmez; kullanıcı onayıyla indirilen ya da sistemde kurulu harici araç olarak çağrılır (Karar 20 yöntemi).
+Gerekçe: Video kodlama C# içinde yazılmaz; FFmpeg ayrı süreçtir, lisansı GPL-3.0-or-later ile uyumludur ve dağıtım yükü kullanıcı onayına bağlıdır.
+
 Revizyon 4 — 13/10/2026
 Değişiklik: Albüm sayfa metinleri için yedi gömülü yazı tipi eklendi (kaynak dosya, NuGet değil): Great Vibes, Pinyon Script, Parisienne, Allura, Cormorant Garamond, Playfair Display, Montserrat — hepsi SIL OFL 1.1. Ayrıntı: Karar 17 §11.
 Gerekçe: Ekran ve PDF aynı dosyayı kullansın; albüm, yazı tipi kurulu olmayan bilgisayarda da aynı çıksın. OFL yazı tipleri GPL yazılımla birlikte dağıtılabilir.
@@ -615,6 +619,8 @@ CommunityToolkit.Mvvm	MIT	✅	Onaylı
 Inter (yazı tipi, gömülü)	SIL OFL 1.1	✅	Onaylı (Revizyon 3)
 Lucide (ikonlar, gömülü)	ISC	✅	Onaylı (Revizyon 3)
 Albüm yazı tipleri (7 aile, gömülü)	SIL OFL 1.1	✅	Onaylı (Revizyon 4)
+SkiaSharp.NativeAssets.Linux.NoDependencies	MIT	✅	Onaylı (Revizyon 5)
+FFmpeg (harici, kullanıcı onayıyla indirilir)	GPL-3.0	✅	Onaylı (Revizyon 5)
 JsonSchema.Net	MIT	✅	Onaylı
 QuestPDF	Hibrit	⚠️	Reddedildi
 iText	AGPL/Ticari	❌	Reddedildi

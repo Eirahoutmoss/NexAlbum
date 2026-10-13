@@ -31,6 +31,11 @@ public sealed partial class MainViewModel
     /// <summary>Sunum modu istendi (F5); pencere tam ekran sunumu açar.</summary>
     public event EventHandler<PresentationViewModel>? PresentationRequested;
 
+    /// <summary>Hikâye filmi penceresi istendi (Karar 21).</summary>
+    public event EventHandler<VideoViewModel>? FilmRequested;
+
+    public RelayCommand FilmCommand { get; private set; } = null!;
+
     public RelayCommand ToggleBookViewCommand { get; private set; } = null!;
 
     public RelayCommand PresentCommand { get; private set; } = null!;
@@ -73,6 +78,27 @@ public sealed partial class MainViewModel
     public bool IsRightSelected => isBookView && SelectedPage is not null && ReferenceEquals(SelectedPage, spreadRight);
 
     /// <summary>Sunum modunu başlatır: seçili sayfanın çift sayfasından itibaren.</summary>
+    /// <summary>Hikâye filmi penceresinin görünüm modeli (ayarlar projeye yazılır, müzik klasörleri uygulama ayarlarına).</summary>
+    public VideoViewModel? CreateFilm() => project is null
+        ? null
+        : new VideoViewModel(project, SaveVideoSettings, () => appSettings, SaveSettings);
+
+    public void OpenFilm()
+    {
+        if (CreateFilm() is { } film)
+        {
+            FilmRequested?.Invoke(this, film);
+        }
+    }
+
+    public void SaveVideoSettings(Core.Video.VideoSettings value)
+    {
+        if (project is not null && value != project.Video)
+        {
+            UpdateProject(project with { Video = value }, "Film ayarları");
+        }
+    }
+
     public void Present()
     {
         if (project is null || project.Pages.Count == 0)
@@ -292,6 +318,7 @@ public sealed partial class MainViewModel
         isBookView = appSettings.BookView;
         ToggleBookViewCommand = new RelayCommand(() => IsBookView = !IsBookView);
         PresentCommand = new RelayCommand(Present, () => HasProject && Pages.Count > 0 && !IsBusy);
+        FilmCommand = new RelayCommand(OpenFilm, () => HasProject && HasPhotos && !IsBusy);
         ForgetRecentCommand = new RelayCommand<RecentProjectItem>(ForgetRecent);
         LoadRecent();
         Palette = new CommandPaletteViewModel(BuildPaletteCommands());
@@ -301,6 +328,7 @@ public sealed partial class MainViewModel
     {
         OpenRecentCommand?.NotifyCanExecuteChanged();
         PresentCommand?.NotifyCanExecuteChanged();
+        FilmCommand?.NotifyCanExecuteChanged();
     }
 
     private void OnShellPageChanged(PageItemViewModel? page)
@@ -486,6 +514,7 @@ public sealed partial class MainViewModel
         new("Galeri: kullanılmamışlar", "Galeri", "Icon.Gallery", null, new RelayCommand(() => GalleryFilter = GalleryFilter.Unused), "süzgeç filtre boşta"),
         new("Galeri: albümdekiler", "Galeri", "Icon.Gallery", null, new RelayCommand(() => GalleryFilter = GalleryFilter.Used), "süzgeç filtre kullanılan"),
         new("Galeri: rötuşlananlar", "Galeri", "Icon.Gallery", null, new RelayCommand(() => GalleryFilter = GalleryFilter.Edited), "süzgeç filtre düzenlenen"),
+        new("Hikâye filmi (video / sosyal medya)", "Hikâye", "Icon.Film", null, FilmCommand, "video film reels tiktok shorts mp4 4k müzik klip montaj"),
         new("Hikâye: bölümleri bul", "Hikâye", "Icon.Story", null, DetectStoryCommand, "düğün evre akış kına hazırlık gelin alma nikah dış çekim zaman exif"),
         new("Hikâye: bölümlere göre albüm oluştur", "Hikâye", "Icon.Story", null, BuildFromStoryCommand, "otomatik akış bölüm"),
         new("Hikâye: seçili fotoğraftan yeni bölüm", "Hikâye", "Icon.Split", null, SplitStoryHereCommand, "böl ayır başlat"),

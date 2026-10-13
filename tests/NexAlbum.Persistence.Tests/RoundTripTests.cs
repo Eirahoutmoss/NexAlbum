@@ -58,7 +58,7 @@ public class RoundTripTests
         ProjectPackageWriter.Save(path, Samples.FullProject(), Options() with { Portable = true, AppVersion = "0.2.0" });
 
         var loaded = ProjectPackageReader.Load(path);
-        loaded.Manifest.Should().Be(new PackageManifest("1.0", 4, Samples.Now, "0.2.0", Samples.FullProject().Id, "Ahmet & Zeynep Düğün Albümü", Portable: true));
+        loaded.Manifest.Should().Be(new PackageManifest("1.0", 5, Samples.Now, "0.2.0", Samples.FullProject().Id, "Ahmet & Zeynep Düğün Albümü", Portable: true));
         loaded.Project.AppVersion.Should().Be("0.2.0");
         loaded.Entries.Should().Contain(new[]
         {
@@ -75,7 +75,8 @@ public class RoundTripTests
         ProjectPackageWriter.Save(path, Samples.FullProject(), Options());
         var json = ReadEntry(path, ProjectFormat.ProjectEntry);
 
-        json.Should().Contain("\"schemaVersion\": 4", "şema v4: hikâye akışı (Karar 09 Rev. 3)");
+        json.Should().Contain("\"schemaVersion\": 5", "şema v5: hikâye filmi (Karar 09 Rev. 4)");
+        json.Should().Contain("\"transition\": \"dipToWhite\"", "elle seçilen geçiş yazılır");
         json.Should().Contain("\"name\": \"Gelin Alma\"", "bölüm adı yazılır");
         json.Should().Contain("\"kind\": \"glow\"", "metin etkisi yazılır");
         json.Should().Contain("\"name\": \"Ahmet & Zeynep Düğün Albümü\"", "Türkçe karakterler ve & kaçışsız yazılmalı");

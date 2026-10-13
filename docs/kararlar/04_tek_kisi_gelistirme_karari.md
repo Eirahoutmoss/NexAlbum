@@ -238,7 +238,7 @@ Otomatik yüz güzelleştirme
 
 Gelişmiş RAW işleme
 
-Video desteği
+Video desteği — Geçersiz (Karar 21: hikâye filmi ve sosyal medya klipleri kapsama alındı)
 
 Baskı evi API entegrasyonu
 

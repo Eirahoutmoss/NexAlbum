@@ -78,6 +78,11 @@ ICONS = {
     "Merge": "merge",
     "Split": "split",
     "ChevronDown": "chevron-down",
+    "Film": "film",
+    "Play": "play",
+    "Pause": "pause",
+    "Music": "music",
+    "Download": "download",
     "Sparkles": "sparkles",
 }
 

@@ -63,12 +63,6 @@
       <Setter Property="FontSize" Value="13" />
       <Setter Property="LineHeight" Value="19" />
     </Style>
-    <Style x:Key="SmallButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-      <Setter Property="Padding" Value="10,3" />
-      <Setter Property="MinHeight" Value="28" />
-      <Setter Property="Margin" Value="0,0,6,6" />
-      <Setter Property="FontSize" Value="12" />
-    </Style>
     <!-- Sağ panel ve galeri başlık satırı: büyük harf başlık + sağda küçük eylem -->
     <Style x:Key="HeaderRow" TargetType="DockPanel">
       <Setter Property="Margin" Value="16,18,12,8" />
@@ -229,6 +223,8 @@
             </Button>
             <Button Style="{StaticResource CommandButton}" ui:Ui.Icon="{StaticResource Icon.Present}" Content="Sunum" Command="{Binding PresentCommand}"
                     ToolTip="Sunum modu: tam ekran, yalnızca sayfalar — çiftle birlikte bakmak için (F5)" />
+            <Button Style="{StaticResource CommandButton}" ui:Ui.Icon="{StaticResource Icon.Film}" Content="Film" Command="{Binding FilmCommand}"
+                    ToolTip="Hikâye filmi: geçiş efektli, müzikli video — sosyal medya (9:16, 1:1, 4:5) ya da 2K/4K film" />
           </StackPanel>
         </DockPanel>
       </Border>
@@ -1110,6 +1106,13 @@
                     <StackPanel Orientation="Horizontal">
                       <ui:NexIcon Data="{StaticResource Icon.Sparkles}" Width="15" Height="15" Margin="0,0,6,0" />
                       <TextBlock Text="Bölümleri bul" />
+                    </StackPanel>
+                  </Button>
+                  <Button Style="{StaticResource OutlineAccentButton}" Command="{Binding FilmCommand}" Margin="0,0,8,8" Padding="12,5"
+                          ToolTip="Bölümlerden geçiş efektli, müzikli video">
+                    <StackPanel Orientation="Horizontal">
+                      <ui:NexIcon Data="{StaticResource Icon.Film}" Width="15" Height="15" Margin="0,0,6,0" />
+                      <TextBlock Text="Hikâye filmi" />
                     </StackPanel>
                   </Button>
                   <Button Style="{StaticResource OutlineAccentButton}" Command="{Binding BuildFromStoryCommand}" Margin="0,0,8,8" Padding="12,5"

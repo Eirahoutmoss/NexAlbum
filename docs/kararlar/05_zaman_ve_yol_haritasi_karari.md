@@ -580,7 +580,7 @@ Web
 
 macOS/Linux (Avalonia ile mümkün ama ertelendi)
 
-Video
+Video — Geçersiz (Karar 21: hikâye filmi ve sosyal medya klipleri kapsama alındı)
 
 Abonelik
 

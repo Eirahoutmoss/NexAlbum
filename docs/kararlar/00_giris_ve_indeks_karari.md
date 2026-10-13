@@ -210,7 +210,7 @@ Karar dokümanları — Yazılı, gerekçeli, sürümlenebilir.
 
 ❌ AI rötuş
 
-❌ Video
+❌ Video — Geçersiz (Karar 21: hikâye filmi ve sosyal medya klipleri kapsama alındı)
 
 ❌ Mobil / Web
 
