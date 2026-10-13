@@ -71,6 +71,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         InitializeStory();
         InitializeCameraClocks();
         InitializeFrame();
+        InitializeCover();
         InitializeShell();
     }
 
@@ -192,6 +193,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     public string SelectedPageInfo => SelectedPage is null
         ? "Sayfa seçilmedi."
+        : SelectedPage.Cover is { } cover
+        ? "Kapak · " + CoverLayout.Describe(cover)
         : string.Format(
             CultureInfo.CurrentCulture,
             "{0} / {1} · {2} · {3} fotoğraf{4}",
@@ -394,7 +397,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             return;
         }
 
-        var result = ProjectPreflight.Check(project, new PreflightEnvironment { FontAvailable = FontCatalog.IsInstalled });
+        var result = CheckProject(project);
         ShowIssues(result);
         Status = result.HasErrors
             ? string.Format(CultureInfo.CurrentCulture, "Ön kontrol: {0} hata, {1} uyarı.", result.Errors.Count(), result.Warnings.Count())
@@ -430,7 +433,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             return;
         }
 
-        var preflight = ProjectPreflight.Check(current, new PreflightEnvironment { FontAvailable = FontCatalog.IsInstalled });
+        var preflight = CheckProject(current);
         ShowIssues(preflight);
         if (preflight.HasErrors)
         {
@@ -461,8 +464,15 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         {
             var settings = PdfExportSettings.FromProfile(current.Profile) with { Creator = AppInfo.Name + " " + AppInfo.Version };
             var result = await Task.Run(() => PdfAlbumExporter.Export(current, path, settings)).ConfigureAwait(true);
+            var coverResult = await Task.Run(() => ExportCoverPdf(current, path, settings)).ConfigureAwait(true);
+            if (coverResult is not null)
+            {
+                result = result with { Files = [.. result.Files, .. coverResult.Files], Issues = result.Issues.Merge(coverResult.Issues) };
+            }
+
             ShowIssues(preflight.Merge(result.Issues));
-            Status = string.Format(CultureInfo.CurrentCulture, "PDF hazır: {0} sayfa → {1}", result.PageCount, Path.GetFileName(path));
+            Status = string.Format(CultureInfo.CurrentCulture, "PDF hazır: {0} sayfa → {1}", result.PageCount, Path.GetFileName(path))
+                + (coverResult is not null ? " · kapak → " + Path.GetFileName(coverResult.Files[0]) : string.Empty);
             if (result.Issues.HasErrors)
             {
                 dialogs.Warn("PDF oluşturuldu ancak bazı öğeler eklenemedi. Ayrıntılar sağ panelde.");
@@ -601,6 +611,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private void UpdateProject(AlbumProject value, string? label = "Düzenleme", bool record = true)
     {
         var selectedIndex = SelectedPage?.Index;
+        var wasCover = SelectedPage?.IsCover == true;
         SelectedPage = null;
         var previousProject = project;
         if (record && previousProject is not null && !ReferenceEquals(previousProject, value))
@@ -611,7 +622,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         project = value;
         IsDirty = !ReferenceEquals(value, savedProject);
 
-        var used = value.Pages.SelectMany(p => p.Slots).Select(s => s.Placement?.AssetId).OfType<string>().ToHashSet(StringComparer.Ordinal);
+        var used = (value.Cover is { } c ? value.Pages.Append(c) : value.Pages).SelectMany(p => p.Slots).Select(s => s.Placement?.AssetId).OfType<string>().ToHashSet(StringComparer.Ordinal);
         Assets.Clear();
         foreach (var asset in value.Photos)
         {
@@ -632,9 +643,14 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                 : new PageItemViewModel(value.Pages[i], i, value));
         }
 
-        if (selectedIndex is { } index)
+        RebuildCover(value, reuse: reusable is not null);
+        if (wasCover && CoverPage is not null)
         {
-            SelectedPage = Pages.ElementAtOrDefault(Math.Min(index, Pages.Count - 1));
+            SelectedPage = CoverPage;
+        }
+        else if (selectedIndex is { } index)
+        {
+            SelectedPage = Pages.ElementAtOrDefault(Math.Clamp(index, 0, Math.Max(0, Pages.Count - 1)));
         }
 
         OnPropertyChanged(nameof(Project));
@@ -673,6 +689,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         RefreshPositioningCommands();
         RefreshStoryCommands();
         RefreshClockCommands();
+        RefreshCoverCommands();
         ToggleFrameEditingCommand?.NotifyCanExecuteChanged();
         ResetFrameCornersCommand?.NotifyCanExecuteChanged();
         RefreshDesignCommands();

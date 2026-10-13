@@ -8,6 +8,9 @@ namespace NexAlbum.UI.ViewModels;
 /// <summary>Renk modu seçeneği; null = bilinmiyor.</summary>
 public sealed record ColorModeOption(ColorMode? Mode, string Name);
 
+/// <summary>Kapak tipi seçeneği (formda).</summary>
+public sealed record CoverTypeOption(CoverType Type, string Name);
+
 /// <summary>
 /// Profil düzenleme formu (Karar 03 §6). Boş alan "bilinmiyor" demektir; değer uydurulmaz.
 /// Ondalık ayırıcı olarak hem virgül hem nokta kabul edilir.
@@ -38,7 +41,33 @@ public sealed class ProfileForm
         IccProfile = profile.Color.IccProfile ?? string.Empty;
         CropMarks = profile.Output.CropMarks;
         Verified = profile.Verified;
+        CoverType = CoverTypes.First(o => o.Type == (profile.Cover?.Type ?? Core.Profiles.CoverType.None));
+        FrontWidth = Text(profile.Cover?.Front?.Width);
+        FrontHeight = Text(profile.Cover?.Front?.Height);
+        BackWidth = Text(profile.Cover?.Back?.Width);
+        BackHeight = Text(profile.Cover?.Back?.Height);
+        SpineWidth = Text(profile.Cover?.Spine?.WidthMm);
     }
+
+    public static IReadOnlyList<CoverTypeOption> CoverTypes { get; } =
+    [
+        new(Core.Profiles.CoverType.None, "Kapak yok"),
+        new(Core.Profiles.CoverType.Softcover, "Yumuşak kapak"),
+        new(Core.Profiles.CoverType.Hardcover, "Sert kapak"),
+    ];
+
+    public CoverTypeOption CoverType { get; set; }
+
+    public string FrontWidth { get; set; }
+
+    public string FrontHeight { get; set; }
+
+    public string BackWidth { get; set; }
+
+    public string BackHeight { get; set; }
+
+    /// <summary>Sırt genişliği (mm): baskı evinden alınır, sayfa sayısına göre değişir (Karar 03 §8).</summary>
+    public string SpineWidth { get; set; }
 
     public static IReadOnlyList<ColorModeOption> ColorModes { get; } =
     [
@@ -99,6 +128,13 @@ public sealed class ProfileForm
         var gutter = ParseNumber("Cilt payı", Gutter, problems);
         var target = ParseInt("Hedef DPI", TargetDpi, problems);
         var min = ParseInt("En düşük DPI", MinDpi, problems);
+        var front = ParseSize("Ön kapak", FrontWidth, FrontHeight, problems);
+        var back = ParseSize("Arka kapak", BackWidth, BackHeight, problems);
+        var spine = ParseNumber("Sırt genişliği", SpineWidth, problems);
+        if (spine is 0d)
+        {
+            problems.Add("Sırt genişliği sıfır olamaz; bilmiyorsanız boş bırakın.");
+        }
         if (string.IsNullOrWhiteSpace(Name))
         {
             problems.Add("Profil adı boş olamaz.");
@@ -126,6 +162,9 @@ public sealed class ProfileForm
                 Gutter = new GutterSpec(gutter, original.Gutter.Verified, original.Gutter.Note),
                 Resolution = new ResolutionSpec(target, min, original.Resolution.Note),
                 Color = original.Color with { Mode = ColorMode.Mode, IccProfile = string.IsNullOrWhiteSpace(IccProfile) ? null : IccProfile.Trim() },
+                Cover = CoverType.Type == Core.Profiles.CoverType.None && front is null && back is null && spine is null
+                    ? (original.Cover is null ? null : new CoverSpec(Core.Profiles.CoverType.None))
+                    : new CoverSpec(CoverType.Type, front, back, spine is null ? null : new SpineSpec(spine, SpineCalculationMethod.Manual, original.Cover?.Spine?.Verified ?? false, original.Cover?.Spine?.Note)),
                 Output = new OutputSpec(CropMarks, original.Output.CropMarkOffsetMm, original.Output.CropMarkLengthMm, original.Output.RegistrationMarks, original.Output.ColorBars, original.Output.PageInfo),
                 Verified = Verified,
                 VerifiedAt = Verified ? (original.Verified ? original.VerifiedAt : now) : null,
@@ -209,6 +248,24 @@ public sealed class ProfileForm
 
         problems.Add(label + ": geçersiz değer '" + text + "'.");
         return null;
+    }
+
+    private static SizeMm? ParseSize(string label, string width, string height, List<string> problems)
+    {
+        if (string.IsNullOrWhiteSpace(width) && string.IsNullOrWhiteSpace(height))
+        {
+            return null;
+        }
+
+        var w = ParseNumber(label + " genişliği", width, problems);
+        var h = ParseNumber(label + " yüksekliği", height, problems);
+        if (w is not > 0 || h is not > 0)
+        {
+            problems.Add(label + ": genişlik ve yükseklik birlikte girilmeli (eksik değer tahmin edilmez).");
+            return null;
+        }
+
+        return new SizeMm(w.Value, h.Value);
     }
 
     private static int? ParseInt(string label, string text, List<string> problems)

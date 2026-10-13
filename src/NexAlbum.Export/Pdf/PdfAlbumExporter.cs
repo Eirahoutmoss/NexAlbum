@@ -90,6 +90,73 @@ public static class PdfAlbumExporter
         return new PdfExportResult(files, pages.Count, new ValidationResult(issues));
     }
 
+    /// <summary>
+    /// Kapak yaprağı PDF'i (Karar 11 Rev. 1): tek sayfa, arka + sırt + ön; taşma payı ve kesim işaretleri iç sayfalarla aynı
+    /// kurallarla. Kesim işaretleri açıksa katlama (sırt) çizgileri de üstte ve altta, taşma payının dışında işaretlenir.
+    /// </summary>
+    public static PdfExportResult ExportCover(AlbumProject project, CoverGeometry cover, string path, PdfExportSettings? settings = null)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+        ArgumentNullException.ThrowIfNull(cover);
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        if (project.Cover is not { } coverPage)
+        {
+            throw new InvalidOperationException("Projede kapak yok.");
+        }
+
+        settings ??= PdfExportSettings.FromProfile(project.Profile);
+        var issues = new List<ValidationIssue>();
+        var bleed = settings.IncludeBleed ? project.Profile.Bleed.Value : null;
+        if (settings.IncludeBleed && bleed is null)
+        {
+            issues.Add(new("export.bleed.missing", ValidationSeverity.Warning, "Profilde taşma payı yok; kapak taşma payı olmadan üretildi."));
+        }
+
+        var geometry = SheetGeometry.Create(cover.Sheet, bleed, settings.IncludeCropMarks, settings.CropMarkOffsetMm, settings.CropMarkLengthMm);
+        var assets = project.Assets.ToDictionary(a => a.Id, a => a.Effective(), StringComparer.Ordinal);
+        using var images = new ImageCache();
+        using var document = NewDocument(project, settings);
+        document.Info.Subject = string.Create(CultureInfo.InvariantCulture, $"Kapak {cover.Sheet.Width:0.##}×{cover.Sheet.Height:0.##} mm, sırt {cover.Spine.Width:0.##} mm");
+        var page = document.AddPage();
+        DrawPage(page, coverPage, 0, geometry, assets, images, issues);
+        if (settings.IncludeCropMarks)
+        {
+            using var gfx = XGraphics.FromPdfPage(page, XGraphicsPdfPageOptions.Append);
+            var pen = new XPen(XColors.Black, MarkThicknessPt);
+            foreach (var m in FoldMarks(geometry, cover, bleed ?? default, settings.CropMarkOffsetMm, settings.CropMarkLengthMm))
+            {
+                gfx.DrawLine(pen, m.X1 * PointsPerMm, m.Y1 * PointsPerMm, m.X2 * PointsPerMm, m.Y2 * PointsPerMm);
+            }
+        }
+
+        var file = SaveDocument(document, path);
+        return new PdfExportResult([file], 1, new ValidationResult(issues));
+    }
+
+    /// <summary>"album.pdf" → "album_kapak.pdf".</summary>
+    public static string CoverPath(string path)
+    {
+        var directory = Path.GetDirectoryName(path) ?? string.Empty;
+        return Path.Combine(directory, Path.GetFileNameWithoutExtension(path) + "_kapak" + Path.GetExtension(path));
+    }
+
+    /// <summary>Katlama çizgisi işaretleri (medya koordinatı, mm): her katlamada üstte ve altta birer dikey çizgi.</summary>
+    public static IReadOnlyList<MarkLine> FoldMarks(SheetGeometry geometry, CoverGeometry cover, EdgesMm bleed, double offset, double length)
+    {
+        ArgumentNullException.ThrowIfNull(geometry);
+        ArgumentNullException.ThrowIfNull(cover);
+        var top = geometry.Trim.Y - bleed.Top - offset;
+        var bottom = geometry.Trim.Bottom + bleed.Bottom + offset;
+        return
+        [
+            .. cover.Folds.SelectMany(f =>
+            {
+                var x = geometry.Trim.X + f;
+                return new[] { new MarkLine(x, top - length, x, top), new MarkLine(x, bottom, x, bottom + length) };
+            }),
+        ];
+    }
+
     /// <summary>"album.pdf" → "album_003.pdf".</summary>
     public static string NumberedPath(string path, int pageNumber)
     {

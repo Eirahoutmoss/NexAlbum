@@ -1,3 +1,7 @@
+Revizyon 1 — 13/10/2026 (kapak PDF'i ve JPG/PNG önizleme)
+Değişiklik: (1) Kapak varsa baskı PDF'inin yanına tek sayfalık "ad_kapak.pdf" yazılır: TrimBox = kapak yaprağı (arka + sırt + ön), taşma payı ve kesim işaretleri iç sayfalarla aynı kural; kesim işaretleri açıksa katlama (sırt) çizgileri üstte ve altta taşma payının dışında 0,25 pt çizgiyle işaretlenir. (2) §4 JPG ve §7.1 PNG uygulandı: sayfalar ekrandaki çizimle aynı sonuçla, bitmiş ölçüye kırpılarak 150 DPI kaydedilir ("ad_sayfa-001.jpg", kapak "ad_kapak.jpg"); JPEG kalitesi proje ayarından (varsayılan 90). "Bu dosya önizleme amaçlıdır. Baskı için PDF çıktısı kullanın." notu arayüzde ve JPEG meta verisinde (açıklama) yer alır. Renk sRGB.
+Değişmeyenler: baskı dosyası PDF'tir; JPG/PNG önizlemedir.
+
 Karar Dokümanı 11 — Çıktı Formatları, PSD Analizi ve Preflight
 Proje: NexAlbum
 Karar no: 11

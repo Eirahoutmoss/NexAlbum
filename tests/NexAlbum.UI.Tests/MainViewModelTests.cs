@@ -527,6 +527,10 @@ public sealed partial class MainViewModelTests : IDisposable
 
         public string? AskPdfPath(string suggestedName) => PdfPath;
 
+        public string? ImagePath { get; set; }
+
+        public string? AskImagePath(string suggestedName) => ImagePath;
+
         public void Reveal(string path) => Revealed = path;
 
         public void ShowAbout()

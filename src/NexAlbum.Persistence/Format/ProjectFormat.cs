@@ -17,8 +17,9 @@ public static class ProjectFormat
     /// v5 (Karar 09 Rev. 4): projede "video" (hikâye filmi ayarları, Karar 21).
     /// v6 (Karar 09 Rev. 5): yerleşim "filters" alanına "exposure", "temperature", "blackWhite".
     /// v7 (Karar 09 Rev. 6): varlıklarda "clockOffsetSeconds" (makine saat düzeltmesi; "capturedAt" düzeltilmiş zamandır).
+    /// v8 (Karar 09 Rev. 7): projede "cover" (kapak yaprağı: arka + sırt + ön, sayfa biçiminde).
     /// </summary>
-    public const int CurrentSchemaVersion = 7;
+    public const int CurrentSchemaVersion = 8;
 
     public const string ManifestEntry = "manifest.json";
     public const string ProjectEntry = "project.json";

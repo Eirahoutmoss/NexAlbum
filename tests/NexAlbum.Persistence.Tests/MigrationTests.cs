@@ -258,6 +258,24 @@ public class MigrationTests
     }
 
     [Fact]
+    public void V7ProjectIsUpgradedToV8WithoutCover()
+    {
+        using var dir = new TempDir();
+        var path = dir.File("v7.albumproj");
+        var v7 = PackageBuilder.EditJson(PackageBuilder.Valid(), ProjectFormat.ProjectEntry, n =>
+        {
+            n["schemaVersion"] = 7;
+            n.AsObject().Remove("cover");
+        });
+        File.WriteAllBytes(path, v7);
+
+        var loaded = ProjectPackageReader.Load(path, new LoadOptions { BackupBeforeMigration = false });
+
+        loaded.OriginalSchemaVersion.Should().Be(7);
+        loaded.Project.Cover.Should().BeNull();
+    }
+
+    [Fact]
     public void BuiltInChainReachesTheCurrentVersion()
     {
         var node = new JsonObject { ["schemaVersion"] = 1 };

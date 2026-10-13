@@ -128,6 +128,15 @@
           </Button>
 
           <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" WindowChrome.IsHitTestVisibleInChrome="True">
+            <!-- Paylaş ve diğer çıktılar: araç çubuğuna sığmayanlar -->
+            <Button Style="{StaticResource IconButton}" ui:Ui.Icon="{StaticResource Icon.Download}" Margin="0,0,2,0" Click="OnChapterNamesClick"
+                    ToolTip="Paylaş ve diğer çıktılar: JPG/PNG önizleme, HTML prova" AutomationProperties.Name="Paylaş ve çıktılar">
+              <Button.ContextMenu>
+                <ContextMenu>
+                  <MenuItem Header="Sayfaları JPG/PNG olarak kaydet (önizleme)…" Command="{Binding ExportImagesCommand}" />
+                </ContextMenu>
+              </Button.ContextMenu>
+            </Button>
             <Button Command="{Binding ToggleThemeCommand}" ToolTip="{Binding ThemeToggleToolTip}" Margin="0,0,2,0">
               <Button.Style>
                 <Style TargetType="Button" BasedOn="{StaticResource IconButton}">
@@ -396,9 +405,9 @@
                 <Grid>
                   <!-- Tek sayfa -->
                   <ContentControl Content="{Binding SelectedPage}" ContentTemplate="{StaticResource CanvasPage}" Focusable="False"
-                                  Visibility="{Binding IsBookView, Converter={StaticResource InverseBoolToVisibility}}" />
+                                  Visibility="{Binding ShowSingleCanvas, Converter={StaticResource BoolToVisibility}}" />
                   <!-- Kitap görünümü: karşılıklı iki sayfa + cilt gölgesi; etkin sayfa ince altın çizgiyle belirtilir -->
-                  <Grid Visibility="{Binding IsBookView, Converter={StaticResource BoolToVisibility}}">
+                  <Grid Visibility="{Binding ShowBookCanvas, Converter={StaticResource BoolToVisibility}}">
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition Width="*" />
                       <ColumnDefinition Width="*" />
@@ -498,6 +507,15 @@
                   <TextBlock Text="SAYFA" Style="{StaticResource HeaderText}" />
                 </DockPanel>
                 <TextBlock Text="{Binding SelectedPageInfo}" Style="{StaticResource SectionText}" />
+                <StackPanel Visibility="{Binding IsCoverSelected, Converter={StaticResource BoolToVisibility}}">
+                  <TextBlock Style="{StaticResource Caption}" Margin="16,6,16,0" TextWrapping="Wrap"
+                             Text="Soldan sağa: arka kapak · sırt · ön kapak (mor kesikli çizgiler katlama yeri). Ölçüler profilden gelir; sırt genişliğini baskı evinizden teyit edin. PDF'te ayrı dosya (ad_kapak.pdf) olarak çıkar." />
+                  <WrapPanel Margin="16,8,10,0">
+                    <Button Style="{StaticResource SmallButton}" Content="Kapağı yeniden oluştur" Command="{Binding CreateCoverCommand}" Margin="0,0,6,6"
+                            ToolTip="Profildeki güncel ölçülerle kapağı yeniden kurar (başlık korunur; geri alınabilir)." />
+                    <Button Style="{StaticResource SmallButton}" Content="Kapağı kaldır" Command="{Binding RemoveCoverCommand}" Margin="0,0,6,6" />
+                  </WrapPanel>
+                </StackPanel>
 
                 <StackPanel Visibility="{Binding HasSelectedSlot, Converter={StaticResource BoolToVisibility}}">
                   <TextBlock Text="SEÇİLİ YUVA" Style="{StaticResource PanelHeader}" />
@@ -1391,7 +1409,55 @@
             </ControlTemplate>
           </Button.Template>
         </Button>
-        <ListBox x:Name="PageStrip" ItemsSource="{Binding Pages}" SelectedItem="{Binding SelectedPage}" Padding="10,0"
+        <!-- Baştaki kapak kutusu: kapak yoksa oluşturur, varsa tuvalde açar -->
+        <Button DockPanel.Dock="Left" Width="64" Height="80" Margin="14,2,0,0" VerticalAlignment="Top"
+                Command="{Binding CreateCoverCommand}" ToolTip="{Binding CoverInfo}" AutomationProperties.Name="Kapak oluştur"
+                Visibility="{Binding HasNoCover, Converter={StaticResource BoolToVisibility}}">
+          <Button.Template>
+            <ControlTemplate TargetType="Button">
+              <Grid Background="Transparent">
+                <Rectangle x:Name="Box" RadiusX="6" RadiusY="6" Stroke="{DynamicResource BorderStrongBrush}" StrokeThickness="1.2" StrokeDashArray="4 3" />
+                <StackPanel VerticalAlignment="Center">
+                  <ui:NexIcon x:Name="Ic" Data="{StaticResource Icon.Book}" Width="18" Height="18" Foreground="{DynamicResource MutedTextBrush}" />
+                  <TextBlock x:Name="Tx" Text="Kapak" FontSize="11" HorizontalAlignment="Center" Margin="0,4,0,0" Foreground="{DynamicResource MutedTextBrush}" />
+                </StackPanel>
+              </Grid>
+              <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                  <Setter TargetName="Box" Property="Stroke" Value="{DynamicResource AccentBrush}" />
+                  <Setter TargetName="Ic" Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+                  <Setter TargetName="Tx" Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter Property="Opacity" Value="0.4" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Button.Template>
+        </Button>
+        <Button DockPanel.Dock="Left" Width="64" Height="80" Margin="14,2,0,0" VerticalAlignment="Top"
+                Command="{Binding ShowCoverCommand}" ToolTip="{Binding CoverInfo}" AutomationProperties.Name="Kapak"
+                Visibility="{Binding HasCover, Converter={StaticResource BoolToVisibility}}">
+          <Button.Template>
+            <ControlTemplate TargetType="Button">
+              <Border x:Name="Box" CornerRadius="6" BorderThickness="1.5" BorderBrush="{DynamicResource BorderStrongBrush}" Background="{DynamicResource SurfaceHoverBrush}">
+                <StackPanel VerticalAlignment="Center">
+                  <ui:NexIcon Data="{StaticResource Icon.Book}" Width="18" Height="18" Foreground="{DynamicResource AccentTextBrush}" />
+                  <TextBlock Text="Kapak" FontSize="11" HorizontalAlignment="Center" Margin="0,4,0,0" />
+                </StackPanel>
+              </Border>
+              <ControlTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsCoverSelected}" Value="True">
+                  <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                </DataTrigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                  <Setter TargetName="Box" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Button.Template>
+        </Button>
+        <ListBox x:Name="PageStrip" ItemsSource="{Binding Pages}" SelectedItem="{Binding StripSelectedPage}" Padding="10,0"
                  AllowDrop="True" PreviewMouseLeftButtonDown="OnStripMouseDown" PreviewMouseMove="OnStripMouseMove"
                  DragOver="OnStripDragOver" DragLeave="OnStripDragLeave" Drop="OnStripDrop"
                  ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Auto"

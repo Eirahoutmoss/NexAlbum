@@ -17,6 +17,7 @@ public partial class ProfileEditorWindow : Window
         InitializeComponent();
         form = new ProfileForm(profile);
         ColorBox.ItemsSource = ProfileForm.ColorModes;
+        CoverBox.ItemsSource = ProfileForm.CoverTypes;
         DataContext = form;
     }
 

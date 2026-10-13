@@ -169,6 +169,13 @@ public sealed class ScreenshotTests : IDisposable
                 Capture(main, "19-cerceve-gece").Should().BeTrue();
                 vm.IsFrameEditing = false;
 
+                // Kapak: arka + sırt + ön; katlama çizgileri, başlık ön kapakta.
+                vm.CreateCover();
+                vm.IsCoverSelected.Should().BeTrue();
+                Settle(main);
+                Capture(main, "20-kapak-gece").Should().BeTrue();
+                vm.StripSelectedPage = vm.Pages[0];
+
                 vm.DetectStory();
                 vm.Chapters.Should().HaveCount(4);
                 vm.SelectedChapter = vm.Chapters[1];
@@ -351,7 +358,8 @@ public sealed class ScreenshotTests : IDisposable
             files.Add(path);
         }
 
-        var project = AlbumProject.Create("Aile Albümü 2026", BuiltInProfiles.Find("builtin-30x30")!, now, "0.1.0", Guid.Parse("6d1f8a3e-0000-4000-8000-000000000001"));
+        var profile = BuiltInProfiles.Find("builtin-30x30")! with { Cover = new CoverSpec(CoverType.Hardcover, new Core.Geometry.SizeMm(300, 300), null, new SpineSpec(14)) };
+        var project = AlbumProject.Create("Aile Albümü 2026", profile, now, "0.1.0", Guid.Parse("6d1f8a3e-0000-4000-8000-000000000001"));
         project = new PhotoImporter().ImportFiles(files, project).ApplyTo(project);
 
         // Düğün günü akışı: örnek dosyalarda EXIF yok; çekim saatleri hikâye sekmesi için verilir.

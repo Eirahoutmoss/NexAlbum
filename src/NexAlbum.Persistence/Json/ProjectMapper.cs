@@ -39,6 +39,7 @@ internal static class ProjectMapper
         ProfileSnapshot = ProfileMapper.ToDto(p.Profile),
         Page = ProfileMapper.SizeToDto(p.PageSize),
         Pages = [.. p.Pages.Select((page, i) => PageToDto(page, i))],
+        Cover = p.Cover is { } cover ? PageToDto(cover, 0) : null,
         Assets = [.. p.Assets.Select(a => AssetToDto(a, p.PagesUsingAsset(a.Id)))],
         Settings = new SettingsDto
         {
@@ -118,6 +119,7 @@ internal static class ProjectMapper
             History = d.History is { } h ? new HistorySettings { Enabled = h.Enabled ?? true, MaxSteps = h.MaxSteps ?? 100 } : null,
             Story = d.Story is { } s ? At("story", () => StoryFromDto(s)) : StoryPlan.Empty,
             Video = d.Video is { } v ? At("video", () => VideoFromDto(v)) : Core.Video.VideoSettings.Default,
+            Cover = d.Cover is { } c ? PageFromDto(c, "cover") : null,
         };
     }
 

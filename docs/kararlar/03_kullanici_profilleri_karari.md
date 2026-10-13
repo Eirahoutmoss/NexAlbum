@@ -1,3 +1,9 @@
+Revizyon 1 — 13/10/2026 (kapak tasarımı)
+Değişiklik: Profil düzenleyiciye kapak alanları (tip: yok/yumuşak/sert; ön ve arka kapak G×Y; sırt genişliği) eklendi ve kapak tasarlanabilir oldu. İstek: Hasan Güler (kapak ve sırt).
+- Kapak yaprağı tek parçadır: soldan sağa arka kapak + sırt + ön kapak; yükseklik ön/arka kapağın büyüğü. Sırt genişliği §8'deki gibi yalnızca elle girilir; uygulama hesaplamaz. Ön kapak ya da sırt yoksa kapak kurulmaz ("Baskı evinizden … isteyin"). Arka kapak ölçüsü boşsa ön kapakla aynı alınır ve bilgi notu verilir.
+- Kapak iç sayfalar gibi düzenlenir (fotoğraf, yazı, çerçeve, fon); katlama çizgileri yalnızca ekranda görünür. Ön kontrol: profil artık kapak kuramıyorsa uyarı; ön kapak yuvası güncel katlama çizgisinde değilse "kapak eski ölçüyle oluşturulmuş" uyarısı; her zaman "sırt genişliğini sayfa sayısıyla teyit edin" bilgisi (§8.3).
+Dosya biçimi etkisi: Karar 09 Revizyon 7 (şema v8).
+
 Karar Dokümanı 03 — Kullanıcı Tanımlı Baskı Profilleri
 Proje: NexAlbum
 Karar no: 03

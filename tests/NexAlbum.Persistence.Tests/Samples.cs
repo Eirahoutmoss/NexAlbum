@@ -188,6 +188,17 @@ internal static class Samples
                 ChapterTitles = false,
                 Overrides = [new Core.Video.ChapterVideoOverride("chapter-02", Core.Video.TransitionKind.DipToWhite, Core.Video.VideoLook.Sepia)],
             },
+            Cover = new AlbumPage
+            {
+                Id = "cover",
+                Type = PageType.FrontCover,
+                CreatedAt = Now,
+                UpdatedAt = Now,
+                Elements =
+                [
+                    new Slot { Id = "cover-front", Bounds = new RectMm(318, -3, 303, 306), Placement = new PhotoPlacement { AssetId = "asset-001" }, ZIndex = 1 },
+                ],
+            },
         };
     }
 

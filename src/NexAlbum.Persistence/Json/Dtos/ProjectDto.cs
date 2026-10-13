@@ -36,6 +36,9 @@ internal sealed class ProjectDto
 
     /// <summary>Şema v5: hikâye filmi ayarları.</summary>
     public VideoDto? Video { get; set; }
+
+    /// <summary>Şema v8: kapak yaprağı (arka + sırt + ön); yoksa null.</summary>
+    public PageDto? Cover { get; set; }
 }
 
 internal sealed class VideoDto

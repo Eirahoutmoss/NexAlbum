@@ -86,6 +86,19 @@ public sealed class DialogService(Window owner) : IDialogService
         return dialog.ShowDialog(owner) == true ? dialog.FileName : null;
     }
 
+    public string? AskImagePath(string suggestedName)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Filter = "JPEG önizleme (*.jpg)|*.jpg|PNG (*.png)|*.png",
+            Title = "Sayfaları görüntü olarak kaydet (önizleme)",
+            FileName = suggestedName,
+            DefaultExt = ".jpg",
+            AddExtension = true,
+        };
+        return dialog.ShowDialog(owner) == true ? dialog.FileName : null;
+    }
+
     public void Reveal(string path) =>
         Process.Start(new ProcessStartInfo("explorer.exe", "/select,\"" + path + "\"") { UseShellExecute = true })?.Dispose();
 

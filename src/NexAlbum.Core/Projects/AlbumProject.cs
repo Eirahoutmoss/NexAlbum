@@ -40,6 +40,12 @@ public sealed record AlbumProject
     /// <summary>Hikâye akışı: zamansal bölümler (Karar 10 Rev. 2–3); yoksa boş.</summary>
     public StoryPlan Story { get; init => field = value ?? throw new ArgumentNullException(nameof(Story)); } = StoryPlan.Empty;
 
+    /// <summary>
+    /// Kapak yaprağı (arka + sırt + ön, tek parça; Karar 09 Rev. 7). Koordinatları kapak yaprağının sol üst köşesine göredir.
+    /// Yoksa null. İç sayfalardan ayrıdır: sayfa sırasına ve sayıma girmez.
+    /// </summary>
+    public AlbumPage? Cover { get; init; }
+
     /// <summary>Hikâye filmi ayarları (Karar 21 §6).</summary>
     public global::NexAlbum.Core.Video.VideoSettings Video { get; init => field = value ?? throw new ArgumentNullException(nameof(Video)); } = global::NexAlbum.Core.Video.VideoSettings.Default;
 
@@ -99,6 +105,11 @@ public sealed record AlbumProject
     public AlbumProject ReplacePage(AlbumPage page)
     {
         ArgumentNullException.ThrowIfNull(page);
+        if (Cover is not null && string.Equals(page.Id, Cover.Id, StringComparison.Ordinal))
+        {
+            return this with { Cover = page };
+        }
+
         var index = RequirePage(page.Id);
         var list = Pages.ToList();
         list[index] = page;
@@ -167,6 +178,7 @@ public sealed record AlbumProject
         {
             Assets = [.. Assets.Where(a => a.Id != assetId)],
             Pages = [.. Pages.Select(p => p.UsesAsset(assetId) ? p.ClearPlacementsOf(assetId) : p)],
+            Cover = Cover is { } cover && cover.UsesAsset(assetId) ? cover.ClearPlacementsOf(assetId) : Cover,
         };
     }
 
