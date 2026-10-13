@@ -1090,9 +1090,9 @@
           <TabItem Header="Hikâye" ui:Ui.Icon="{StaticResource Icon.Story}" IsEnabled="{Binding HasProject}">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
               <StackPanel Margin="0,0,0,20">
-                <TextBlock Text="DÜĞÜNÜN AKIŞI" Style="{StaticResource PanelHeader}" />
+                <TextBlock Text="ZAMAN AKIŞI" Style="{StaticResource PanelHeader}" />
                 <TextBlock Style="{StaticResource Caption}" Margin="16,-2,16,8" TextWrapping="Wrap"
-                           Text="Fotoğraflar çekim saatine göre bölümlere ayrılır: hazırlık, gelin alma, dış çekim, nikâh, düğün… Her bölüm albümde yeni sayfada başlar." />
+                           Text="Fotoğraflar çekim saatine göre bölümlere ayrılır: sabah, öğle, akşam; birden çok günde gün adıyla. Her bölüm albümde yeni sayfada başlar. Adları dilediğiniz gibi değiştirin." />
                 <DockPanel Margin="16,0,16,6">
                   <TextBlock DockPanel.Dock="Right" Text="{Binding StoryGapMinutes, StringFormat={}{0:0} dk}" Width="46" TextAlignment="Right" VerticalAlignment="Center"
                              Foreground="{DynamicResource SecondaryTextBrush}" />

@@ -43,7 +43,7 @@ public class VideoPlannerTests
 
         timeline.Format.Width.Should().Be(3840);
         timeline.Clips.OfType<PhotoClip>().Should().HaveCount(20, "film tüm hikâyeyi anlatır");
-        timeline.Clips.OfType<TitleClip>().Select(t => t.Title).Should().Equal(project.Name, "Hazırlık", "Gelin Alma", "Dış Çekim", "Düğün");
+        timeline.Clips.OfType<TitleClip>().Select(t => t.Title).Should().Equal(project.Name, "Sabah", "Öğle", "Öğleden sonra", "Akşam");
         timeline.Clips.OfType<TitleClip>().First().Subtitle.Should().Be("13 HAZİRAN 2026");
         timeline.Clips[0].Start.Should().Be(0);
 
@@ -110,7 +110,7 @@ public class VideoPlannerTests
         timeline.Clips.OfType<PhotoClip>().Should().OnlyContain(c => c.From == c.To, "hareket azaltma");
         timeline.Clips.Select(c => c.TransitionIn).Should().OnlyContain(t => t == TransitionKind.Cut || t == TransitionKind.Crossfade || t == TransitionKind.DipToBlack || t == TransitionKind.DipToWhite);
         timeline.Clips.OfType<PhotoClip>().Where(c => c.AssetId.StartsWith("dis", StringComparison.Ordinal)).Should().OnlyContain(c => c.Look == VideoLook.BlackWhite);
-        timeline.Clips.OfType<TitleClip>().Single(t => t.Title == "Dış Çekim").TransitionIn.Should().Be(TransitionKind.DipToWhite);
+        timeline.Clips.OfType<TitleClip>().Single(t => t.Title == "Öğleden sonra").TransitionIn.Should().Be(TransitionKind.DipToWhite);
 
         settings.WithOverride(new ChapterVideoOverride(chapter.Id)).Overrides.Should().BeEmpty("boş seçim elle ayarı kaldırır");
     }

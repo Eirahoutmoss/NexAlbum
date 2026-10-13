@@ -40,7 +40,7 @@ public class StoryTests
     {
         var plan = StoryDetector.Detect(Wedding());
 
-        plan.Chapters.Select(c => c.Name).Should().Equal("Kına Gecesi", "Hazırlık", "Gelin Alma", "Dış Çekim", "Nikâh", "Düğün");
+        plan.Chapters.Select(c => c.Name).Should().Equal("Cuma · Akşam", "Cumartesi · Sabah", "Cumartesi · Öğle", "Cumartesi · Öğleden sonra", "Cumartesi · Akşam", "Cumartesi · Akşam II");
         plan.Chapters[1].Start.Should().Be(At(13, 9, 30));
         plan.Chapters.Select(c => c.Id).Should().OnlyHaveUniqueItems();
         StoryDetector.Detect(Wedding()).Should().BeEquivalentTo(plan, "deterministik");
@@ -56,7 +56,7 @@ public class StoryTests
         var plan = StoryDetector.Detect(photos);
 
         plan.Chapters.Should().HaveCount(6, "iki fotoğraflık ara çekim hazırlığa katılır");
-        plan.ChapterOf(photos.Single(p => p.Id == "ara-2"))!.Name.Should().Be("Hazırlık");
+        plan.ChapterOf(photos.Single(p => p.Id == "ara-2"))!.Name.Should().Be("Cumartesi · Sabah");
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class StoryTests
         var photos = times.Select((t, i) => TestData.Asset($"a{i}") with { CapturedAt = t }).ToList();
 
         var plan = StoryDetector.Detect(photos, new StoryDetectionOptions { Gap = TimeSpan.FromMinutes(45), MinPhotos = 1 });
-        plan.Chapters.Select(c => c.Name).Should().Equal(new[] { "Düğün", "Düğün II", "Ertesi Gün" }, "gece yarısından sonrası ertesi gündür");
+        plan.Chapters.Select(c => c.Name).Should().Equal(new[] { "Cumartesi · Akşam", "Cumartesi · Akşam II", "Pazar · Gece" }, "gece yarısından sonrası ertesi gündür");
 
         StoryDetector.Detect(photos, new StoryDetectionOptions { Gap = TimeSpan.FromHours(2), MinPhotos = 1 }).Chapters.Should().HaveCount(2, "gün değişimi her zaman böler");
         StoryDetector.Detect([TestData.Asset("x")]).HasChapters.Should().BeFalse("zamanı olan fotoğraf yok");
@@ -82,7 +82,7 @@ public class StoryTests
         groups.Should().HaveCount(7, "6 bölüm + zamansızlar");
         groups[^1].Chapter.Should().BeNull();
         groups[^1].Photos.Should().ContainSingle(p => p.Id == "zamansiz");
-        groups.Single(g => g.Chapter?.Name == "Düğün").Photos.Should().Contain(p => p.Id == "kayip-1");
+        groups.Single(g => g.Chapter?.Name == "Cumartesi · Akşam II").Photos.Should().Contain(p => p.Id == "kayip-1");
         groups.SelectMany(g => g.Photos).Should().HaveCount(photos.Count);
 
         var renamed = plan.Rename(plan.Chapters[4].Id, "  Nikâh Töreni ");
@@ -91,7 +91,7 @@ public class StoryTests
         var merged = renamed.MergeWithPrevious(renamed.Chapters[5].Id);
         merged.Chapters.Should().HaveCount(5);
         merged.ChapterOf(photos.Single(p => p.Id == "dugun-03"))!.Name.Should().Be("Nikâh Töreni");
-        merged.MergeWithPrevious(merged.Chapters[0].Id).Chapters[0].Name.Should().Be("Kına Gecesi", "ilk bölüm sonrakini yutar");
+        merged.MergeWithPrevious(merged.Chapters[0].Id).Chapters[0].Name.Should().Be("Cuma · Akşam", "ilk bölüm sonrakini yutar");
 
         var split = merged.SplitAt(At(13, 16, 20), "Gün Batımı");
         split.Chapters.Should().HaveCount(6);

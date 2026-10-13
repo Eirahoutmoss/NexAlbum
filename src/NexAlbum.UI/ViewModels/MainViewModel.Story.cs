@@ -69,7 +69,7 @@ public sealed record ChapterNameSuggestion(string Name, IRelayCommand ApplyComma
 public sealed record TimelineBin(double Height, Brush Color, string ToolTip);
 
 /// <summary>
-/// Hikâye akışı (Karar 10 Rev. 2): düğünün bölümlerini bulma, adlandırma, birleştirme/bölme ve albümü bölümlere göre
+/// Hikâye akışı (Karar 10 Rev. 2): zamansal bölümleri bulma, adlandırma, birleştirme/bölme ve albümü bölümlere göre
 /// oluşturma. Bölümler projeye yazılır; tüm değişiklikler geri alınabilir.
 /// </summary>
 public sealed partial class MainViewModel
@@ -198,9 +198,8 @@ public sealed partial class MainViewModel
             return;
         }
 
-        var mainDay = project.Photos.Where(p => p.CapturedAt is not null).GroupBy(p => p.CapturedAt!.Value.DateTime.Date)
-            .OrderByDescending(g => g.Count()).ThenBy(g => g.Key).First().Key;
-        UpdateStory(s => s.SplitAt(at, StoryDetector.Suggest(at, mainDay)), "Yeni bölüm");
+        var days = project.Photos.Where(p => p.CapturedAt is not null).Select(p => p.CapturedAt!.Value.DateTime.Date).ToList();
+        UpdateStory(s => s.SplitAt(at, StoryDetector.Suggest(at, days.Min(), days.Max())), "Yeni bölüm");
         PanelTabIndex = StoryTabIndex;
         Status = "Bu fotoğraftan itibaren yeni bölüm başladı. Adını Hikâye sekmesinden değiştirebilirsiniz.";
     }

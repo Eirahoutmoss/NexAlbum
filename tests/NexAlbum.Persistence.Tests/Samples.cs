@@ -172,8 +172,8 @@ internal static class Samples
                 Openers = true,
                 Chapters =
                 [
-                    new StoryChapter("chapter-01", "Hazırlık", Now.AddYears(-1).AddHours(-3)),
-                    new StoryChapter("chapter-02", "Gelin Alma", new DateTimeOffset(2025, 10, 12, 14, 30, 0, TimeSpan.FromHours(3))),
+                    new StoryChapter("chapter-01", "Sabah", Now.AddYears(-1).AddHours(-3)),
+                    new StoryChapter("chapter-02", "Öğle", new DateTimeOffset(2025, 10, 12, 14, 30, 0, TimeSpan.FromHours(3))),
                 ],
             },
             Video = new Core.Video.VideoSettings

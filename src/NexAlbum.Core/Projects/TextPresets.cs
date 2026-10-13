@@ -72,7 +72,7 @@ public static class TextPresets
         new("title", "Başlık", "Birlikte", new FontSpec { Family = "Great Vibes", Size = 54, Color = Ink }, TextAlignment.Center, 70, 42, 1, 1.1),
         new("subtitle", "Alt başlık", "sonsuza dek", new FontSpec { Family = "Cormorant Garamond", Size = 20, Italic = true, Color = Ink }, TextAlignment.Center, 60, 54, 1),
         new("date", "Tarih", "13 EKİM 2026", new FontSpec { Family = "Montserrat", Size = 10, Color = Gold }, TextAlignment.Center, 50, 62, 1, 1.4),
-        new("names", "İsimler", "Elif & Can", new FontSpec { Family = "Playfair Display", Size = 28, Color = Ink }, TextAlignment.Center, 70, 48, 1),
+        new("names", "İsimler", "Ece & Deniz", new FontSpec { Family = "Playfair Display", Size = 28, Color = Ink }, TextAlignment.Center, 70, 48, 1),
         new("quote", "Alıntı", "Bazı anlar bir ömür sürer.", new FontSpec { Family = "Cormorant Garamond", Size = 16, Italic = true, Color = Ink }, TextAlignment.Center, 62, 80, 2, 1.35),
         new("body", "Serbest metin", "Metninizi yazın", new FontSpec { Family = "Cormorant Garamond", Size = 13, Color = Ink }, TextAlignment.Left, 50, 50, 3, 1.35),
     ];

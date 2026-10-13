@@ -37,7 +37,7 @@ public sealed record AlbumProject
 
     public HistorySettings? History { get; init; }
 
-    /// <summary>Hikâye akışı: düğünün bölümleri (Karar 10 Rev. 2); yoksa boş.</summary>
+    /// <summary>Hikâye akışı: zamansal bölümler (Karar 10 Rev. 2–3); yoksa boş.</summary>
     public StoryPlan Story { get; init => field = value ?? throw new ArgumentNullException(nameof(Story)); } = StoryPlan.Empty;
 
     /// <summary>Hikâye filmi ayarları (Karar 21 §6).</summary>

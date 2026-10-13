@@ -76,7 +76,7 @@ public sealed record VideoStyle(
 {
     public static IReadOnlyList<VideoStyle> All { get; } =
     [
-        new("elegant", "Zarif", "Yumuşak çapraz geçişler, yavaş yaklaşma; her düğüne yakışır.",
+        new("elegant", "Zarif", "Yumuşak çapraz geçişler, yavaş yaklaşma; her hikâyeye yakışır.",
             [TransitionKind.Crossfade, TransitionKind.Crossfade, TransitionKind.FocusShift], TransitionKind.DipToBlack, 3.6, 1.1, 0.08, VideoLook.Natural, false, false),
         new("cinematic", "Sinematik", "Siyaha geçişler, geniş ve ağır hareket, sıcak ton ve vinyet.",
             [TransitionKind.Crossfade, TransitionKind.DipToBlack, TransitionKind.FocusShift], TransitionKind.DipToBlack, 4.4, 1.4, 0.11, VideoLook.Warm, true, false),

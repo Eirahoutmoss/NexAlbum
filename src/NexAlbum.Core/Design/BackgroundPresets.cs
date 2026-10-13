@@ -6,7 +6,7 @@ namespace NexAlbum.Core.Design;
 /// <summary>Hazır fon.</summary>
 public sealed record BackgroundPreset(string Id, string Name, BackgroundFill Fill);
 
-/// <summary>Düğün albümlerine uygun düz renk ve gradyan fonlar.</summary>
+/// <summary>Albümlere uygun düz renk ve gradyan fonlar.</summary>
 public static class BackgroundPresets
 {
     public static IReadOnlyList<BackgroundPreset> Colors { get; } =
