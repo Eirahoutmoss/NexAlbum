@@ -158,6 +158,14 @@ public sealed partial class MainViewModel
         set => SetFilter(value, GalleryFilter.Edited);
     }
 
+    public bool IsFilterFavorites
+    {
+        get => galleryFilter == GalleryFilter.Favorites;
+        set => SetFilter(value, GalleryFilter.Favorites);
+    }
+
+    public string FilterFavoritesText => Assets.Count(a => a.IsFavorite).ToString(CultureInfo.CurrentCulture);
+
     public string FilterAllText => Count("Tümü", Assets.Count);
 
     public string FilterUnusedText => Count("Kullanılmamış", Assets.Count(a => !a.IsUsed));
@@ -188,6 +196,7 @@ public sealed partial class MainViewModel
             GalleryFilter.Unused => "Tüm fotoğraflar albümde kullanılıyor.",
             GalleryFilter.Used => "Albümde henüz fotoğraf yok. «Oto Oluştur» ile başlayın.",
             GalleryFilter.Edited => "Rötuşlanmış fotoğraf yok. «Rötuş» ile toplu düzenleyebilirsiniz.",
+            GalleryFilter.Favorites => "Favori yok. Fotoğrafın yıldızına tıklayın ya da seçip F'ye basın;\nfavoriler otomatik yerleşimde önce yerleşir.",
             _ => string.Empty,
         };
 
@@ -342,6 +351,7 @@ public sealed partial class MainViewModel
         GalleryFilter.Unused => !item.IsUsed,
         GalleryFilter.Used => item.IsUsed,
         GalleryFilter.Edited => item.IsEdited,
+        GalleryFilter.Favorites => item.IsFavorite,
         _ => true,
     };
 
@@ -349,7 +359,7 @@ public sealed partial class MainViewModel
     private void RebuildGallery()
     {
         var keep = SelectedAsset?.Asset.Id;
-        var visible = Assets.Where(Matches).ToList();
+        var visible = Sorted(Assets.Where(Matches)).ToList();
         GalleryRows.Clear();
         for (var i = 0; i < visible.Count; i += galleryColumns)
         {
@@ -370,6 +380,8 @@ public sealed partial class MainViewModel
         OnPropertyChanged(nameof(IsFilterUnused));
         OnPropertyChanged(nameof(IsFilterUsed));
         OnPropertyChanged(nameof(IsFilterEdited));
+        OnPropertyChanged(nameof(IsFilterFavorites));
+        OnPropertyChanged(nameof(FilterFavoritesText));
         OnPropertyChanged(nameof(FilterAllText));
         OnPropertyChanged(nameof(FilterUnusedText));
         OnPropertyChanged(nameof(FilterUsedText));
@@ -463,6 +475,10 @@ public sealed partial class MainViewModel
         new("Galeri: kullanılmamışlar", "Galeri", "Icon.Gallery", null, new RelayCommand(() => GalleryFilter = GalleryFilter.Unused), "süzgeç filtre boşta"),
         new("Galeri: albümdekiler", "Galeri", "Icon.Gallery", null, new RelayCommand(() => GalleryFilter = GalleryFilter.Used), "süzgeç filtre kullanılan"),
         new("Galeri: rötuşlananlar", "Galeri", "Icon.Gallery", null, new RelayCommand(() => GalleryFilter = GalleryFilter.Edited), "süzgeç filtre düzenlenen"),
+        new("Galeri: favoriler", "Galeri", "Icon.Star", null, new RelayCommand(() => GalleryFilter = GalleryFilter.Favorites), "süzgeç filtre yıldız seçilen"),
+        new("Favori yap / kaldır", "Galeri", "Icon.Star", "F", ToggleFavoriteCommand, "yıldız beğen seç öne çıkar"),
+        new("Galeri: çekim zamanına göre sırala", "Galeri", "Icon.Gallery", null, new RelayCommand(() => SelectedGallerySort = GallerySortOptions[1]), "sırala tarih saat exif"),
+        new("Galeri: dosya adına göre sırala", "Galeri", "Icon.Gallery", null, new RelayCommand(() => SelectedGallerySort = GallerySortOptions[2]), "sırala ad isim"),
         new("Ayarlar", "Uygulama", "Icon.Settings", null, EditSettingsCommand, "tema düzenleyici klasör"),
         new("Hakkında", "Uygulama", "Icon.Info", "F1", AboutCommand, "sürüm lisans geliştirici"),
     ];

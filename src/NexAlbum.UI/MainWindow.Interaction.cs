@@ -23,6 +23,11 @@ public partial class MainWindow
     /// <summary>Sayfa şeridinde sürüklenen sayfa (aynı süreç içi; nesnenin kendisi taşınır).</summary>
     private const string PageFormat = "NexAlbum.Page";
 
+    /// <summary>Yuvadan sürüklenen fotoğrafın sayfası (şeritteki başka bir sayfaya taşımak için).</summary>
+    private const string SourcePageFormat = "NexAlbum.SourcePageId";
+
+    private PageItemViewModel? stripPhotoTarget;
+
     private Point stripStart;
     private PageItemViewModel? stripPage;
     private PageItemViewModel? stripMark;
@@ -62,6 +67,7 @@ public partial class MainWindow
         galleryItem = null;
         DragDrop.DoDragDrop(Gallery, new DataObject(AssetFormat, item.Asset.Id), DragDropEffects.Copy);
         ClearDropTarget();
+        SetStripPhotoTarget(null);
     }
 
     /// <summary>Sürüklemeye dönüşmeyen tıklama fotoğrafı seçer (sağ tık menüsü ve "Düzenleyicide aç" bunun üzerinde çalışır).</summary>
@@ -70,6 +76,7 @@ public partial class MainWindow
         if (galleryItem is { } item)
         {
             ViewModel.SelectedAsset = item;
+            Gallery.Focus();
         }
 
         galleryItem = null;
@@ -137,6 +144,18 @@ public partial class MainWindow
 
     private void OnStripDragOver(object sender, DragEventArgs e)
     {
+        // Galeriden ya da tuvaldeki yuvadan gelen fotoğraf: üzerine gelinen sayfanın boş yuvasına konur.
+        if (e.Data.GetDataPresent(AssetFormat) || e.Data.GetDataPresent(SourcePageFormat))
+        {
+            var target = StripPageUnder(e);
+            var ok = MainViewModel.CanReceivePhoto(target)
+                && !(e.Data.GetData(SourcePageFormat) is string dragged && string.Equals(dragged, target!.Page.Id, StringComparison.Ordinal));
+            SetStripPhotoTarget(ok ? target : null);
+            e.Effects = !ok ? DragDropEffects.None : e.Data.GetDataPresent(AssetFormat) ? DragDropEffects.Copy : DragDropEffects.Move;
+            e.Handled = true;
+            return;
+        }
+
         if (e.Data.GetData(PageFormat) is not PageItemViewModel)
         {
             e.Effects = DragDropEffects.None;
@@ -150,12 +169,29 @@ public partial class MainWindow
         e.Handled = true;
     }
 
-    private void OnStripDragLeave(object sender, DragEventArgs e) => ClearStripMark();
+    private void OnStripDragLeave(object sender, DragEventArgs e)
+    {
+        ClearStripMark();
+        SetStripPhotoTarget(null);
+    }
 
     private void OnStripDrop(object sender, DragEventArgs e)
     {
         ClearStripMark();
+        SetStripPhotoTarget(null);
         e.Handled = true;
+        if (e.Data.GetData(AssetFormat) is string assetId)
+        {
+            ViewModel.PlaceOnPage(StripPageUnder(e), assetId);
+            return;
+        }
+
+        if (e.Data.GetData(SourcePageFormat) is string sourcePage && e.Data.GetData(SlotFormat) is string slotId)
+        {
+            ViewModel.MovePhotoToPage(sourcePage, slotId, StripPageUnder(e));
+            return;
+        }
+
         if (e.Data.GetData(PageFormat) is not PageItemViewModel page || !ViewModel.Pages.Contains(page))
         {
             return;
@@ -178,6 +214,31 @@ public partial class MainWindow
         }
 
         return ViewModel.Pages.Count;
+    }
+
+    private static PageItemViewModel? StripPageUnder(DragEventArgs e)
+    {
+        for (var current = e.OriginalSource as DependencyObject; current is not null; current = ParentOf(current))
+        {
+            if (current is ListBoxItem { DataContext: PageItemViewModel page })
+            {
+                return page;
+            }
+        }
+
+        return null;
+    }
+
+    private void SetStripPhotoTarget(PageItemViewModel? page)
+    {
+        if (ReferenceEquals(page, stripPhotoTarget))
+        {
+            return;
+        }
+
+        stripPhotoTarget?.IsPhotoDropTarget = false;
+        stripPhotoTarget = page;
+        page?.IsPhotoDropTarget = true;
     }
 
     private void SetStripMark(PageItemViewModel? page)
@@ -284,8 +345,15 @@ public partial class MainWindow
         {
             var source = pressedSlot;
             ResetPress();
-            DragDrop.DoDragDrop(CanvasArea, new DataObject(SlotFormat, source.Id), DragDropEffects.Move);
+            var data = new DataObject(SlotFormat, source.Id);
+            if (ViewModel.SelectedPage is { } origin)
+            {
+                data.SetData(SourcePageFormat, origin.Page.Id);
+            }
+
+            DragDrop.DoDragDrop(CanvasArea, data, DragDropEffects.Move);
             ClearDropTarget();
+            SetStripPhotoTarget(null);
         }
     }
 
@@ -365,7 +433,16 @@ public partial class MainWindow
         }
         else if (slot is not null && e.Data.GetData(SlotFormat) is string sourceId)
         {
-            ViewModel.MoveSlot(sourceId, slot);
+            // Kitap görünümünde karşı sayfadaki yuvaya bırakılırsa fotoğraf o sayfaya geçer (doluysa yer değiştirir).
+            var targetPage = PageAt(VisualTreeHelper.HitTest(CanvasArea, e.GetPosition(CanvasArea))?.VisualHit);
+            if (e.Data.GetData(SourcePageFormat) is string originPage && targetPage is not null && !string.Equals(originPage, targetPage.Page.Id, StringComparison.Ordinal))
+            {
+                ViewModel.MovePhotoToSlot(originPage, sourceId, targetPage, slot);
+            }
+            else
+            {
+                ViewModel.MoveSlot(sourceId, slot);
+            }
         }
     }
 
@@ -444,6 +521,19 @@ public partial class MainWindow
     /// Kitap görünümünde tıklanan/bırakılan öğenin sayfası seçili değilse önce o sayfa seçilir; düzenleme işlemleri
     /// her zaman seçili sayfada çalışır.
     /// </summary>
+    private static PageItemViewModel? PageAt(DependencyObject? source)
+    {
+        for (var current = source; current is not null; current = ParentOf(current))
+        {
+            if (current is FrameworkElement { DataContext: PageItemViewModel page })
+            {
+                return page;
+            }
+        }
+
+        return null;
+    }
+
     private void FocusPageOf(DependencyObject? source)
     {
         for (var current = source; current is not null; current = ParentOf(current))

@@ -64,6 +64,8 @@ public sealed class ScreenshotTests : IDisposable
                 var vm = main.ViewModel;
                 vm.SelectedPage = vm.Pages[Math.Min(1, vm.Pages.Count - 1)];
                 ShowGeometricPage(vm);
+                vm.ToggleFavorite(vm.Assets[0]);
+                vm.ToggleFavorite(vm.Assets[4]);
                 vm.SelectedAsset = vm.Assets[2];
                 Settle(main);
                 Capture(main, "02-calisma-gece").Should().BeTrue();

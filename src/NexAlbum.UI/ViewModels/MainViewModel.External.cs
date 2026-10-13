@@ -48,6 +48,7 @@ public sealed partial class MainViewModel : IBatchEditHost
                 previous?.IsSelected = false;
                 value?.IsSelected = true;
                 RefreshExternalCommands();
+                ToggleFavoriteCommand?.NotifyCanExecuteChanged();
             }
         }
     }

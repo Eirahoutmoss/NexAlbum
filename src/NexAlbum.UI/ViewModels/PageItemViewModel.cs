@@ -18,6 +18,7 @@ public sealed class PageItemViewModel : ObservableObject
 {
     private Brush background;
     private bool isDropBefore;
+    private bool isPhotoDropTarget;
 
     public PageItemViewModel(AlbumPage page, int index, AlbumProject project)
     {
@@ -67,6 +68,13 @@ public sealed class PageItemViewModel : ObservableObject
     {
         get => isDropBefore;
         set => SetProperty(ref isDropBefore, value);
+    }
+
+    /// <summary>Sürüklenen fotoğraf bu sayfanın boş yuvasına bırakılacak (şeritte altın çerçeve).</summary>
+    public bool IsPhotoDropTarget
+    {
+        get => isPhotoDropTarget;
+        set => SetProperty(ref isPhotoDropTarget, value);
     }
 
     /// <summary>Sayfa şeridindeki küçük resmin yüksekliği (DIP).</summary>

@@ -22,7 +22,7 @@ public sealed class AssetItemViewModel(PhotoAsset asset, bool used) : Observable
     }
 
     /// <summary>Izgaradaki ipucu: dosya adı, boyut, çekim zamanı ve durum.</summary>
-    public string ToolTipText => FileName + "\n" + Details
+    public string ToolTipText => FileName + (IsFavorite ? "  ★" : string.Empty) + "\n" + Details
         + (IsUsed ? "\nAlbümde" : "\nHenüz kullanılmadı")
         + (IsEdited ? "\n" + EditBadge : string.Empty)
         + (IsMissing ? "\nDosya bulunamadı" : string.Empty);
@@ -30,6 +30,9 @@ public sealed class AssetItemViewModel(PhotoAsset asset, bool used) : Observable
     public string FileName => Asset.FileName;
 
     public bool IsUsed { get; } = used;
+
+    /// <summary>Favori (yıldızlı): otomatik yerleşimde önce yerleşir (Karar 10 §9.5).</summary>
+    public bool IsFavorite => Asset.Favorite;
 
     public bool IsMissing => Asset.Missing && !Asset.IsEditActive;
 
