@@ -54,6 +54,13 @@ public class XamlSmokeTests
             presentation.DataContext.Should().BeOfType<PresentationViewModel>();
             presentation.Close();
 
+            using (var film = new VideoViewModel(empty, _ => { }, () => new Services.AppSettings(), _ => { }))
+            {
+                var video = new VideoWindow(film);
+                video.DataContext.Should().BeOfType<VideoViewModel>();
+                video.Close();
+            }
+
             main.Close();
             about.Close();
             newProject.Close();
