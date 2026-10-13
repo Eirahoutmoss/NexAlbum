@@ -75,7 +75,7 @@ public sealed partial class MainViewModel : IBatchEditHost
         {
             if (project is not null && SelectedSlotAsset is { Edit: not null } asset && asset.UseEdit == value)
             {
-                UpdateProject(PhotoEdits.SetUseEdit(project, asset.Id, use: !value));
+                UpdateProject(PhotoEdits.SetUseEdit(project, asset.Id, use: !value), "Önce/sonra");
                 Status = value ? asset.FileName + ": orijinal gösteriliyor." : asset.FileName + ": düzenlenmiş sürüm gösteriliyor.";
             }
         }
@@ -138,7 +138,7 @@ public sealed partial class MainViewModel : IBatchEditHost
             ImageLoader.Shared.Invalidate(edit.Path);
         }
 
-        UpdateProject(result.ApplyTo(project));
+        UpdateProject(result.ApplyTo(project), "Toplu rötuş");
         Status = string.Format(CultureInfo.CurrentCulture, "{0} fotoğrafa «{1}» uygulandı; orijinaller değişmedi.", result.Edits.Count, result.Recipe.Name);
     }
 
@@ -223,7 +223,7 @@ public sealed partial class MainViewModel : IBatchEditHost
             Tool = editor is null ? "Harici düzenleyici" : Path.GetFileNameWithoutExtension(editor),
             Recipe = asset.Edit?.Path == Path.GetFullPath(path) ? asset.Edit.Recipe : null,
             CreatedAt = clock.GetUtcNow(),
-        }));
+        }), "Harici düzenleme");
         Status = asset.FileName + ": düzenleyicideki değişiklik albüme yansıdı.";
     }
 
@@ -242,7 +242,7 @@ public sealed partial class MainViewModel : IBatchEditHost
         }
 
         StopWatching(asset.Id);
-        UpdateProject(PhotoEdits.Remove(project, asset.Id));
+        UpdateProject(PhotoEdits.Remove(project, asset.Id), "Düzenlemeyi kaldır");
         Status = asset.FileName + ": orijinaline döndü.";
     }
 

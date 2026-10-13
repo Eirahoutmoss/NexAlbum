@@ -17,6 +17,7 @@ namespace NexAlbum.UI.ViewModels;
 public sealed class PageItemViewModel : ObservableObject
 {
     private Brush background;
+    private bool isDropBefore;
 
     public PageItemViewModel(AlbumPage page, int index, AlbumProject project)
     {
@@ -58,6 +59,13 @@ public sealed class PageItemViewModel : ObservableObject
     public string? TemplateId => Page.TemplateId;
 
     public int PhotoCount => Slots.Count(s => !s.IsEmpty);
+
+    /// <summary>Sayfa şeridinde sürüklenen sayfa bu sayfanın önüne bırakılacak (yalnızca görsel işaret).</summary>
+    public bool IsDropBefore
+    {
+        get => isDropBefore;
+        set => SetProperty(ref isDropBefore, value);
+    }
 
     /// <summary>Sayfa şeridindeki küçük resmin yüksekliği (DIP).</summary>
     public const double ThumbHeight = 76;

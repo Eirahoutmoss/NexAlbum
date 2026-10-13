@@ -11,6 +11,7 @@ namespace NexAlbum.UI.Tests;
 /// Tüm pencereler gerçekten oluşturulur: XAML ayrıştırma, kaynak anahtarları ve tür adları çalışma anında denetlenir.
 /// (Application tek örneklidir; tüm pencere testleri <see cref="WpfApp"/> iş parçacığında çalışır.)
 /// </summary>
+[Collection(WpfApp.Collection)]
 public class XamlSmokeTests
 {
     [Fact]

@@ -1,6 +1,6 @@
 # Kaldığımız yer (devir notu)
 
-Son güncelleme: 13 Ekim 2026 (geometrik şablonlar, kitap görünümü, sunum modu). Başka bilgisayarda devam etmek için önce bunu okuyun.
+Son güncelleme: 13 Ekim 2026 (geri al / yinele, sayfa yönetimi). Başka bilgisayarda devam etmek için önce bunu okuyun.
 
 ## Yeni bilgisayarda kurulum
 1. Git ve .NET SDK 10 (10.0.1xx veya üstü) kurun: `dotnet --list-sdks`
@@ -29,7 +29,10 @@ Son güncelleme: 13 Ekim 2026 (geometrik şablonlar, kitap görünümü, sunum m
 | **Şablon galerisi** | Biçim süzgeci (Tümü/Geometrik/Kolaj/Izgara/Sade); önizlemeler seçili sayfanın kendi fotoğraflarıyla |
 | **Kitap görünümü / sunum** | Ctrl+B karşılıklı sayfalar (cilt gölgesi); F5 tam ekran sunum (kırpılmış, kılavuzsuz, çift sayfa) |
 
-Testler: Windows 530, Ubuntu 465 — hepsi geçiyor. CI: `build.yml`, `test.yml` ve `screenshots.yml`
+| **Geri al / yinele** | Ctrl+Z / Ctrl+Y (Ctrl+Shift+Z), başlıkta düğmeler; 100 adım, kaydırıcı sürüklemesi tek adım; kaydedilmiş hâle dönülünce "Kaydedildi" |
+| **Sayfa yönetimi** | Ekle (komşu fonuyla), çoğalt (Ctrl+D), sil (onaysız, geri alınır), sola/sağa taşı, şeritte sürükleyerek sırala, sağ tık menüsü, sonda "+" kutusu; kilitli sayfa silinmez/taşınmaz |
+
+Testler: Windows 545, Ubuntu 472 — hepsi geçiyor. Takılan test 5 dakikada kesilir (`--blame-hang-timeout`). CI: `build.yml`, `test.yml` ve `screenshots.yml`
 (her dalda iki temada ekran görüntüsü üretir ve `ekran/<dal>` dalına yazar; ör. `ekran/main`).
 
 ## Elle denenmesi gerekenler
@@ -40,20 +43,23 @@ Otomatik test edilemeyenler:
 - **Açılış ekranı** uygulama açılırken görünüp soluyor mu? Görev çubuğu/Alt+Tab simgesi altın "N" mi?
 - Fare/sürükle-bırak: Gezgin'den galeriye bırakma, galeri karesinden yuvaya sürükleme, yuvalar arası taşıma, Ctrl+sürükle kaydırma,
   tekerlekle yuva yakınlaştırma, Ctrl+tekerlekle tuval yakınlaştırma; galeri karesine tıklayıp sağ tık menüsü.
+- **Sayfa şeridi:** küçük resmi sürükleyip başka bir yere bırakma (altın çizgi doğru yerde mi), sağ tık menüsü, Ctrl+Z ile silinen sayfanın geri gelmesi.
 - **Kitap görünümü:** karşı sayfadaki yuvaya tıklama/galeriden bırakma o sayfayı seçip oraya uygulanmalı.
 - **Sunum (F5):** ← → / boşluk / tıklama ile gezinme, Esc ile çıkış, birkaç saniye sonra alt bilginin ve imlecin gizlenmesi; çok monitörde doğru ekranda açılması.
 - **Geometrik sayfaların PDF'i:** çapraz kenarlardaki boşluk ekranla aynı mı (baskı evine göndermeden önce bir sayfa basıp bakın).
 - Photoshop CI'da yok: "Rötuş → Action'ları yükle", "Önce bir fotoğrafta dene", "Düzenleyicide aç → kaydet → albüm yenilendi mi".
 
 ## Sıradaki işler (öncelik sırasıyla)
-1. **Faz 2 — profesyonel iş akışı:** sayfa yönetimi (ekle/sil/çoğalt, şeritte sürükleyerek sırala, sayfalar arası fotoğraf taşıma);
-   geri al / yinele (Ctrl+Z / Ctrl+Y — proje değişmez kayıt olduğundan anlık görüntü yığını); metin öğeleri (model hazır; arayüz ve PDF
-   çizimi yok); fotoğrafa yıldız/favori; kapak ve sırt (Karar 03 sırt genişliği); JPG/PNG çıktı (Karar 11).
-2. **Faz 3 — farklılaştırıcılar:** hikâye akışı (EXIF saatine göre düğün evreleri: hazırlık, gelin alma, nikâh, dış çekim, düğün → bölümler);
-   çift için çevrimdışı HTML prova (beğeni/not, geri içe aktarma); geometrik yuvalarda elle köşe düzenleme.
-3. Rötuş: Photoshop UXP paneli (isteğe bağlı), yüz/cilt odaklı hazır action paketi önerileri, rötuşçuya iş listesi devretme (Karar 20 §1).
+1. **Metin öğeleri:** başlık, tarih, "Özel Anlar" gibi yazılar (model hazır; arayüz, yazı tipi seçimi ve PDF çizimi yok).
+2. Sayfalar arası fotoğraf taşıma (tuvaldeki fotoğrafı şeritteki başka bir sayfaya sürükleme); fotoğrafa yıldız/favori.
+3. **Hikâye akışı:** EXIF saatine göre düğün evreleri (hazırlık, gelin alma, nikâh, dış çekim, düğün) → bölümler.
+4. Kapak ve sırt (Karar 03 sırt genişliği); JPG/PNG çıktı (Karar 11).
+5. Çift için çevrimdışı HTML prova (beğeni/not, geri içe aktarma); geometrik yuvalarda elle köşe düzenleme.
+6. Rötuş: Photoshop UXP paneli, hazır action paketi önerileri, rötuşçuya iş listesi (Karar 20 §1).
 
 ## Notlar
 - Commit kuralı: Conventional Commits + `git commit -s` (Karar 14).
 - Yeni ikon: `tools/ikonlar/lucide_to_xaml.py` içindeki listeye ekleyip `Themes/Icons.xaml`'ı yeniden üretin.
+- WPF düzen tuzağı: boyutu kendi genişliğine bağlı öğeler (galeri kareleri) "Auto" kaydırma çubuklu bir alanda sonsuz düzen
+  döngüsüne girer; çubuk her zaman yer ayırmalı (`VerticalScrollBarVisibility="Visible"`).
 - Renk yalnızca anlamsal anahtarla (`{DynamicResource AccentBrush}` vb.); XAML/C# içinde sabit renk yazılmaz (sayfa içeriği hariç).

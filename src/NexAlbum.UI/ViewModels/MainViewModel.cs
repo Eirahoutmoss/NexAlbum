@@ -63,6 +63,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         InitializeDesign();
         InitializeEditing();
         InitializeExternal(settings, photoshop);
+        InitializePages();
         InitializeShell();
     }
 
@@ -316,6 +317,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(FilePath));
         }
 
+        savedProject = project;
         IsDirty = false;
         RememberRecent(path, project!.Name);
         Status = "Kaydedildi: " + Path.GetFileName(path);
@@ -363,7 +365,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             var options = new LayoutOptions { Mode = SelectedMode.Mode, Seed = seed };
             var request = LayoutRequest.ForProject(current, BuiltInTemplates.All, options, clock.GetUtcNow());
             var result = await Task.Run(() => engine.Layout(request)).ConfigureAwait(true);
-            UpdateProject(current.WithPages(result.Pages));
+            UpdateProject(current.WithPages(result.Pages), "Otomatik oluşturma");
             SelectedPage = Pages.FirstOrDefault();
             ShowIssues(result.Issues);
             Status = string.Format(CultureInfo.CurrentCulture, "{0} sayfa oluşturuldu ({1} mod).", result.Pages.Count, SelectedMode.Name);
@@ -405,7 +407,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             return;
         }
 
-        UpdateProject(project.WithProfile(edited));
+        UpdateProject(project.WithProfile(edited), "Profil");
         RunPreflight();
         Status = "Profil güncellendi; ön kontrol yenilendi.";
     }
@@ -482,7 +484,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
         var index = SelectedPage.Index;
         var page = SelectedPage.Page;
-        UpdateProject(project.ReplacePage(page with { Locked = !page.Locked, UpdatedAt = clock.GetUtcNow() }));
+        UpdateProject(project.ReplacePage(page with { Locked = !page.Locked, UpdatedAt = clock.GetUtcNow() }), page.Locked ? "Kilidi aç" : "Kilitle");
         SelectedPage = Pages.ElementAtOrDefault(index);
     }
 
@@ -577,20 +579,30 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         filePath = path;
         seed = null;
         Issues.Clear();
-        UpdateProject(value);
+        UpdateProject(value, label: null, record: false);
+        history.Clear();
+        savedProject = dirty ? null : value;
         IsDirty = dirty;
         SelectedPage = Pages.FirstOrDefault();
         OnPropertyChanged(nameof(FilePath));
         OnPropertyChanged(nameof(HasNoProject));
     }
 
-    private void UpdateProject(AlbumProject value)
+    /// <param name="value">Yeni proje.</param>
+    /// <param name="label">Geri alma adımının açıklaması (ör. "Şablon").</param>
+    /// <param name="record">Önceki hâl geri alma geçmişine yazılsın mı (açma/yeni projede hayır).</param>
+    private void UpdateProject(AlbumProject value, string? label = "Düzenleme", bool record = true)
     {
         var selectedIndex = SelectedPage?.Index;
         SelectedPage = null;
         var previousProject = project;
+        if (record && previousProject is not null && !ReferenceEquals(previousProject, value))
+        {
+            history.Record(previousProject, label);
+        }
+
         project = value;
-        IsDirty = true;
+        IsDirty = !ReferenceEquals(value, savedProject);
 
         var used = value.Pages.SelectMany(p => p.Slots).Select(s => s.Placement?.AssetId).OfType<string>().ToHashSet(StringComparer.Ordinal);
         Assets.Clear();
@@ -646,6 +658,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         PreviousPageCommand.NotifyCanExecuteChanged();
         NextPageCommand.NotifyCanExecuteChanged();
         RefreshShellCommands();
+        RefreshPageCommands();
         RefreshDesignCommands();
         RefreshEditCommands();
     }

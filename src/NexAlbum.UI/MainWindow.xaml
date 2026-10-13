@@ -36,6 +36,10 @@
     <KeyBinding Key="PageDown" Command="{Binding NextPageCommand}" />
     <KeyBinding Key="F1" Command="{Binding AboutCommand}" />
     <KeyBinding Key="B" Modifiers="Control" Command="{Binding ToggleBookViewCommand}" />
+    <KeyBinding Key="Z" Modifiers="Control" Command="{Binding UndoCommand}" />
+    <KeyBinding Key="Y" Modifiers="Control" Command="{Binding RedoCommand}" />
+    <KeyBinding Key="Z" Modifiers="Control+Shift" Command="{Binding RedoCommand}" />
+    <KeyBinding Key="D" Modifiers="Control" Command="{Binding DuplicatePageCommand}" />
     <KeyBinding Key="F5" Command="{Binding PresentCommand}" />
   </Window.InputBindings>
 
@@ -80,7 +84,7 @@
         <RowDefinition Height="62" />
         <RowDefinition Height="*" />
         <RowDefinition Height="1" />
-        <RowDefinition Height="132" MinHeight="96" MaxHeight="240" />
+        <RowDefinition Height="154" MinHeight="120" MaxHeight="260" />
         <RowDefinition Height="28" />
       </Grid.RowDefinitions>
 
@@ -103,6 +107,13 @@
                          TextTrimming="CharacterEllipsis" MaxWidth="260" VerticalAlignment="Center" />
               <Ellipse Width="6" Height="6" Fill="{DynamicResource AccentBrush}" Margin="8,1,0,0" VerticalAlignment="Center" ToolTip="Kaydedilmemiş değişiklik var"
                        Visibility="{Binding IsDirty, Converter={StaticResource BoolToVisibility}}" />
+              <!-- Geri al / yinele (Ctrl+Z / Ctrl+Y) -->
+              <StackPanel Orientation="Horizontal" Margin="14,0,0,0" WindowChrome.IsHitTestVisibleInChrome="True">
+                <Button Style="{StaticResource IconButton}" ui:Ui.Icon="{StaticResource Icon.Undo}" Width="28" Height="28"
+                        Command="{Binding UndoCommand}" ToolTip="{Binding UndoToolTip}" />
+                <Button Style="{StaticResource IconButton}" ui:Ui.Icon="{StaticResource Icon.Redo}" Width="28" Height="28"
+                        Command="{Binding RedoCommand}" ToolTip="{Binding RedoToolTip}" />
+              </StackPanel>
             </StackPanel>
           </StackPanel>
 
@@ -248,8 +259,9 @@
                      AllowDrop="True" DragOver="OnFileDragOver" Drop="OnGalleryDrop"
                      PreviewMouseLeftButtonDown="OnGalleryMouseDown" PreviewMouseMove="OnGalleryMouseMove" PreviewMouseLeftButtonUp="OnGalleryMouseUp"
                      PreviewMouseRightButtonDown="OnGalleryRightButtonDown" MouseDoubleClick="OnGalleryDoubleClick" SizeChanged="OnGallerySizeChanged"
-                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
                      VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.ScrollUnit="Pixel">
+              <!-- Dikey çubuk hep yer ayırır: kare yüksekliği genişliğe bağlı olduğundan "Auto" çubuk görün/kaybol döngüsüne (sonsuz düzen) girer. -->
               <ListBox.ContextMenu>
                 <ContextMenu>
                   <MenuItem Header="Düzenleyicide aç" Command="{Binding OpenInEditorCommand}" />
@@ -797,11 +809,60 @@
 
       <!-- ⑥ Sayfa şeridi -->
       <DockPanel Grid.Row="4" Background="{DynamicResource SurfaceBrush}">
-        <TextBlock DockPanel.Dock="Top" Text="{Binding PagesHeader}" Style="{StaticResource PanelHeader}" Margin="16,10,16,4" />
-        <ListBox ItemsSource="{Binding Pages}" SelectedItem="{Binding SelectedPage}" Padding="10,0"
+        <DockPanel DockPanel.Dock="Top" Margin="16,4,10,0">
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+            <Button Style="{StaticResource IconButton}" ui:Ui.Icon="{StaticResource Icon.PagePlus}" Width="28" Height="28" Command="{Binding AddPageCommand}"
+                    ToolTip="Seçili sayfanın arkasına boş sayfa ekle" />
+            <Button Style="{StaticResource IconButton}" ui:Ui.Icon="{StaticResource Icon.Restore}" Width="28" Height="28" Command="{Binding DuplicatePageCommand}"
+                    ToolTip="Sayfayı çoğalt (Ctrl+D)" />
+            <Button Style="{StaticResource IconButton}" ui:Ui.Icon="{StaticResource Icon.ChevronLeft}" Width="28" Height="28" Command="{Binding MovePageLeftCommand}"
+                    ToolTip="Sola taşı · sürükleyerek de sıralayabilirsiniz" />
+            <Button Style="{StaticResource IconButton}" ui:Ui.Icon="{StaticResource Icon.ChevronRight}" Width="28" Height="28" Command="{Binding MovePageRightCommand}"
+                    ToolTip="Sağa taşı · sürükleyerek de sıralayabilirsiniz" />
+            <Button Style="{StaticResource IconButton}" ui:Ui.Icon="{StaticResource Icon.Trash}" Width="28" Height="28" Command="{Binding DeletePageCommand}"
+                    ToolTip="Sayfayı sil (Ctrl+Z ile geri alınır; kilitli sayfa silinmez)" />
+          </StackPanel>
+          <TextBlock Text="{Binding PagesHeader}" Style="{StaticResource PanelHeader}" Margin="0" VerticalAlignment="Center" />
+        </DockPanel>
+        <!-- Sondaki "+" kutusu: albümün sonuna boş sayfa -->
+        <Button DockPanel.Dock="Right" Width="60" Height="80" Margin="4,2,14,0" VerticalAlignment="Top" Command="{Binding AddPageCommand}" ToolTip="Sayfa ekle"
+                Visibility="{Binding HasProject, Converter={StaticResource BoolToVisibility}}">
+          <Button.Template>
+            <ControlTemplate TargetType="Button">
+              <Grid Background="Transparent">
+                <Rectangle x:Name="Box" RadiusX="6" RadiusY="6" Stroke="{DynamicResource BorderStrongBrush}" StrokeThickness="1.2" StrokeDashArray="4 3" />
+                <ui:NexIcon x:Name="Ic" Data="{StaticResource Icon.Plus}" Width="20" Height="20" Foreground="{DynamicResource MutedTextBrush}" />
+              </Grid>
+              <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                  <Setter TargetName="Box" Property="Stroke" Value="{DynamicResource AccentBrush}" />
+                  <Setter TargetName="Ic" Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                  <Setter Property="Opacity" Value="0.4" />
+                </Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </Button.Template>
+        </Button>
+        <ListBox x:Name="PageStrip" ItemsSource="{Binding Pages}" SelectedItem="{Binding SelectedPage}" Padding="10,0"
+                 AllowDrop="True" PreviewMouseLeftButtonDown="OnStripMouseDown" PreviewMouseMove="OnStripMouseMove"
+                 DragOver="OnStripDragOver" DragLeave="OnStripDragLeave" Drop="OnStripDrop"
                  ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Auto"
                  ScrollViewer.CanContentScroll="True"
                  VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
+          <ListBox.ContextMenu>
+            <ContextMenu>
+              <MenuItem Header="Sayfa ekle" Command="{Binding AddPageCommand}" />
+              <MenuItem Header="Sayfayı çoğalt" Command="{Binding DuplicatePageCommand}" InputGestureText="Ctrl+D" />
+              <Separator />
+              <MenuItem Header="Sola taşı" Command="{Binding MovePageLeftCommand}" />
+              <MenuItem Header="Sağa taşı" Command="{Binding MovePageRightCommand}" />
+              <MenuItem Header="{Binding LockButtonText}" Command="{Binding ToggleLockCommand}" InputGestureText="Ctrl+L" />
+              <Separator />
+              <MenuItem Header="Sayfayı sil" Command="{Binding DeletePageCommand}" />
+            </ContextMenu>
+          </ListBox.ContextMenu>
           <ListBox.ItemsPanel>
             <ItemsPanelTemplate>
               <VirtualizingStackPanel Orientation="Horizontal" />
@@ -815,9 +876,14 @@
                 <Setter.Value>
                   <ControlTemplate TargetType="ListBoxItem">
                     <StackPanel Margin="6,2" Background="Transparent">
-                      <Border x:Name="Frame" BorderThickness="2" CornerRadius="4" Padding="1" BorderBrush="Transparent">
-                        <ContentPresenter />
-                      </Border>
+                      <Grid>
+                        <Border x:Name="Frame" BorderThickness="2" CornerRadius="4" Padding="1" BorderBrush="Transparent">
+                          <ContentPresenter />
+                        </Border>
+                        <!-- Sürükle-bırak: buraya bırakılınca sayfa bu konuma gelir -->
+                        <Border x:Name="DropMark" Width="3" CornerRadius="1.5" Margin="-6,0,0,0" HorizontalAlignment="Left"
+                                Background="{DynamicResource AccentBrush}" Visibility="Collapsed" />
+                      </Grid>
                       <DockPanel Margin="2,4,2,0">
                         <ui:NexIcon DockPanel.Dock="Right" Data="{StaticResource Icon.Lock}" Width="11" Height="11" Foreground="{DynamicResource AccentTextBrush}"
                                     Visibility="{Binding IsLocked, Converter={StaticResource BoolToVisibility}}" ToolTip="Kilitli" />
@@ -833,6 +899,9 @@
                         <Setter TargetName="Number" Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
                         <Setter TargetName="Number" Property="FontWeight" Value="SemiBold" />
                       </Trigger>
+                      <DataTrigger Binding="{Binding IsDropBefore}" Value="True">
+                        <Setter TargetName="DropMark" Property="Visibility" Value="Visible" />
+                      </DataTrigger>
                     </ControlTemplate.Triggers>
                   </ControlTemplate>
                 </Setter.Value>
