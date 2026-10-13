@@ -14,17 +14,18 @@ public sealed record StoryDetectionOptions
 }
 
 /// <summary>
-/// Düğün akışını çekim saatlerinden çıkarır (Karar 10 Rev. 2): fotoğraflar zamana göre dizilir; uzun ara ya da gün
-/// değişimi yeni bölüm başlatır, çok küçük bölümler komşusuna katılır. Ad, bölümün başladığı saate ve düğün gününe göre
-/// önerilir (Türkiye'deki yaygın akış: hazırlık → gelin alma → dış çekim → nikâh → düğün; önceki akşam kına).
-/// Öneridir; kullanıcı her adı değiştirebilir. Saftır ve deterministiktir.
+/// Fotoğrafların zaman akışını çekim saatlerinden çıkarır (Karar 10 Rev. 2–3): fotoğraflar zamana göre dizilir; uzun ara ya
+/// da gün değişimi yeni bölüm başlatır, çok küçük bölümler komşusuna katılır. Ad, etkinlik türünden bağımsız zamansal bir
+/// belirteçtir: günün dilimi (Sabah, Öğle, Öğleden sonra, Akşam, Gece), birden çok günde gün adıyla ("Cumartesi · Akşam")
+/// ya da bir haftayı aşan akışta tarihle ("13 Haziran · Sabah"). Gezi, doğum günü, mezuniyet, aile günü ya da düğün — hepsine
+/// uyar. Öneridir; kullanıcı her adı değiştirebilir. Saftır ve deterministiktir.
 /// </summary>
 public static class StoryDetector
 {
-    /// <summary>Panelde seçilebilen bölüm adları (yaygın evreler).</summary>
+    /// <summary>Panelde seçilebilen hazır bölüm adları (etkinlikten bağımsız).</summary>
     public static IReadOnlyList<string> PhaseNames { get; } =
     [
-        "Kına Gecesi", "Hazırlık", "Gelin Alma", "Dış Çekim", "Nikâh", "Düğün", "İlk Dans", "Pasta", "Aile ve Dostlar", "Ertesi Gün",
+        "Sabah", "Öğle", "Öğleden sonra", "Akşam", "Gece", "Başlangıç", "Hazırlık", "Yolculuk", "Buluşma", "Kutlama", "Aile", "Dostlar", "Kapanış",
     ];
 
     public static StoryPlan Detect(IEnumerable<PhotoAsset> photos, StoryDetectionOptions? options = null)
@@ -79,14 +80,15 @@ public static class StoryDetector
         }
         while (merged);
 
-        // 3. Adlandır: düğün günü = en çok fotoğrafın çekildiği gün.
-        var mainDay = times.GroupBy(t => t.DateTime.Date).OrderByDescending(g => g.Count()).ThenBy(g => g.Key).First().Key;
+        // 3. Adlandır: günün dilimi; birden çok gün varsa gün adı ya da tarih öne eklenir.
+        var firstDay = times[0].DateTime.Date;
+        var lastDay = times[^1].DateTime.Date;
         var chapters = new List<StoryChapter>(groups.Count);
         var used = new Dictionary<string, int>(StringComparer.Ordinal);
         for (var i = 0; i < groups.Count; i++)
         {
             var start = groups[i][0];
-            var name = Suggest(start, mainDay);
+            var name = Suggest(start, firstDay, lastDay);
             used[name] = used.TryGetValue(name, out var n) ? n + 1 : 1;
             var shown = used[name] == 1 ? name : name + " " + Roman(used[name]);
             chapters.Add(new StoryChapter("chapter-" + (i + 1).ToString("00", System.Globalization.CultureInfo.InvariantCulture), shown, start));
@@ -95,29 +97,32 @@ public static class StoryDetector
         return new StoryPlan { Chapters = chapters };
     }
 
-    /// <summary>Başlangıç saatine göre evre adı (çekim saati, fotoğrafın kendi saatiyle).</summary>
-    public static string Suggest(DateTimeOffset start, DateTime mainDay)
+    /// <summary>Günün dilimi (fotoğrafın kendi saatiyle).</summary>
+    public static string DayPart(DateTimeOffset at) => at.DateTime.TimeOfDay.TotalHours switch
     {
-        var day = start.DateTime.Date;
-        var hour = start.DateTime.TimeOfDay;
-        if (day < mainDay)
+        < 5 => "Gece",
+        < 11 => "Sabah",
+        < 14 => "Öğle",
+        < 18 => "Öğleden sonra",
+        < 22 => "Akşam",
+        _ => "Gece",
+    };
+
+    /// <summary>
+    /// Zamansal bölüm adı: tek günlük akışta yalnızca dilim; bir haftaya kadar süren akışta "Cumartesi · Akşam"; daha uzun
+    /// akışta "13 Haziran · Sabah".
+    /// </summary>
+    public static string Suggest(DateTimeOffset start, DateTime firstDay, DateTime lastDay)
+    {
+        var part = DayPart(start);
+        if (firstDay == lastDay)
         {
-            return hour >= TimeSpan.FromHours(16) ? "Kına Gecesi" : "Hazırlık";
+            return part;
         }
 
-        if (day > mainDay)
-        {
-            return "Ertesi Gün";
-        }
-
-        return hour.TotalHours switch
-        {
-            < 12 => "Hazırlık",
-            < 15 => "Gelin Alma",
-            < 18 => "Dış Çekim",
-            < 20 => "Nikâh",
-            _ => "Düğün",
-        };
+        var tr = System.Globalization.CultureInfo.GetCultureInfo("tr-TR");
+        var day = (lastDay - firstDay).TotalDays < 7 ? start.DateTime.ToString("dddd", tr) : start.DateTime.ToString("d MMMM", tr);
+        return day + " · " + part;
     }
 
     private static bool SameDay(List<DateTimeOffset> a, List<DateTimeOffset> b) => a[^1].DateTime.Date == b[0].DateTime.Date;

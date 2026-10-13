@@ -9,7 +9,7 @@ Tarih: 13/10/2026
 otomatik ya da kullanıcının seçtiği efektler; yerel müzik kütüphanesi". Efekt dili: "NexAlbum — Fotoğraf Efektleri ve Hikâye" belgesi.
 
 1. Karar Özeti
-Düğün fotoğrafçısı albümü teslim ederken çifte bir de film ve paylaşılabilir kısa klip verir. NexAlbum, Karar 10 Rev. 2'deki
+Bir albümün (düğün, gezi, doğum günü, mezuniyet, aile günü…) yanında film ve paylaşılabilir kısa klip verilir. NexAlbum, Karar 10 Rev. 2'deki
 hikâye bölümlerini iskelet alarak videoyu kendisi kurar: bölüm başlığı kartı, fotoğraflarda yavaş hareket (Ken Burns), bölüm
 içinde ve arasında geçişler, müziğin vuruşuna oturan kesmeler, sonda müziğin yumuşakça kısılması. Tümü yerel ve deterministiktir.
 

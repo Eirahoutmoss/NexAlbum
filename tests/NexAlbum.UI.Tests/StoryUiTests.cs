@@ -21,7 +21,7 @@ public sealed partial class MainViewModelTests
         vm.HasStory.Should().BeFalse();
 
         vm.DetectStory();
-        vm.Chapters.Select(c => c.Name).Should().Equal("Hazırlık", "Gelin Alma", "Dış Çekim", "Düğün");
+        vm.Chapters.Select(c => c.Name).Should().Equal("Sabah", "Öğle", "Öğleden sonra", "Akşam");
         vm.Chapters[0].PhotoCount.Should().Be(6);
         vm.Chapters[0].Summary.Should().Contain("09:00").And.Contain("6 fotoğraf");
         vm.Chapters[0].Preview.Should().HaveCount(5);
@@ -36,24 +36,24 @@ public sealed partial class MainViewModelTests
         vm.IsFilterAll = true;
         vm.SelectedChapter.Should().BeNull("başka süzgeç seçilince bölüm süzgeci kalkar");
 
-        vm.Chapters[3].Name = "Düğün ve Eğlence";
-        vm.Chapters[3].Name.Should().Be("Düğün ve Eğlence");
+        vm.Chapters[3].Name = "Akşam ve Kutlama";
+        vm.Chapters[3].Name.Should().Be("Akşam ve Kutlama");
         vm.MergeChapter(vm.Chapters[2]);
         vm.Chapters.Should().HaveCount(3);
         vm.Chapters[1].PhotoCount.Should().Be(12, "dış çekim gelin almaya katıldı");
 
         vm.SelectedAsset = vm.Assets.Single(a => a.Asset.Id == "dis-00");
         vm.SplitStoryHere();
-        vm.Chapters.Select(c => c.Name).Should().Equal("Hazırlık", "Gelin Alma", "Dış Çekim", "Düğün ve Eğlence");
+        vm.Chapters.Select(c => c.Name).Should().Equal("Sabah", "Öğle", "Öğleden sonra", "Akşam ve Kutlama");
 
         vm.StoryOpeners = true;
         await vm.BuildFromStoryCommand.ExecuteAsync(null);
-        vm.Pages.Where(p => p.HasChapterLabel).Select(p => p.ChapterLabel).Should().Equal("Hazırlık", "Gelin Alma", "Dış Çekim", "Düğün ve Eğlence");
-        vm.Pages.First().Texts.Should().ContainSingle().Which.Content.Should().Be("Hazırlık", "ilk sayfa bölüm açılışı");
+        vm.Pages.Where(p => p.HasChapterLabel).Select(p => p.ChapterLabel).Should().Equal("Sabah", "Öğle", "Öğleden sonra", "Akşam ve Kutlama");
+        vm.Pages.First().Texts.Should().ContainSingle().Which.Content.Should().Be("Sabah", "ilk sayfa bölüm açılışı");
 
         vm.Save(saveAs: false).Should().BeTrue();
         var saved = ProjectPackageReader.Load(path).Project.Story;
-        saved.Chapters.Select(c => c.Name).Should().Equal("Hazırlık", "Gelin Alma", "Dış Çekim", "Düğün ve Eğlence");
+        saved.Chapters.Select(c => c.Name).Should().Equal("Sabah", "Öğle", "Öğleden sonra", "Akşam ve Kutlama");
         saved.Openers.Should().BeTrue();
 
         vm.UndoCommand.Execute(null);
@@ -70,11 +70,11 @@ public sealed partial class MainViewModelTests
         using var vm = new MainViewModel(new FakeDialogs(), settings: new MemoryAppSettingsStore());
         vm.Open(WeddingProject());
         vm.DetectStory();
-        vm.Chapters[0].Suggestions.Select(x => x.Name).Should().Contain("Kına Gecesi");
+        vm.Chapters[0].Suggestions.Select(x => x.Name).Should().Contain("Kutlama");
 
-        vm.Chapters[0].Suggestions.Single(x => x.Name == "Kına Gecesi").ApplyCommand.Execute(null);
+        vm.Chapters[0].Suggestions.Single(x => x.Name == "Kutlama").ApplyCommand.Execute(null);
 
-        vm.Chapters[0].Name.Should().Be("Kına Gecesi");
+        vm.Chapters[0].Name.Should().Be("Kutlama");
         vm.UndoToolTip.Should().Contain("Bölüm adı");
     }
 

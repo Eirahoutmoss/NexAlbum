@@ -40,7 +40,7 @@ public class FilmTests
 
             film.SelectedFormat.Id.Should().Be("reels", "varsayılan sosyal dikey");
             film.SelectedDuration.Seconds.Should().Be(30);
-            film.Chapters.Select(c => c.Name).Should().Equal("Hazırlık", "Düğün");
+            film.Chapters.Select(c => c.Name).Should().Equal("Sabah", "Akşam");
             film.Summary.Should().Contain("1080×1920");
             film.TimeText.Should().StartWith("0:00 / ");
             film.FfmpegStatus.Should().NotBeNullOrWhiteSpace();

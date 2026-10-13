@@ -77,7 +77,7 @@ public class RoundTripTests
 
         json.Should().Contain("\"schemaVersion\": 5", "şema v5: hikâye filmi (Karar 09 Rev. 4)");
         json.Should().Contain("\"transition\": \"dipToWhite\"", "elle seçilen geçiş yazılır");
-        json.Should().Contain("\"name\": \"Gelin Alma\"", "bölüm adı yazılır");
+        json.Should().Contain("\"name\": \"Öğle\"", "bölüm adı yazılır");
         json.Should().Contain("\"kind\": \"glow\"", "metin etkisi yazılır");
         json.Should().Contain("\"name\": \"Ahmet & Zeynep Düğün Albümü\"", "Türkçe karakterler ve & kaçışsız yazılmalı");
         json.Should().Contain("\"type\": \"slot\"");

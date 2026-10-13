@@ -21,7 +21,7 @@ public enum LayoutMode
 /// <summary>Fotoğrafların sayfalara diziliş sırası.</summary>
 public enum PhotoOrder
 {
-    /// <summary>EXIF çekim zamanına göre (düğün akışını korur); zamanı olmayanlar sona, kendi sıralarıyla.</summary>
+    /// <summary>EXIF çekim zamanına göre (olayların akışını korur); zamanı olmayanlar sona, kendi sıralarıyla.</summary>
     CaptureTime,
 
     /// <summary>Verildiği sırayla.</summary>

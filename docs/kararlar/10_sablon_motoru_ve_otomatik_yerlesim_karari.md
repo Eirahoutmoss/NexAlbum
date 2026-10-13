@@ -18,6 +18,12 @@ Değişiklik: Otomatik yerleşime **bölümler** eklendi. İstek: Hasan Güler (
 Değişmeyenler: determinizm, kilitli sayfalar, çeşitlilik kuralları (bölüm sınırları arasında da sürer).
 Dosya biçimi etkisi: Karar 09 Revizyon 3 (şema v4).
 
+Revizyon 3 — 13/10/2026 (zamansal bölüm adları)
+Değişiklik: Rev. 2'deki düğüne özgü ad önerileri (Kına Gecesi, Hazırlık, Gelin Alma, Dış Çekim, Nikâh, Düğün, Ertesi Gün) **Geçersiz**. İstek: Hasan Güler — "sadece düğün fotoğrafçıları kullanmayacak; insanların gönül rahatlığıyla kullanabileceği bir şey yapıyoruz".
+- Ad önerisi etkinlikten bağımsız zamansal belirteçtir: günün dilimi (Gece <05, Sabah 05–11, Öğle 11–14, Öğleden sonra 14–18, Akşam 18–22, Gece ≥22). Akış birden çok güne yayılıyorsa gün adı öne eklenir ("Cumartesi · Akşam"); bir haftayı aşıyorsa tarih ("13 Haziran · Sabah"). Tekrar eden ad II, III…
+- Hazır ad menüsü: Sabah, Öğle, Öğleden sonra, Akşam, Gece, Başlangıç, Hazırlık, Yolculuk, Buluşma, Kutlama, Aile, Dostlar, Kapanış.
+Değişmeyenler: bölüm bulma (ara, gün değişimi, küçük bölüm birleştirme), saklama (ad + başlangıç), yerleşim kuralları.
+
 1. Karar Özeti
 NexAlbum'in kalbi şablon motoru ve otomatik yerleşim algoritmasıdır. Bu iki bileşen, ürünün "hızlı, doğru, çeşitli" vaadini gerçekleştirir.
 

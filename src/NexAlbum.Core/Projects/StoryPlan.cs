@@ -3,7 +3,7 @@ using NexAlbum.Core.Common;
 namespace NexAlbum.Core.Projects;
 
 /// <summary>
-/// Albümün bir bölümü (hazırlık, gelin alma, nikâh…). Üyelik saklanmaz, başlangıç zamanından hesaplanır: bir fotoğraf,
+/// Albümün zamansal bir bölümü (ör. "Sabah", "Cumartesi · Akşam"). Üyelik saklanmaz, başlangıç zamanından hesaplanır: bir fotoğraf,
 /// çekim zamanı kendisinden önce ya da aynı anda başlayan son bölüme aittir. Böylece sonradan eklenen fotoğraflar da
 /// kendiliğinden doğru bölüme düşer (Karar 10 Rev. 2).
 /// </summary>
