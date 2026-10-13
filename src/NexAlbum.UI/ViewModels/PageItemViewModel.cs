@@ -89,8 +89,21 @@ public sealed class PageItemViewModel : ObservableObject
 
     public bool HasSafeArea => SafeArea is not null;
 
-    /// <summary>Kesim ve güvenli alan kılavuzları çizilsin mi? Sunum modunda kapalıdır (baskıdaki gibi görünür).</summary>
-    public bool ShowGuides { get; init; } = true;
+    /// <summary>
+    /// Kesim ve güvenli alan kılavuzları ile boş yuva ipuçları çizilsin mi? Sunum modunda kapalıdır (baskıdaki gibi görünür).
+    /// </summary>
+    public bool ShowGuides
+    {
+        get;
+        init
+        {
+            field = value;
+            foreach (var slot in Slots)
+            {
+                slot.ShowCues = value;
+            }
+        }
+    } = true;
 
     public bool ShowBleedGuide => ShowGuides && HasBleed;
 
@@ -277,7 +290,10 @@ public sealed class SlotItemViewModel : ObservableObject
 
     public bool IsEmpty => Asset is null;
 
-    public bool ShowEmptyLabel => IsEmpty && !sample;
+    /// <summary>Boş yuva ipuçları ("+", yazı, kesik çizgi) gösterilsin mi? Sunumda kapalıdır.</summary>
+    public bool ShowCues { get; set; } = true;
+
+    public bool ShowEmptyLabel => IsEmpty && !sample && ShowCues;
 
     /// <summary>Boş yuvadaki "+" ikonunun boyu (mm): yuvanın kullanılabilir iç boşluğuna oranlı, çok büyük/küçük olmaz.</summary>
     public double EmptyIconSize => Math.Clamp(emptyRoom * 0.16, 4, 22);
