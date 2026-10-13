@@ -43,6 +43,55 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
 
+      <!-- Çerçeve kipi: seçili yuvanın biçimi, boyut tutamaçları ve geometrik köşeler -->
+      <Canvas DataContext="{Binding FrameEdit}">
+        <Polygon Points="{Binding Outline}" Fill="#22D4A853" Stroke="#D4A853" StrokeThickness="{Binding StrokeWidth}" IsHitTestVisible="False" />
+        <Rectangle Canvas.Left="{Binding X}" Canvas.Top="{Binding Y}" Width="{Binding Width}" Height="{Binding Height}"
+                   Stroke="#D4A853" StrokeThickness="{Binding StrokeWidth}" StrokeDashArray="4 3" IsHitTestVisible="False" />
+        <ItemsControl ItemsSource="{Binding Handles}" Focusable="False">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <Canvas />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemContainerStyle>
+            <Style TargetType="ContentPresenter">
+              <Setter Property="Canvas.Left" Value="{Binding X}" />
+              <Setter Property="Canvas.Top" Value="{Binding Y}" />
+            </Style>
+          </ItemsControl.ItemContainerStyle>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Rectangle Width="{Binding DataContext.HandleSize, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                         Height="{Binding DataContext.HandleSize, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                         Fill="White" Stroke="#B8862F" StrokeThickness="{Binding DataContext.StrokeWidth, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                         Cursor="{Binding Cursor}" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <ItemsControl ItemsSource="{Binding Corners}" Focusable="False">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <Canvas />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemContainerStyle>
+            <Style TargetType="ContentPresenter">
+              <Setter Property="Canvas.Left" Value="{Binding X}" />
+              <Setter Property="Canvas.Top" Value="{Binding Y}" />
+            </Style>
+          </ItemsControl.ItemContainerStyle>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Ellipse Width="{Binding DataContext.CornerSize, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                       Height="{Binding DataContext.CornerSize, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                       Fill="#D4A853" Stroke="White" StrokeThickness="{Binding DataContext.StrokeWidth, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                       Cursor="Cross" ToolTip="Köşeyi sürükleyin" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Canvas>
+
       <!-- Akıllı hizalama çizgileri (yalnızca sürüklerken) -->
       <ItemsControl ItemsSource="{Binding SnapLines}" Focusable="False" IsHitTestVisible="False">
         <ItemsControl.ItemsPanel>

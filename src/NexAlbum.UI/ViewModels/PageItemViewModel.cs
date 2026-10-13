@@ -22,6 +22,7 @@ public sealed class PageItemViewModel : ObservableObject
     private bool isPhotoDropTarget;
     private string? chapterLabel;
     private Brush? chapterColor;
+    private FrameEditViewModel? frameEdit;
 
     public PageItemViewModel(AlbumPage page, int index, AlbumProject project)
     {
@@ -159,6 +160,16 @@ public sealed class PageItemViewModel : ObservableObject
 
     /// <summary>Tuvalin proje koordinatlarındaki yeri (taşma payı dahil): metin bunun dışına taşınamaz.</summary>
     public RectMm CanvasBounds => Origin;
+
+    /// <summary>Çerçeve kipinde seçili yuvanın düzenleme katmanı; yoksa null.</summary>
+    public FrameEditViewModel? FrameEdit
+    {
+        get => frameEdit;
+        set => SetProperty(ref frameEdit, value);
+    }
+
+    /// <summary>Çerçeve tutamaçlarının kenarı (mm): sayfanın uzun kenarının 1/55'i, ekranda her ölçekte tutulabilir.</summary>
+    public double HandleSizeMm => Math.Max(CanvasWidth, CanvasHeight) / 55;
 
     /// <summary>Sürüklerken gösterilen akıllı hizalama çizgileri (tuval koordinatı, mm).</summary>
     public ObservableCollection<SnapLineViewModel> SnapLines { get; } = [];

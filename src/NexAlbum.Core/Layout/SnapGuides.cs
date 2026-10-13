@@ -30,23 +30,47 @@ public static class SnapGuides
     {
         ArgumentNullException.ThrowIfNull(others);
         var list = others.ToList();
-        var xTargets = new List<(double At, SnapKind Kind)> { (page.X + (page.Width / 2), SnapKind.PageCenter), (page.X, SnapKind.PageEdge), (page.Right, SnapKind.PageEdge) };
-        var yTargets = new List<(double At, SnapKind Kind)> { (page.Y + (page.Height / 2), SnapKind.PageCenter), (page.Y, SnapKind.PageEdge), (page.Bottom, SnapKind.PageEdge) };
+        var (dx, gx) = Axis([moving.X, moving.X + (moving.Width / 2), moving.Right], Targets(vertical: true, page, safeArea, list), tolerance, vertical: true);
+        var (dy, gy) = Axis([moving.Y, moving.Y + (moving.Height / 2), moving.Bottom], Targets(vertical: false, page, safeArea, list), tolerance, vertical: false);
+        return new SnapResult(moving.X + dx, moving.Y + dy, [.. gx, .. gy]);
+    }
+
+    /// <summary>
+    /// Tek bir çizgiyi yapıştırır (yeniden boyutlandırmada hareket eden kenar): <paramref name="vertical"/> true ise x konumu,
+    /// değilse y konumu. Hedefler <see cref="Snap"/> ile aynıdır.
+    /// </summary>
+    public static (double Value, IReadOnlyList<SnapGuide> Guides) SnapLine(double value, bool vertical, RectMm page, RectMm? safeArea, IEnumerable<RectMm> others, double tolerance)
+    {
+        ArgumentNullException.ThrowIfNull(others);
+        var (d, guides) = Axis([value], Targets(vertical, page, safeArea, [.. others]), tolerance, vertical);
+        return (value + d, guides);
+    }
+
+    private static List<(double At, SnapKind Kind)> Targets(bool vertical, RectMm page, RectMm? safeArea, List<RectMm> others)
+    {
+        // Eksene göre: başlangıç, orta ve bitiş (x için sol/orta/sağ, y için üst/orta/alt).
+        static (double Start, double Middle, double End) Span(RectMm r, bool vertical) => vertical
+            ? (r.X, r.X + (r.Width / 2), r.Right)
+            : (r.Y, r.Y + (r.Height / 2), r.Bottom);
+
+        var p = Span(page, vertical);
+        var targets = new List<(double At, SnapKind Kind)> { (p.Middle, SnapKind.PageCenter), (p.Start, SnapKind.PageEdge), (p.End, SnapKind.PageEdge) };
         if (safeArea is { } safe)
         {
-            xTargets.AddRange([(safe.X, SnapKind.SafeArea), (safe.Right, SnapKind.SafeArea)]);
-            yTargets.AddRange([(safe.Y, SnapKind.SafeArea), (safe.Bottom, SnapKind.SafeArea)]);
+            var s = Span(safe, vertical);
+            targets.Add((s.Start, SnapKind.SafeArea));
+            targets.Add((s.End, SnapKind.SafeArea));
         }
 
-        foreach (var r in list)
+        foreach (var r in others)
         {
-            xTargets.AddRange([(r.X, SnapKind.Element), (r.X + (r.Width / 2), SnapKind.Element), (r.Right, SnapKind.Element)]);
-            yTargets.AddRange([(r.Y, SnapKind.Element), (r.Y + (r.Height / 2), SnapKind.Element), (r.Bottom, SnapKind.Element)]);
+            var o = Span(r, vertical);
+            targets.Add((o.Start, SnapKind.Element));
+            targets.Add((o.Middle, SnapKind.Element));
+            targets.Add((o.End, SnapKind.Element));
         }
 
-        var (dx, gx) = Axis([moving.X, moving.X + (moving.Width / 2), moving.Right], xTargets, tolerance, vertical: true);
-        var (dy, gy) = Axis([moving.Y, moving.Y + (moving.Height / 2), moving.Bottom], yTargets, tolerance, vertical: false);
-        return new SnapResult(moving.X + dx, moving.Y + dy, [.. gx, .. gy]);
+        return targets;
     }
 
     private static (double Delta, List<SnapGuide> Guides) Axis(double[] anchors, List<(double At, SnapKind Kind)> targets, double tolerance, bool vertical)

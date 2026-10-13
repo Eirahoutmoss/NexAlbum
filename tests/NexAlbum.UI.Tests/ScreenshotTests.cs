@@ -160,6 +160,15 @@ public sealed class ScreenshotTests : IDisposable
                 Capture(main, "18-hizalama-gece").Should().BeTrue();
                 vm.EndTextDrag();
 
+                // Çerçeve kipi: yuva tutamaçları ve köşeler; bir köşe içeri çekilmiş (önizleme), sayfa ortası kılavuzu.
+                vm.SelectSlot(vm.SelectedPage!.Slots.OrderByDescending(x => x.Width * x.Height).First());
+                vm.IsFrameEditing = true;
+                var frame = vm.SelectedPage!.FrameEdit!;
+                vm.DragFrameCorner(0, frame.Rect.X + (frame.Rect.Width * 0.18), frame.Rect.Y + (frame.Rect.Height * 0.08));
+                Settle(main);
+                Capture(main, "19-cerceve-gece").Should().BeTrue();
+                vm.IsFrameEditing = false;
+
                 vm.DetectStory();
                 vm.Chapters.Should().HaveCount(4);
                 vm.SelectedChapter = vm.Chapters[1];
