@@ -232,7 +232,7 @@ public sealed partial class MainViewModel
             return;
         }
 
-        UpdateProject(project with { Story = changed }.Touch(clock.GetUtcNow()), label ?? "Hikâye", record: label is not null);
+        UpdateProject((project with { Story = changed }).Touch(clock.GetUtcNow()), label ?? "Hikâye", record: label is not null);
     }
 
     /// <summary>Bölüm listesi, zaman çizelgesi ve şeritteki bölüm etiketleri projeden yeniden kurulur.</summary>
