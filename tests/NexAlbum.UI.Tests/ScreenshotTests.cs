@@ -146,6 +146,8 @@ public sealed class ScreenshotTests : IDisposable
                 vm.Chapters.Should().HaveCount(4);
                 vm.SelectedChapter = vm.Chapters[1];
                 Settle(main);
+                All<ListBox>(main).First(l => ReferenceEquals(l.ItemsSource, vm.Chapters)).BringIntoView();
+                Settle(main);
                 Capture(main, "15-hikaye-gece").Should().BeTrue();
                 vm.IsFilterAll = true;
 
