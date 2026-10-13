@@ -259,8 +259,9 @@
                      AllowDrop="True" DragOver="OnFileDragOver" Drop="OnGalleryDrop"
                      PreviewMouseLeftButtonDown="OnGalleryMouseDown" PreviewMouseMove="OnGalleryMouseMove" PreviewMouseLeftButtonUp="OnGalleryMouseUp"
                      PreviewMouseRightButtonDown="OnGalleryRightButtonDown" MouseDoubleClick="OnGalleryDoubleClick" SizeChanged="OnGallerySizeChanged"
-                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.CanContentScroll="True"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
                      VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.ScrollUnit="Pixel">
+              <!-- Dikey çubuk hep yer ayırır: kare yüksekliği genişliğe bağlı olduğundan "Auto" çubuk görün/kaybol döngüsüne (sonsuz düzen) girer. -->
               <ListBox.ContextMenu>
                 <ContextMenu>
                   <MenuItem Header="Düzenleyicide aç" Command="{Binding OpenInEditorCommand}" />
