@@ -176,6 +176,17 @@ internal static class Samples
                     new StoryChapter("chapter-02", "Gelin Alma", new DateTimeOffset(2025, 10, 12, 14, 30, 0, TimeSpan.FromHours(3))),
                 ],
             },
+            Video = new Core.Video.VideoSettings
+            {
+                FormatId = "4k",
+                StyleId = "cinematic",
+                Fps = 24,
+                TargetSeconds = 90,
+                MusicPath = @"C:\Müzik\İlk Dans.mp3",
+                ReduceMotion = true,
+                ChapterTitles = false,
+                Overrides = [new Core.Video.ChapterVideoOverride("chapter-02", Core.Video.TransitionKind.DipToWhite, Core.Video.VideoLook.Sepia)],
+            },
         };
     }
 

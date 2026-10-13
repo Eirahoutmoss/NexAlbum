@@ -734,8 +734,8 @@ Abonelik modeli	SmartAlbums	Karar 01 (ücretsiz)
 Baskı evi entegrasyonu	Mixbook	Karar 03 (kullanıcı profili)
 CDR doğrudan çıktı	CorelDRAW	Kapalı format, karmaşık
 Photoshop eklentisi	Album DS	Bağımlılık, reddedildi
-Sosyal paylaşım	Canva	Kapsam dışı
-Video desteği	—	Kapsam dışı
+Sosyal paylaşım	Canva	Kapsam dışı — Geçersiz (Karar 21: hikâye filmi ve sosyal medya klipleri kapsama alındı)
+Video desteği	—	Kapsam dışı — Geçersiz (Karar 21: hikâye filmi ve sosyal medya klipleri kapsama alındı)
 AI rötuş	—	Kapsam dışı (Karar 04)
 Yüz güzelleştirme	—	Kapsam dışı
 Şablon mağazası (paralı)	—	Karar 01 (ücretsiz)

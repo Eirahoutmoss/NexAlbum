@@ -15,6 +15,8 @@ internal static class ProjectMapper
     private static readonly TextEnum<SpreadPosition> SpreadPositions = new();
     private static readonly TextEnum<CropMode> CropModes = new();
     private static readonly TextEnum<TextEffectKind> EffectKinds = new();
+    private static readonly TextEnum<Core.Video.TransitionKind> Transitions = new();
+    private static readonly TextEnum<Core.Video.VideoLook> Looks = new();
     private static readonly TextEnum<SlotShape> Shapes = new();
     private static readonly TextEnum<TextAlignment> Alignments = new();
     private static readonly TextEnum<VerticalAlignment> VerticalAlignments = new();
@@ -61,6 +63,22 @@ internal static class ProjectMapper
                 Chapters = [.. p.Story.Chapters.Select(c => new ChapterDto { Id = c.Id, Name = c.Name, Start = c.Start })],
             }
             : null,
+        Video = p.Video == Core.Video.VideoSettings.Default ? null : new VideoDto
+        {
+            Format = p.Video.FormatId,
+            Style = p.Video.StyleId,
+            Fps = p.Video.Fps,
+            TargetSeconds = p.Video.TargetSeconds,
+            Music = p.Video.MusicPath,
+            ReduceMotion = p.Video.ReduceMotion,
+            ChapterTitles = p.Video.ChapterTitles,
+            Overrides = p.Video.Overrides.Count == 0 ? null : [.. p.Video.Overrides.Select(o => new VideoOverrideDto
+            {
+                Chapter = o.ChapterId,
+                Transition = Transitions.FormatOrNull(o.Transition),
+                Look = Looks.FormatOrNull(o.Look),
+            })],
+        },
     };
 
     public static AlbumProject FromDto(ProjectDto d) => At("project", () => Map(d));
@@ -99,8 +117,24 @@ internal static class ProjectMapper
             Settings = At("settings", () => SettingsFromDto(d.Settings)),
             History = d.History is { } h ? new HistorySettings { Enabled = h.Enabled ?? true, MaxSteps = h.MaxSteps ?? 100 } : null,
             Story = d.Story is { } s ? At("story", () => StoryFromDto(s)) : StoryPlan.Empty,
+            Video = d.Video is { } v ? At("video", () => VideoFromDto(v)) : Core.Video.VideoSettings.Default,
         };
     }
+
+    private static Core.Video.VideoSettings VideoFromDto(VideoDto d) => new()
+    {
+        FormatId = d.Format ?? Core.Video.VideoSettings.Default.FormatId,
+        StyleId = d.Style ?? Core.Video.VideoSettings.Default.StyleId,
+        Fps = d.Fps ?? 30,
+        TargetSeconds = d.TargetSeconds,
+        MusicPath = d.Music,
+        ReduceMotion = d.ReduceMotion ?? false,
+        ChapterTitles = d.ChapterTitles ?? true,
+        Overrides = [.. (d.Overrides ?? []).Select((o, i) => new Core.Video.ChapterVideoOverride(
+            Required(o.Chapter, $"overrides[{i}].chapter"),
+            Transitions.ParseOrNull(o.Transition, $"overrides[{i}].transition"),
+            Looks.ParseOrNull(o.Look, $"overrides[{i}].look")))],
+    };
 
     private static StoryPlan StoryFromDto(StoryDto d) => new()
     {

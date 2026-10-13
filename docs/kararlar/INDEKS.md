@@ -6,7 +6,7 @@ Kararların kendisi değişmez; bu dosya yalnızca yönlendirir. Tam liste ve ma
 |---|---|---|
 | Proje/çözüm iskeleti, paketler, katmanlar | 08 Teknoloji yığını | §13 mimari, lisans tablosu |
 | Domain modeli (Album, Page, Slot, Photo…) | 09 Veri modeli | §3–§11 |
-| `.albumproj` kaydet/aç, şema (v2), migration | 09 Veri modeli (Rev. 1) | §13–§14 |
+| `.albumproj` kaydet/aç, şema (v5), migration | 09 Veri modeli (Rev. 1–4) | §13–§14 |
 | Baskı profili, bleed, sırt genişliği, doğrulama | 03 Kullanıcı profilleri | §3, §7, §8 |
 | Şablon formatı, otomatik yerleşim algoritması, çokgen/geometrik yuvalar | 10 Şablon motoru (Rev. 1) | §3, §5–§11, §15 tohum |
 | PDF/JPG/SVG/PNG/TIFF çıktı, preflight | 11 Çıktı formatları | §3–§5, §7, §9–§10 |
@@ -16,6 +16,7 @@ Kararların kendisi değişmez; bu dosya yalnızca yönlendirir. Tam liste ve ma
 | Aşama sırası / MVP kapsamı ("bunu şimdi mi yapalım?") | 05 Yol haritası, 04 Tek kişi | §3–§9, §13 |
 | Photoshop/harici düzenleyici, toplu rötuş, düzenlenmiş sürüm | 20 Harici düzenleyici | §2–§5 |
 | Renk, tema, logo, yazı tipi, ikon, açılış ekranı | 17 Marka | §3–§9 |
+| Hikâye filmi, sosyal medya klibi, FFmpeg, müzik | 21 Hikâye filmi | §2–§7 |
 | Özellik ekle/reddet | 07 Rakip sentezi, 01, 02, 06 | Karar özeti |
 
 ## Hızlı kurallar

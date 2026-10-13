@@ -190,6 +190,24 @@ public class MigrationTests
     }
 
     [Fact]
+    public void V4ProjectIsUpgradedToV5WithDefaultVideoSettings()
+    {
+        using var dir = new TempDir();
+        var path = dir.File("v4.albumproj");
+        var v4 = PackageBuilder.EditJson(PackageBuilder.Valid(), ProjectFormat.ProjectEntry, n =>
+        {
+            n["schemaVersion"] = 4;
+            n.AsObject().Remove("video");
+        });
+        File.WriteAllBytes(path, v4);
+
+        var loaded = ProjectPackageReader.Load(path, new LoadOptions { BackupBeforeMigration = false });
+
+        loaded.OriginalSchemaVersion.Should().Be(4);
+        loaded.Project.Video.Should().Be(Core.Video.VideoSettings.Default);
+    }
+
+    [Fact]
     public void BuiltInChainReachesTheCurrentVersion()
     {
         var node = new JsonObject { ["schemaVersion"] = 1 };

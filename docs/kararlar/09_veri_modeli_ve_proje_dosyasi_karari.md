@@ -21,6 +21,11 @@ Değişiklik: project.json şema sürümü 3 → **4**. Projeye isteğe bağlı 
 Göç (§14): `V3ToV4Story` — v3 dosyalarında "story" yoktur (tek akış); yapı değişmez, yalnızca sürüm yükselir; açılışta yedek (.bak-v3) alınır.
 Gerekçe: Hikâye akışı (Karar 10 Rev. 2). Başlangıç zamanıyla saklamak, sonradan eklenen fotoğrafların kendiliğinden doğru bölüme düşmesini sağlar.
 
+Revizyon 4 — 13/10/2026 (şema v5)
+Değişiklik: project.json şema sürümü 4 → **5**. Projeye isteğe bağlı "video": { "format", "style", "fps", "targetSeconds", "music" (yerel yol), "reduceMotion", "chapterTitles", "overrides": [ { "chapter", "transition", "look" } ] }. Yoksa varsayılanlar. Müzik dosyası pakete gömülmez.
+Göç (§14): `V4ToV5Video` — yapı değişmez, yalnızca sürüm yükselir.
+Gerekçe: Hikâye filmi (Karar 21 §6): aynı ayarlarla aynı video.
+
 1. Karar Özeti
 NexAlbum'in veri modeli katmanlı, sürümlenmiş, açık ve taşınabilir olacaktır.
 

@@ -14,8 +14,9 @@ public static class ProjectFormat
     /// v2 (Karar 10 Rev. 1): yuvalarda "polygon" köşeleri ve yeni biçimler (triangle, diamond, hexagon, octagon, arch, slant).
     /// v3 (Karar 09 Rev. 2): metinlerde "effect" (gölge, hale, kontur, bant, kabartma); "letterSpacing" punto katıdır.
     /// v4 (Karar 09 Rev. 3): projede "story" (hikâye akışı: bölüm adları ve başlangıç zamanları).
+    /// v5 (Karar 09 Rev. 4): projede "video" (hikâye filmi ayarları, Karar 21).
     /// </summary>
-    public const int CurrentSchemaVersion = 4;
+    public const int CurrentSchemaVersion = 5;
 
     public const string ManifestEntry = "manifest.json";
     public const string ProjectEntry = "project.json";
