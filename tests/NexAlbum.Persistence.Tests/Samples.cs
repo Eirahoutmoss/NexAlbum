@@ -55,6 +55,7 @@ internal static class Samples
                 PixelHeight = 4000,
                 ExifOrientation = 1,
                 CapturedAt = Now.AddYears(-1),
+                ClockOffset = TimeSpan.FromMinutes(-63),
                 ImportedAt = Now,
                 CameraModel = "Canon EOS R5",
                 Lens = "RF 24-70mm F2.8",

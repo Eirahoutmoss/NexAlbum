@@ -50,6 +50,8 @@ public sealed partial class MainViewModel : IBatchEditHost
                 RefreshExternalCommands();
                 ToggleFavoriteCommand?.NotifyCanExecuteChanged();
                 SplitStoryHereCommand?.NotifyCanExecuteChanged();
+                MarkClockReferenceCommand?.NotifyCanExecuteChanged();
+                MatchClockToReferenceCommand?.NotifyCanExecuteChanged();
             }
         }
     }

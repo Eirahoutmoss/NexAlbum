@@ -32,6 +32,12 @@ Göç (§14): `V5ToV6PhotoAdjustments` — yapı değişmez, yalnızca sürüm y
 Döndürme: yuvadaki "rotation" alanı düzeltme açısı olarak ±15° ile kullanılır; fotoğraf yuvayı kaplamaya devam eder (ImageFit, ekran ve PDF aynı hesap). Kullanıcının 90° döndürmesi fotoğrafın kendisine aittir: varlığın "orientation" (EXIF kodu 1–8) alanına işlenir ve albümün her yerinde geçerli olur; dosya yeniden okunsa bile projedeki yön esas alınır.
 Gerekçe: Efekt belgesi §1 (P0) — parlaklık/kontrast/pozlama, sıcaklık/doygunluk, siyah-beyaz.
 
+Revizyon 6 — 13/10/2026 (şema v7)
+Değişiklik: project.json şema sürümü 6 → **7**. Varlığa isteğe bağlı "clockOffsetSeconds" (makine saat düzeltmesi, saniye) eklendi. "capturedAt" düzeltilmiş zamandır; makinenin kaydettiği zaman = capturedAt − clockOffsetSeconds (EXIF bilgisi kaybolmaz). Düzeltme makine modeline göre (EXIF "Model"; yoksa "Bilinmeyen makine") bütün fotoğraflara birlikte uygulanır; sonradan eklenen aynı makine fotoğrafları da aynı düzeltmeyi alır. Hikâye bölümleri, zaman sıralaması ve hikâye filmi düzeltilmiş zamanı kullanır.
+Eşitleme yolları: (1) farkı elle yazmak (+1:07, −0:12, ±1 sa düğmeleri), (2) otomatik öneri — en çok fotoğraflı makine başvuru alınır, diğer makinenin çekim anları ±14 saat aralığında dakika adımlarıyla kaydırılıp en çok örtüşen fark seçilir (belirgin örtüşme yoksa öneri yapılmaz), (3) aynı anın iki fotoğrafı (galeride "başvuru yap" → "başvuruya eşitle"). Hepsi geri alınabilir.
+Göç (§14): `V6ToV7CameraClocks` — yapı değişmez, yalnızca sürüm yükselir.
+Gerekçe: İki fotoğrafçı/iki makine ile çekilen etkinliklerde saat farkı bölümleri karıştırır.
+
 1. Karar Özeti
 NexAlbum'in veri modeli katmanlı, sürümlenmiş, açık ve taşınabilir olacaktır.
 

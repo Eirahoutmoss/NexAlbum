@@ -89,6 +89,75 @@ public sealed partial class MainViewModelTests
         vm.SplitStoryHereCommand.CanExecute(null).Should().BeFalse();
     }
 
+    [Fact]
+    public void CameraClocksAreShiftedSyncedAndUndone()
+    {
+        var path = Path.Combine(dir, "iki-makine.albumproj");
+        var day = new DateTimeOffset(2026, 6, 13, 0, 0, 0, TimeSpan.FromHours(3));
+        int[] moments = [542, 551, 577, 604, 708, 735, 783, 821, 920, 969, 1075, 1170];
+        var photos = new List<PhotoAsset>();
+        for (var i = 0; i < moments.Length; i++)
+        {
+            photos.Add(Photo($"a-{i:00}", day.AddMinutes(moments[i]), "Canon EOS R5"));
+            photos.Add(Photo($"a-{i:00}b", day.AddMinutes(moments[i]).AddSeconds(20), "Canon EOS R5"));
+            if (i % 3 != 2)
+            {
+                photos.Add(Photo($"b-{i:00}", day.AddMinutes(moments[i] - 67).AddSeconds(15), "NIKON Z 6_2"));
+            }
+        }
+
+        var project = SampleProject(0).AddAssets(photos);
+        ProjectPackageWriter.Save(path, project, new SaveOptions { AppVersion = project.AppVersion });
+        using var vm = new MainViewModel(new FakeDialogs { SavePath = path }, settings: new MemoryAppSettingsStore());
+        vm.History.MergeWindow = TimeSpan.Zero;
+        vm.Open(path);
+
+        vm.CameraClockItems.Select(c => c.Name).Should().Equal("Canon EOS R5", "NIKON Z 6_2");
+        vm.HasSeveralCameras.Should().BeTrue();
+
+        // Elle: yazılan fark uygulanır, okunamayan yazı eskiye döner.
+        vm.CameraClockItems[1].Offset = "+1:00";
+        vm.CameraClockItems[1].Offset.Should().Be("+1 sa");
+        vm.Project!.Assets.Single(a => a.Id == "b-00").CapturedAt.Should().Be(day.AddMinutes(542 - 7).AddSeconds(15));
+        vm.CameraClockItems[1].Offset = "yarın";
+        vm.Status.Should().Contain("okunamadı");
+        vm.CameraClockItems[1].Offset.Should().Be("+1 sa");
+
+        // Otomatik eşitleme gerçek farkı bulur; geri alınabilir.
+        vm.SyncClocksCommand.Execute(null);
+        vm.CameraClockItems[1].Offset.Should().Be("+1 sa 7 dk");
+        vm.UndoToolTip.Should().Contain("Saatleri eşitle");
+        vm.UndoCommand.Execute(null);
+        vm.CameraClockItems[1].Offset.Should().Be("+1 sa");
+
+        // Aynı anın iki fotoğrafı: başvuru + eşitle.
+        vm.SelectedAsset = vm.Assets.Single(a => a.Asset.Id == "a-01");
+        vm.MarkClockReferenceCommand.Execute(null);
+        vm.SelectedAsset = vm.Assets.Single(a => a.Asset.Id == "b-01");
+        vm.MatchClockToReferenceCommand.CanExecute(null).Should().BeTrue();
+        vm.MatchClockToReferenceCommand.Execute(null);
+        vm.Project!.Assets.Single(a => a.Id == "b-01").CapturedAt.Should().Be(day.AddMinutes(551));
+
+        vm.CameraClockItems[1].ResetCommand.Execute(null);
+        vm.CameraClockItems[1].IsShifted.Should().BeFalse();
+
+        vm.CameraClockItems[1].HourForwardCommand.Execute(null);
+        vm.Save(saveAs: false).Should().BeTrue();
+        ProjectPackageReader.Load(path).Project.Assets.Single(a => a.Id == "b-00").ClockOffset.Should().Be(TimeSpan.FromHours(1));
+
+        static PhotoAsset Photo(string id, DateTimeOffset at, string camera) => new()
+        {
+            Id = id,
+            SourcePath = $@"C:\yok\{id}.jpg",
+            FileName = id + ".jpg",
+            PixelWidth = 6000,
+            PixelHeight = 4000,
+            CapturedAt = at,
+            CameraModel = camera,
+            ImportedAt = at,
+        };
+    }
+
     private string WeddingProject()
     {
         var path = Path.Combine(dir, "dugun.albumproj");

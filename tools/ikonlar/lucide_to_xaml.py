@@ -50,6 +50,7 @@ ICONS = {
     "Check": "check",
     "Warning": "triangle-alert",
     "Error": "circle-alert",
+    "Camera": "camera",
     "Clock": "clock",
     "Trash": "trash-2",
     "ExternalLink": "external-link",

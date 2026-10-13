@@ -51,7 +51,14 @@ public sealed record PhotoAsset
     /// <summary>EXIF yönü (1–8). Bilinmiyorsa null (1 kabul edilir).</summary>
     public int? ExifOrientation { get; init => field = value is null ? null : Guard.InRange(value.Value, 1, 8, nameof(ExifOrientation)); }
 
+    /// <summary>Çekim zamanı; makine saat düzeltmesi uygulanmış haliyle (bkz. <see cref="ClockOffset"/>).</summary>
     public DateTimeOffset? CapturedAt { get; init; }
+
+    /// <summary>Makine saatine uygulanan düzeltme (Karar 09 Rev. 6); <see cref="CapturedAt"/> bu kadar kaydırılmıştır.</summary>
+    public TimeSpan ClockOffset { get; init; }
+
+    /// <summary>Makinenin kaydettiği (düzeltilmemiş) çekim zamanı.</summary>
+    public DateTimeOffset? OriginalCapturedAt => CapturedAt - ClockOffset;
 
     public DateTimeOffset ImportedAt { get; init; }
 
@@ -80,6 +87,9 @@ public sealed record PhotoAsset
 
     /// <summary>Ekran, ön kontrol ve PDF düzenlenmiş dosyayı mı kullanıyor?</summary>
     public bool IsEditActive => UseEdit && Edit is { Missing: false };
+
+    /// <summary>Saat düzeltmesini değiştirir; orijinal çekim zamanı korunur.</summary>
+    public PhotoAsset WithClockOffset(TimeSpan offset) => this with { CapturedAt = OriginalCapturedAt + offset, ClockOffset = offset };
 
     /// <summary>
     /// Etkin kaynak: düzenleme etkinse yol, boyut ve yön düzenlenmiş dosyadan gelir (orijinal kayıp olsa bile kullanılabilir);
