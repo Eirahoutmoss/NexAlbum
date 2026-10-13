@@ -104,7 +104,11 @@ public sealed record TextElement : PageElement
 
     public double? LineHeight { get; init => field = Guard.PositiveOrNull(value, nameof(LineHeight)); }
 
+    /// <summary>Harf aralığı: punto katı (0,1 = harfler arasına puntonun %10'u kadar boşluk; Karar 09 §8, Rev. 2).</summary>
     public double LetterSpacing { get; init => field = Guard.Finite(value, nameof(LetterSpacing)); }
+
+    /// <summary>Okunurluk etkisi (gölge, hale, kontur, zemin bandı, kabartma); yoksa <see cref="TextEffect.None"/>.</summary>
+    public TextEffect Effect { get; init => field = value ?? throw new ArgumentNullException(nameof(Effect)); } = TextEffect.None;
 }
 
 /// <summary>Tüm sayfayı kaplayan arka plan katmanı (Karar 09 §9).</summary>

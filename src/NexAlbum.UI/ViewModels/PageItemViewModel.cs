@@ -173,6 +173,7 @@ public sealed class SlotItemViewModel : ObservableObject
     private int detailVersion;
     private bool isSelected;
     private bool isDropTarget;
+    private bool isPositioning;
     private PhotoPlacement? placement;
     private RectMm imageRect;
 
@@ -287,6 +288,13 @@ public sealed class SlotItemViewModel : ObservableObject
     {
         get => isSelected;
         set => SetProperty(ref isSelected, value);
+    }
+
+    /// <summary>Konumlandırma kipinde: düz sürükleme fotoğrafı yuvanın içinde kaydırır (ekranda belirgin çerçeve).</summary>
+    public bool IsPositioning
+    {
+        get => isPositioning;
+        set => SetProperty(ref isPositioning, value);
     }
 
     /// <summary>Sürüklenen fotoğraf bu yuvanın üzerinde.</summary>

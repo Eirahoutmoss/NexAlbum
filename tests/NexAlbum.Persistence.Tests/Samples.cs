@@ -125,6 +125,7 @@ internal static class Samples
                     VerticalAlignment = VerticalAlignment.Middle,
                     LineHeight = 1.2,
                     LetterSpacing = 0.5,
+                    Effect = new TextEffect { Kind = TextEffectKind.Glow, Color = RgbaColor.Parse("#FFFFFFCC"), Strength = 0.7 },
                     ZIndex = 10,
                 },
             ],

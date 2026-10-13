@@ -127,6 +127,54 @@ public static class PageEditor
         };
     }
 
+    /// <summary>
+    /// İmlecin altındaki nokta yerinde kalacak biçimde yakınlaştırır/uzaklaştırır (Karar 12 §10.3): kullanıcı fotoğrafın
+    /// hangi bölgesine yaklaşmak istiyorsa tekerleği oraya getirir.
+    /// </summary>
+    /// <param name="placement">Geçerli yerleşim.</param>
+    /// <param name="area">Fotoğraf alanı (mm).</param>
+    /// <param name="displayAspect">Fotoğrafın görünen en-boy oranı.</param>
+    /// <param name="mode">Sığdırma modu.</param>
+    /// <param name="factor">Çarpan (&gt;1 yakınlaştırır).</param>
+    /// <param name="anchorX">İmleç, yuva merkezine göre yuva genişliğinin oranı (−0,5 sol kenar … 0,5 sağ kenar).</param>
+    /// <param name="anchorY">İmleç, yuva merkezine göre yuva yüksekliğinin oranı.</param>
+    public static PhotoPlacement ZoomAt(PhotoPlacement placement, RectMm area, double displayAspect, CropMode mode, double factor, double anchorX, double anchorY)
+    {
+        ArgumentNullException.ThrowIfNull(placement);
+        var scale = Math.Clamp(placement.Scale * factor, MinScale, MaxScale);
+        var k = scale / placement.Scale;
+        var x = anchorX - ((anchorX - placement.OffsetX) * k);
+        var y = anchorY - ((anchorY - placement.OffsetY) * k);
+        return Clamp(placement with { Scale = scale, OffsetX = Math.Clamp(x, -1, 1), OffsetY = Math.Clamp(y, -1, 1) }, area, displayAspect, mode);
+    }
+
+    /// <summary>Fotoğrafı yuva ölçüsünün oranı kadar kaydırır (yön tuşları); sınırlar korunur.</summary>
+    public static PhotoPlacement Nudge(PhotoPlacement placement, RectMm area, double displayAspect, CropMode mode, double dx, double dy)
+    {
+        ArgumentNullException.ThrowIfNull(placement);
+        return Clamp(
+            placement with { OffsetX = Math.Clamp(placement.OffsetX + dx, -1, 1), OffsetY = Math.Clamp(placement.OffsetY + dy, -1, 1) },
+            area,
+            displayAspect,
+            mode);
+    }
+
+    /// <summary>
+    /// Fotoğrafın hangi bölgesinin görüneceğini seçer: −1 sol/üst, 0 orta, 1 sağ/alt (ör. sol üst = fotoğrafın sol üst köşesi
+    /// yuvanın sol üst köşesine oturur). Yakınlaştırma korunur.
+    /// </summary>
+    public static PhotoPlacement Align(PhotoPlacement placement, RectMm area, double displayAspect, CropMode mode, int horizontal, int vertical)
+    {
+        ArgumentNullException.ThrowIfNull(placement);
+        var edge = Clamp(placement with { OffsetX = 1, OffsetY = 1 }, area, displayAspect, mode);
+        return placement with
+        {
+            Scale = edge.Scale,
+            OffsetX = -Math.Sign(horizontal) * edge.OffsetX,
+            OffsetY = -Math.Sign(vertical) * edge.OffsetY,
+        };
+    }
+
     /// <summary>Ölçek 1'deki görüntü boyutu (ImageFit ile aynı kural).</summary>
     private static (double Width, double Height) BaseSize(RectMm area, double aspect, CropMode mode)
     {

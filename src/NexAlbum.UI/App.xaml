@@ -22,6 +22,17 @@
       <DataTemplate x:Key="SlotTemplate">
         <Canvas Width="{Binding Width}" Height="{Binding Height}">
           <Path Data="{Binding OuterGeometry}" Fill="{Binding ShapeFill}" Effect="{Binding Shadow}" />
+          <!-- Konumlandırma kipi: fotoğrafın yuva dışında kalan kısmı soluk gösterilir (neyin kırpıldığı görülsün). -->
+          <Canvas Canvas.Left="{Binding PhotoX}" Canvas.Top="{Binding PhotoY}" IsHitTestVisible="False" Opacity="0.38"
+                  Visibility="{Binding IsPositioning, Converter={StaticResource BoolToVisibility}}">
+            <Image Source="{Binding Image}" Stretch="Fill"
+                   Canvas.Left="{Binding ImageX}" Canvas.Top="{Binding ImageY}"
+                   Width="{Binding ImageWidth}" Height="{Binding ImageHeight}" RenderTransformOrigin="0.5,0.5">
+              <Image.RenderTransform>
+                <RotateTransform Angle="{Binding ImageRotation}" />
+              </Image.RenderTransform>
+            </Image>
+          </Canvas>
           <Grid Canvas.Left="{Binding PhotoX}" Canvas.Top="{Binding PhotoY}"
                 Width="{Binding PhotoWidth}" Height="{Binding PhotoHeight}"
                 Clip="{Binding PhotoClip}" Background="{Binding PhotoBackground}">
@@ -57,6 +68,8 @@
                 IsHitTestVisible="False" Visibility="{Binding IsSelected, Converter={StaticResource BoolToVisibility}}" />
           <Path Data="{Binding OuterGeometry}" Stroke="{DynamicResource AccentHoverBrush}" StrokeThickness="2" Fill="#40D4A853"
                 IsHitTestVisible="False" Visibility="{Binding IsDropTarget, Converter={StaticResource BoolToVisibility}}" />
+          <Path Data="{Binding OuterGeometry}" Stroke="{DynamicResource AccentHoverBrush}" StrokeThickness="1.6"
+                IsHitTestVisible="False" Visibility="{Binding IsPositioning, Converter={StaticResource BoolToVisibility}}" />
         </Canvas>
       </DataTemplate>
     </ResourceDictionary>

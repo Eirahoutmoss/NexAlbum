@@ -322,24 +322,15 @@ public sealed partial class MainViewModel
     /// Kutu yüksekliğini yazının satır sayısına göre ayarlar (WPF ile ölçülür; satır kırma kuralı PDF ile aynı:
     /// <see cref="TextLines"/>).
     /// </summary>
-    private static TextElement FitToContent(TextElement text)
-    {
-        var typeface = new Typeface(
-            AlbumFonts.ToWpf(text.Font.Family),
-            text.Font.Italic ? FontStyles.Italic : FontStyles.Normal,
-            FontWeight.FromOpenTypeWeight(Math.Clamp(text.Font.Weight, 1, 999)),
-            FontStretches.Normal);
-        var size = text.Font.Size * TextPreset.MmPerPoint;
-        var lines = TextLines.Wrap(text.Content, text.Bounds.Width, s =>
-            new FormattedText(s, CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, typeface, size, Brushes.Black, 1.0).WidthIncludingTrailingWhitespace);
-        return PageTextEditor.FitHeight(text, lines.Count);
-    }
+    private static TextElement FitToContent(TextElement text) =>
+        PageTextEditor.FitHeight(text, TextLayout.Compute(text, Controls.AlbumTextView.Measurer(text)).Lines.Count);
 
     private void InitializeText()
     {
         AddTextCommand = new RelayCommand<TextPreset>(AddText, p => p is not null && SelectedPage is { IsLocked: false } && !IsBusy);
         DeleteTextCommand = new RelayCommand(DeleteText, () => SelectedText is not null && SelectedPage is { IsLocked: false } && !IsBusy);
         ApplyTextColorCommand = new RelayCommand<TextColorOption>(c => TextColorHex = c?.Hex ?? TextColorHex, c => c is not null && SelectedText is not null);
+        InitializeTextEffects();
     }
 
     private void RefreshTextCommands()
@@ -347,6 +338,8 @@ public sealed partial class MainViewModel
         AddTextCommand?.NotifyCanExecuteChanged();
         DeleteTextCommand?.NotifyCanExecuteChanged();
         ApplyTextColorCommand?.NotifyCanExecuteChanged();
+        MakeTextReadableCommand?.NotifyCanExecuteChanged();
+        ApplyTextEffectColorCommand?.NotifyCanExecuteChanged();
     }
 
     private void UpdateText(Func<TextElement, TextElement> change)
@@ -413,6 +406,7 @@ public sealed partial class MainViewModel
         OnPropertyChanged(nameof(IsTextLeft));
         OnPropertyChanged(nameof(IsTextCenter));
         OnPropertyChanged(nameof(IsTextRight));
+        RaiseTextEffects();
         RefreshTextCommands();
     }
 }

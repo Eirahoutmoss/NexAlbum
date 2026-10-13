@@ -425,38 +425,36 @@ public static class PdfAlbumExporter
                 _ => XFontStyleEx.Regular,
             };
 
-            // Punto → mm (çizim birimi mm). Satırlar kutu genişliğine göre kaydırılır; satır aralığı ve dikey hizalama ekrandaki
-            // kuralla aynıdır (satır yüksekliği = punto × satır aralığı, satırlar bloğu kutu içinde hizalanır).
+            // Punto → mm (çizim birimi mm). Satır kırma, hizalama, harf aralığı ve etkiler ekranla ortak hesaptan gelir
+            // (TextLayout): satır yüksekliği = punto × satır aralığı, satırlar bloğu kutu içinde hizalanır.
             var sizeMm = text.Font.Size * 25.4 / 72;
             var font = new XFont(text.Font.Family, sizeMm, style);
-            var b = text.Bounds;
-            var lines = TextLines.Wrap(text.Content, b.Width, s => gfx.MeasureString(s, font).Width);
-            var step = sizeMm * (text.LineHeight ?? TextLines.DefaultLineHeight);
-            var total = lines.Count * step;
-            var top = text.VerticalAlignment switch
+            var layout = TextLayout.Compute(text, s => gfx.MeasureString(s, font).Width);
+            var format = new XStringFormat { Alignment = XStringAlignment.Near, LineAlignment = XLineAlignment.Center };
+
+            if (TextLayout.Band(text.Effect, layout) is { } band)
             {
-                VerticalAlignment.Middle => b.Y + ((b.Height - total) / 2),
-                VerticalAlignment.Bottom => b.Bottom - total,
-                _ => b.Y,
-            };
-            var format = new XStringFormat
+                var box = band.Box;
+                gfx.DrawRoundedRectangle(new XSolidBrush(ToXColor(band.Color, 1)), box.X, box.Y, box.Width, box.Height, band.Radius * 2, band.Radius * 2);
+            }
+
+            void Draw(double dx, double dy, XBrush brush)
             {
-                Alignment = text.Alignment switch
+                foreach (var line in layout.Lines)
                 {
-                    TextAlignment.Center => XStringAlignment.Center,
-                    TextAlignment.Right => XStringAlignment.Far,
-                    _ => XStringAlignment.Near,
-                },
-                LineAlignment = XLineAlignment.Center,
-            };
-            var brush = new XSolidBrush(ToXColor(text.Font.Color, 1));
-            for (var i = 0; i < lines.Count; i++)
-            {
-                if (lines[i].Length > 0)
-                {
-                    gfx.DrawString(lines[i], font, brush, new XRect(b.X, top + (i * step), b.Width, step), format);
+                    foreach (var piece in line.Pieces)
+                    {
+                        gfx.DrawString(piece.Text, font, brush, new XRect(line.Left + piece.X + dx, line.Top + dy, Math.Max(text.Bounds.Width, sizeMm) * 2, layout.Step), format);
+                    }
                 }
             }
+
+            foreach (var pass in TextLayout.Passes(text.Effect, sizeMm))
+            {
+                Draw(pass.Dx, pass.Dy, new XSolidBrush(ToXColor(pass.Color, 1)));
+            }
+
+            Draw(0, 0, new XSolidBrush(ToXColor(text.Font.Color, 1)));
         }
         catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or NotSupportedException)
         {

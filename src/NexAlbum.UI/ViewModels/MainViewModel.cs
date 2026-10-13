@@ -66,6 +66,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         InitializePages();
         InitializeText();
         InitializeGallery();
+        InitializePositioning();
         InitializeShell();
     }
 
@@ -663,6 +664,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         RefreshPageCommands();
         RefreshTextCommands();
         RefreshGalleryCommands();
+        RefreshPositioningCommands();
         RefreshDesignCommands();
         RefreshEditCommands();
     }

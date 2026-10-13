@@ -15,6 +15,7 @@ public sealed partial class MainViewModel
 {
     private SlotItemViewModel? selectedSlot;
     private string? selectedSlotId;
+    private string? selectedSlotPageId;
 
     public AsyncRelayCommand ImportFilesCommand { get; private set; } = null!;
 
@@ -50,6 +51,7 @@ public sealed partial class MainViewModel
                 OnPropertyChanged(nameof(FitButtonText));
                 RefreshEditCommands();
                 RefreshGalleryCommands();
+                SyncPositioning(value);
             }
         }
     }
@@ -103,7 +105,12 @@ public sealed partial class MainViewModel
         // Yuva seçimi (ya da boş tuvale tıklama) metin seçimini kaldırır.
         selectedTextId = null;
         SelectedText = null;
-        selectedSlotId = slot?.Id;
+        if (!string.Equals(slot?.Id, selectedSlotId, StringComparison.Ordinal))
+        {
+            IsPositioning = false;
+        }
+
+        RememberSlot(slot?.Id);
         SelectedSlot = slot;
     }
 
@@ -117,7 +124,7 @@ public sealed partial class MainViewModel
         }
 
         var now = clock.GetUtcNow();
-        selectedSlotId = target.Id;
+        RememberSlot(target.Id);
         return EditSelectedPage(p => PageEditor.PlacePhoto(p, target.Id, asset.Id, now), asset.FileName + " yerleştirildi.");
     }
 
@@ -144,7 +151,7 @@ public sealed partial class MainViewModel
         }
 
         var now = clock.GetUtcNow();
-        selectedSlotId = target.Id;
+        RememberSlot(target.Id);
         return EditSelectedPage(p => PageEditor.Swap(p, sourceSlotId, target.Id, now), target.IsEmpty ? "Fotoğraf taşındı." : "Fotoğraflar yer değiştirdi.");
     }
 
@@ -206,7 +213,7 @@ public sealed partial class MainViewModel
         ArgumentNullException.ThrowIfNull(slot);
         if (slot.Placement is { } placement)
         {
-            selectedSlotId = slot.Id;
+            RememberSlot(slot.Id);
             SetPlacement(slot, placement with { Scale = Math.Clamp(placement.Scale * factor, PageEditor.MinScale, PageEditor.MaxScale) }, "Yakınlaştırma");
         }
     }
@@ -334,15 +341,25 @@ public sealed partial class MainViewModel
             return;
         }
 
-        var slot = selectedSlotId is null ? null : page.Slots.FirstOrDefault(s => string.Equals(s.Id, selectedSlotId, StringComparison.Ordinal));
+        // Yuva kimlikleri sayfalar arasında tekrarlanabilir (şablon yuvaları): seçim yalnızca aynı sayfada geri bulunur.
+        var slot = selectedSlotId is null || !string.Equals(page.Page.Id, selectedSlotPageId, StringComparison.Ordinal)
+            ? null
+            : page.Slots.FirstOrDefault(s => string.Equals(s.Id, selectedSlotId, StringComparison.Ordinal));
         if (slot is null)
         {
             selectedSlotId = null;
+            isPositioning = false;
         }
 
         // Aynı nesne yeniden seçilse de bilgi ve kaydırıcı güncellensin.
         SelectedSlot = null;
         SelectedSlot = slot;
+    }
+
+    private void RememberSlot(string? id)
+    {
+        selectedSlotId = id;
+        selectedSlotPageId = id is null ? null : SelectedPage?.Page.Id;
     }
 
     private void SetPlacement(SlotItemViewModel slot, PhotoPlacement placement, string what)
@@ -353,7 +370,7 @@ public sealed partial class MainViewModel
         }
 
         var now = clock.GetUtcNow();
-        selectedSlotId = slot.Id;
+        RememberSlot(slot.Id);
         if (!EditSelectedPage(p => PageEditor.SetPlacement(p, slot.Id, placement, asset.DisplayAspectRatio, now), null))
         {
             slot.Preview(slot.Slot.Placement ?? placement);

@@ -378,6 +378,7 @@
 
         <!-- ④ Tuval -->
         <Grid x:Name="CanvasArea" Grid.Column="2" Background="{DynamicResource CanvasBackgroundBrush}" AllowDrop="True"
+              Focusable="True" FocusVisualStyle="{x:Null}" KeyDown="OnCanvasKeyDown"
               PreviewMouseLeftButtonDown="OnCanvasMouseDown" PreviewMouseMove="OnCanvasMouseMove" PreviewMouseLeftButtonUp="OnCanvasMouseUp"
               PreviewMouseWheel="OnCanvasMouseWheel" DragOver="OnCanvasDragOver" DragLeave="OnCanvasDragLeave" Drop="OnCanvasDrop">
           <ScrollViewer x:Name="CanvasScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Focusable="False"
@@ -503,6 +504,46 @@
                                Foreground="{DynamicResource SecondaryTextBrush}" />
                     <TextBlock Text="Yakınlaştır" Width="86" VerticalAlignment="Center" />
                     <Slider Minimum="100" Maximum="500" Value="{Binding SlotZoomPercent, Delay=150}" SmallChange="5" LargeChange="25" VerticalAlignment="Center" />
+                  </DockPanel>
+                  <DockPanel Margin="16,10,16,0" IsEnabled="{Binding SelectedSlotHasPhoto}">
+                    <TextBlock Text="Konum" Width="86" VerticalAlignment="Top" Margin="0,4,0,0" />
+                    <Grid DockPanel.Dock="Left" Width="78" Height="78" VerticalAlignment="Top">
+                      <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition />
+                        <RowDefinition />
+                      </Grid.RowDefinitions>
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                      </Grid.ColumnDefinitions>
+                      <Button Grid.Row="0" Grid.Column="0" Style="{StaticResource AnchorButton}" Command="{Binding AlignPhotoCommand}" CommandParameter="-1 -1"
+                              ToolTip="Sol üst: fotoğrafın sol üst bölgesi görünür" AutomationProperties.Name="Sol üst" />
+                      <Button Grid.Row="0" Grid.Column="1" Style="{StaticResource AnchorButton}" Command="{Binding AlignPhotoCommand}" CommandParameter="0 -1"
+                              ToolTip="Üst orta: fotoğrafın üst orta bölgesi görünür" AutomationProperties.Name="Üst orta" />
+                      <Button Grid.Row="0" Grid.Column="2" Style="{StaticResource AnchorButton}" Command="{Binding AlignPhotoCommand}" CommandParameter="1 -1"
+                              ToolTip="Sağ üst: fotoğrafın sağ üst bölgesi görünür" AutomationProperties.Name="Sağ üst" />
+                      <Button Grid.Row="1" Grid.Column="0" Style="{StaticResource AnchorButton}" Command="{Binding AlignPhotoCommand}" CommandParameter="-1 0"
+                              ToolTip="Sol orta: fotoğrafın sol orta bölgesi görünür" AutomationProperties.Name="Sol orta" />
+                      <Button Grid.Row="1" Grid.Column="1" Style="{StaticResource AnchorButton}" Command="{Binding AlignPhotoCommand}" CommandParameter="0 0"
+                              ToolTip="Orta: fotoğrafın orta bölgesi görünür" AutomationProperties.Name="Orta" />
+                      <Button Grid.Row="1" Grid.Column="2" Style="{StaticResource AnchorButton}" Command="{Binding AlignPhotoCommand}" CommandParameter="1 0"
+                              ToolTip="Sağ orta: fotoğrafın sağ orta bölgesi görünür" AutomationProperties.Name="Sağ orta" />
+                      <Button Grid.Row="2" Grid.Column="0" Style="{StaticResource AnchorButton}" Command="{Binding AlignPhotoCommand}" CommandParameter="-1 1"
+                              ToolTip="Sol alt: fotoğrafın sol alt bölgesi görünür" AutomationProperties.Name="Sol alt" />
+                      <Button Grid.Row="2" Grid.Column="1" Style="{StaticResource AnchorButton}" Command="{Binding AlignPhotoCommand}" CommandParameter="0 1"
+                              ToolTip="Alt orta: fotoğrafın alt orta bölgesi görünür" AutomationProperties.Name="Alt orta" />
+                      <Button Grid.Row="2" Grid.Column="2" Style="{StaticResource AnchorButton}" Command="{Binding AlignPhotoCommand}" CommandParameter="1 1"
+                              ToolTip="Sağ alt: fotoğrafın sağ alt bölgesi görünür" AutomationProperties.Name="Sağ alt" />
+                    </Grid>
+                    <StackPanel Margin="12,0,0,0">
+                      <ToggleButton Style="{StaticResource ChipToggle}" Content="{Binding PositioningButtonText}" IsChecked="{Binding IsPositioning}"
+                                    HorizontalAlignment="Left"
+                                    ToolTip="Ya da yuvaya çift tıklayın. Kipteyken düz sürükleme fotoğrafı yuvanın içinde kaydırır." />
+                      <TextBlock Style="{StaticResource Caption}" TextWrapping="Wrap" Margin="0,6,0,0"
+                                 Text="Tekerlek: imlecin olduğu yere yakınlaşır · Yön tuşları: kaydırır (Shift: büyük adım) · + / −: yakınlaştırır · Home: ortalar" />
+                    </StackPanel>
                   </DockPanel>
                   <WrapPanel Margin="16,10,10,0">
                     <Button Style="{StaticResource SmallButton}" Content="Ortala" Command="{Binding CenterPhotoCommand}" ToolTip="Kaydırma ve yakınlaştırmayı sıfırla" />
@@ -902,6 +943,14 @@
                     <Slider Minimum="0.8" Maximum="2.5" Value="{Binding TextLineHeight, Delay=120}" SmallChange="0.05" LargeChange="0.25" IsSnapToTickEnabled="True" TickFrequency="0.05"
                             VerticalAlignment="Center" AutomationProperties.Name="Satır aralığı" />
                   </DockPanel>
+                  <DockPanel Margin="16,0,16,6">
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding TextLetterSpacing, StringFormat={}%{0:0}}" Width="42" TextAlignment="Right" VerticalAlignment="Center"
+                               Foreground="{DynamicResource SecondaryTextBrush}" />
+                    <TextBlock Text="Harf aralığı" VerticalAlignment="Center" Width="86" />
+                    <Slider Minimum="-5" Maximum="50" Value="{Binding TextLetterSpacing, Delay=120}" SmallChange="1" LargeChange="5" IsSnapToTickEnabled="True" TickFrequency="1"
+                            VerticalAlignment="Center" AutomationProperties.Name="Harf aralığı"
+                            ToolTip="Puntonun yüzdesi. Büyük harfli tarih ve isimlerde %15–30 zarif durur." />
+                  </DockPanel>
                   <DockPanel Margin="16,0,16,8">
                     <TextBlock DockPanel.Dock="Right" Text="{Binding TextWidthPercent, StringFormat={}%{0:0}}" Width="42" TextAlignment="Right" VerticalAlignment="Center"
                                Foreground="{DynamicResource SecondaryTextBrush}" />
@@ -939,6 +988,94 @@
                     <TextBox Text="{Binding TextColorHex, UpdateSourceTrigger=LostFocus}" ToolTip="#RRGGBB, ör. #A9843F" FontFamily="Consolas, Cascadia Mono"
                              AutomationProperties.Name="Özel metin rengi" />
                   </DockPanel>
+
+                  <DockPanel Margin="0,0,16,0">
+                    <Button DockPanel.Dock="Right" Style="{StaticResource SmallButton}" Content="Okunur yap" Command="{Binding MakeTextReadableCommand}" VerticalAlignment="Bottom"
+                            ToolTip="Yazı rengine göre en uygun etkiyi seçer: koyu yazıya beyaz hale, açık yazıya koyu gölge." />
+                    <TextBlock Text="OKUNURLUK" Style="{StaticResource PanelHeader}" />
+                  </DockPanel>
+                  <ListBox ItemsSource="{Binding TextEffectOptions}" SelectedItem="{Binding SelectedTextEffect}" Margin="12,0,10,0" Focusable="False"
+                           ScrollViewer.HorizontalScrollBarVisibility="Disabled" AutomationProperties.Name="Metin etkisi">
+                    <ListBox.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <UniformGrid Columns="3" />
+                      </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemContainerStyle>
+                      <Style TargetType="ListBoxItem">
+                        <Setter Property="Cursor" Value="Hand" />
+                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                        <Setter Property="ToolTip" Value="{Binding Hint}" />
+                        <Setter Property="Template">
+                          <Setter.Value>
+                            <ControlTemplate TargetType="ListBoxItem">
+                              <StackPanel Margin="4,0,4,8">
+                                <Border x:Name="Bd" CornerRadius="6" BorderThickness="2" BorderBrush="Transparent" Padding="1">
+                                  <!-- Karışık tonlu zemin: etkinin okunurluğa katkısı açık ve koyu bölgede birlikte görülür. -->
+                                  <Border CornerRadius="4" Height="50">
+                                    <Border.Background>
+                                      <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#EDE3D1" Offset="0" />
+                                        <GradientStop Color="#9C8B76" Offset="0.55" />
+                                        <GradientStop Color="#3F3A35" Offset="1" />
+                                      </LinearGradientBrush>
+                                    </Border.Background>
+                                    <Viewbox Margin="4,2">
+                                      <ui:AlbumTextView Text="{Binding Preview}" Width="30" Height="14" />
+                                    </Viewbox>
+                                  </Border>
+                                </Border>
+                                <TextBlock x:Name="T" Text="{Binding Name}" FontSize="11" HorizontalAlignment="Center" Margin="0,3,0,0"
+                                           Foreground="{DynamicResource SecondaryTextBrush}" />
+                              </StackPanel>
+                              <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                  <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource BorderStrongBrush}" />
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                  <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+                                  <Setter TargetName="T" Property="Foreground" Value="{DynamicResource AccentTextBrush}" />
+                                </Trigger>
+                              </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                          </Setter.Value>
+                        </Setter>
+                      </Style>
+                    </ListBox.ItemContainerStyle>
+                  </ListBox>
+                  <TextBlock Text="{Binding TextEffectHint}" Style="{StaticResource Caption}" Margin="16,0,16,6" TextWrapping="Wrap" />
+                  <StackPanel Visibility="{Binding HasTextEffect, Converter={StaticResource BoolToVisibility}}">
+                    <DockPanel Margin="16,0,16,6">
+                      <TextBlock DockPanel.Dock="Right" Text="{Binding TextEffectStrength, StringFormat={}%{0:0}}" Width="42" TextAlignment="Right" VerticalAlignment="Center"
+                                 Foreground="{DynamicResource SecondaryTextBrush}" />
+                      <TextBlock Text="Güç" VerticalAlignment="Center" Width="86" />
+                      <Slider Minimum="5" Maximum="100" Value="{Binding TextEffectStrength, Delay=120}" SmallChange="5" LargeChange="10" IsSnapToTickEnabled="True" TickFrequency="5"
+                              VerticalAlignment="Center" AutomationProperties.Name="Etki gücü" />
+                    </DockPanel>
+                    <DockPanel Margin="16,0,16,0">
+                      <TextBlock Text="Etki rengi" VerticalAlignment="Center" Width="86" />
+                      <ItemsControl ItemsSource="{Binding TextEffectColors}">
+                        <ItemsControl.ItemsPanel>
+                          <ItemsPanelTemplate>
+                            <WrapPanel />
+                          </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate>
+                            <Button Style="{StaticResource SwatchButton}" ToolTip="{Binding Name}" CommandParameter="{Binding}" Padding="2"
+                                    Command="{Binding DataContext.ApplyTextEffectColorCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+                              <Border Width="20" Height="20" CornerRadius="10" Background="{Binding Preview}" BorderThickness="1" BorderBrush="#33000000" />
+                            </Button>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </DockPanel>
+                    <DockPanel Margin="16,6,16,0">
+                      <TextBlock Text="Özel etki rengi" VerticalAlignment="Center" Width="86" TextWrapping="Wrap" />
+                      <TextBox Text="{Binding TextEffectColorHex, UpdateSourceTrigger=LostFocus}" ToolTip="#RRGGBB ya da saydamlıkla #RRGGBBAA" FontFamily="Consolas, Cascadia Mono"
+                               AutomationProperties.Name="Özel etki rengi" />
+                    </DockPanel>
+                  </StackPanel>
 
                   <Button Margin="16,14,16,0" HorizontalAlignment="Left" Style="{StaticResource ToolButton}" Command="{Binding DeleteTextCommand}" ToolTip="Seçili metni sil (Del)">
                     <StackPanel Orientation="Horizontal">

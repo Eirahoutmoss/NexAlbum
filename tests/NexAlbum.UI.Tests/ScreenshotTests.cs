@@ -116,6 +116,32 @@ public sealed class ScreenshotTests : IDisposable
                 vm.SelectedPage!.Texts.Should().HaveCount(4);
                 Capture(main, "12-metin-gece").Should().BeTrue();
 
+                // Fotoğraf üstünde yazı: koyu yazıya hale, açık yazıya bant; ardından yuvada konumlandırma kipi.
+                vm.SelectedPage = vm.Pages.First(p => p.PhotoCount >= 2);
+                vm.AddText(Core.Projects.TextPresets.Find("title"));
+                vm.TextContent = "Özel Anlar";
+                vm.TextSize = 72;
+                vm.SelectedTextEffect = vm.TextEffectOptions.Single(o => o.Kind == Core.Projects.TextEffectKind.Glow);
+                vm.TextEffectStrength = 95;
+                vm.AddText(Core.Projects.TextPresets.Find("date"));
+                vm.TextColorHex = "#FFFFFF";
+                vm.TextLetterSpacing = 30;
+                vm.SelectedTextEffect = vm.TextEffectOptions.Single(o => o.Kind == Core.Projects.TextEffectKind.Band);
+                vm.ApplyTextEffectColorCommand.Execute(vm.TextEffectColors.Single(c => c.Name == "Mürekkep"));
+                vm.TextEffectStrength = 55;
+                Settle(main);
+                Capture(main, "13-yazi-etkileri-gece").Should().BeTrue();
+
+                var photoSlot = vm.SelectedPage!.Slots.OrderByDescending(x => x.Width * x.Height).First(x => !x.IsEmpty);
+                vm.SelectSlot(photoSlot);
+                vm.ZoomSlotAt(vm.SelectedSlot!, 1.8, photoSlot.Width * 0.7, photoSlot.Height * 0.4);
+                vm.IsPositioning = true;
+                tabs.SelectedIndex = 0;
+                Settle(main);
+                vm.IsPositioning.Should().BeTrue();
+                Capture(main, "14-konumlandirma-gece").Should().BeTrue();
+                vm.IsPositioning = false;
+
                 var show = new PresentationWindow(new ViewModels.PresentationViewModel(vm.Project!, vm.SelectedPage!.Index, spreads: true)) { WindowState = WindowState.Normal };
                 Capture(Show(show, 1440, 900), "08-sunum").Should().BeTrue();
                 show.Hide();
