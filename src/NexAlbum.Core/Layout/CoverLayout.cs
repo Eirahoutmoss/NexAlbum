@@ -111,8 +111,8 @@ public static class CoverLayout
 
         var preset = TextPresets.Find("title")!;
         var white = preset with { Font = preset.Font with { Color = RgbaColor.White }, CenterYPercent = 76, WidthPercent = 80 };
-        elements.Add(white.Create("text-001", string.IsNullOrWhiteSpace(title) ? project.Name : title.Trim(), front, PageTextEditor.TextLayer)
-            with { Effect = TextEffect.Readable(RgbaColor.White) });
+        var text = white.Create("text-001", string.IsNullOrWhiteSpace(title) ? project.Name : title.Trim(), front, PageTextEditor.TextLayer);
+        elements.Add(text with { Effect = TextEffect.Readable(RgbaColor.White) });
 
         return new AlbumPage
         {

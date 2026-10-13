@@ -41,7 +41,7 @@ public class CoverLayoutTests
         none.Should().ContainSingle(i => i.Code == "cover.none");
 
         CoverLayout.Geometry(WithCover(new CoverSpec(CoverType.Softcover, new SizeMm(300, 300))), out var noSpine).Should().BeNull();
-        noSpine.Should().ContainSingle(i => i.Code == "cover.spine.missing").Which.Message.Should().Contain("baskı evinizden");
+        noSpine.Should().ContainSingle(i => i.Code == "cover.spine.missing").Which.Message.Should().Contain("Baskı evinizden");
 
         CoverLayout.Geometry(WithCover(new CoverSpec(CoverType.Hardcover, null, null, new SpineSpec(12))), out var noFront).Should().BeNull();
         noFront.Should().ContainSingle(i => i.Code == "cover.front.missing");
