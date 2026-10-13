@@ -109,35 +109,27 @@ public static class TextLayout
         switch (effect.Kind)
         {
             case TextEffectKind.Shadow:
-            {
                 var d = sizeMm * 0.055;
-                var r = sizeMm * 0.07;
-                Soft(passes, d, d, [r * 0.5, r], c, s * 0.85);
+                var blur = sizeMm * 0.07;
+                Soft(passes, d, d, [blur * 0.5, blur], c, s * 0.85);
                 break;
-            }
 
             case TextEffectKind.Glow:
-            {
                 var r = sizeMm * 0.12;
                 Soft(passes, 0, 0, [r / 3, r * 2 / 3, r], c, s * 0.95);
                 break;
-            }
 
             case TextEffectKind.Outline:
-            {
                 var w = sizeMm * (0.02 + (0.05 * s));
                 Ring(passes, 0, 0, w / 2, RingCopies / 2, c);
                 Ring(passes, 0, 0, w, RingCopies + 4, c);
                 break;
-            }
 
             case TextEffectKind.Emboss:
-            {
                 var e = sizeMm * (0.015 + (0.025 * s));
                 passes.Add(new TextPass(e, e, WithAlpha(c, 0.75 * s)));
                 passes.Add(new TextPass(-e * 0.8, -e * 0.8, WithAlpha(RgbaColor.White, 0.85 * s)));
                 break;
-            }
 
             default:
                 break;
