@@ -522,6 +522,8 @@ public sealed partial class MainViewModel
         new("Hikâye: seçili fotoğraftan yeni bölüm", "Hikâye", "Icon.Split", null, SplitStoryHereCommand, "böl ayır başlat"),
         new("Kapak oluştur / yeniden oluştur", "Albüm", "Icon.Book", null, CreateCoverCommand, "kapak sırt ön arka cilt sert yumuşak"),
         new("Kapağı göster", "Albüm", "Icon.Book", null, ShowCoverCommand, "kapak sırt"),
+        new("Çevrimdışı HTML prova oluştur (müşteriye gönder)", "Albüm", "Icon.Present", null, ExportProofCommand, "prova html müşteri onay beğeni not paylaş çevrimdışı"),
+        new("Prova geri bildirimini içe aktar", "Albüm", "Icon.Open", null, ImportProofCommand, "prova geri bildirim json müşteri not beğeni"),
         new("Sayfaları JPG/PNG olarak kaydet (önizleme)", "Albüm", "Icon.Image", null, ExportImagesCommand, "jpg jpeg png görüntü resim önizleme paylaş instagram dışa aktar"),
         new("Yuva çerçevesini düzenle (taşı, boyutlandır, köşeler)", "Yuva", "Icon.Shapes", null, ToggleFrameEditingCommand, "çerçeve yuva boyut köşe biçim üçgen altıgen hizala taşı"),
         new("Hikâye: makine saatlerini eşitle", "Hikâye", "Icon.Clock", null, SyncClocksCommand, "saat farkı kamera makine fotoğrafçı eşitle kaydır exif zaman dilimi"),

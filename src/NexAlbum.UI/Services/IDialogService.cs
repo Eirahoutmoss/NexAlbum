@@ -52,6 +52,12 @@ public interface IDialogService
     /// <summary>JPG/PNG çıktısının taban dosya adını sordurur (sayfa numaraları eklenir); iptalde null.</summary>
     string? AskImagePath(string suggestedName);
 
+    /// <summary>HTML provanın kaydedileceği yolu sordurur; iptalde null.</summary>
+    string? AskProofPath(string suggestedName);
+
+    /// <summary>Provadan dönen geri bildirim dosyasını (.json) seçtirir; iptalde null.</summary>
+    string? AskProofFeedbackPath();
+
     /// <summary>Çıktı klasörünü dosya gezgininde gösterir.</summary>
     void Reveal(string path);
 

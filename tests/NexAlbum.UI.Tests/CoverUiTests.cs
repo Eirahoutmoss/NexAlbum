@@ -186,4 +186,39 @@ public sealed class ImageExportTests : IDisposable
         var png = PageImageExporter.Export(project, null, Path.Combine(dir, "tatil.png"), dpi: 72);
         png.Files.Should().HaveCount(2, "geometri verilmezse kapak atlanır").And.OnlyContain(f => f.EndsWith(".png", StringComparison.Ordinal));
     });
+
+    [Fact]
+    public void ProofIsExportedAndItsFeedbackComesBack() => WpfApp.Run(() =>
+    {
+        var now = new DateTimeOffset(2026, 10, 12, 10, 0, 0, TimeSpan.Zero);
+        var project = AlbumProject.Create("Mezuniyet", BuiltInProfiles.Find("builtin-30x30")!, now, "0.1.0", Guid.NewGuid()).WithPages(
+        [
+            new AlbumPage { Id = "p1", Background = BackgroundFill.Solid(Core.Common.RgbaColor.Parse("#336699")) },
+            new AlbumPage { Id = "p2" },
+        ]);
+        var path = Path.Combine(dir, "mezuniyet.albumproj");
+        ProjectPackageWriter.Save(path, project, new SaveOptions { AppVersion = project.AppVersion });
+        var dialogs = new MainViewModelTests.FakeDialogs { ProofPath = Path.Combine(dir, "prova.html") };
+        using var vm = new MainViewModel(dialogs, settings: new MemoryAppSettingsStore());
+        vm.Open(path);
+
+        vm.ExportProofCommand.Execute(null);
+
+        var html = File.ReadAllText(dialogs.ProofPath!);
+        html.Should().Contain("Sayfa 2").And.Contain("data:image/jpeg;base64,").And.Contain(project.Id.ToString());
+        vm.Status.Should().Contain("Prova hazır");
+
+        var feedback = Path.Combine(dir, "geri.json");
+        File.WriteAllText(feedback, "{ \"format\": \"nexalbum-proof-feedback\", \"version\": 1, \"projectId\": \"" + project.Id
+            + "\", \"pages\": [ { \"id\": \"p2\", \"liked\": true, \"note\": \"Daha büyük olsun\" } ] }");
+        dialogs.FeedbackPath = feedback;
+        vm.ImportProofCommand.Execute(null);
+
+        vm.Status.Should().Contain("1 beğeni, 1 not");
+        vm.Pages[1].HasNotes.Should().BeTrue();
+        vm.SelectedPage = vm.Pages[1];
+        vm.SelectedPageNotes.Should().Be("Prova: ♥ beğenildi · Daha büyük olsun");
+        vm.UndoCommand.Execute(null);
+        vm.Pages[1].HasNotes.Should().BeFalse();
+    });
 }

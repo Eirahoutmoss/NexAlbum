@@ -99,6 +99,29 @@ public sealed class DialogService(Window owner) : IDialogService
         return dialog.ShowDialog(owner) == true ? dialog.FileName : null;
     }
 
+    public string? AskProofPath(string suggestedName)
+    {
+        var dialog = new SaveFileDialog
+        {
+            Filter = "HTML prova (*.html)|*.html",
+            Title = "Çevrimdışı prova (müşteriye gönderin)",
+            FileName = suggestedName,
+            DefaultExt = ".html",
+            AddExtension = true,
+        };
+        return dialog.ShowDialog(owner) == true ? dialog.FileName : null;
+    }
+
+    public string? AskProofFeedbackPath()
+    {
+        var dialog = new OpenFileDialog
+        {
+            Filter = "Prova geri bildirimi (*.json)|*.json",
+            Title = "Prova geri bildirimini içe aktar",
+        };
+        return dialog.ShowDialog(owner) == true ? dialog.FileName : null;
+    }
+
     public void Reveal(string path) =>
         Process.Start(new ProcessStartInfo("explorer.exe", "/select,\"" + path + "\"") { UseShellExecute = true })?.Dispose();
 

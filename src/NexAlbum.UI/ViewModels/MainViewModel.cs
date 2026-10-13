@@ -72,6 +72,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         InitializeCameraClocks();
         InitializeFrame();
         InitializeCover();
+        InitializeProof();
         InitializeShell();
     }
 
@@ -690,6 +691,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         RefreshStoryCommands();
         RefreshClockCommands();
         RefreshCoverCommands();
+        RefreshProofCommands();
         ToggleFrameEditingCommand?.NotifyCanExecuteChanged();
         ResetFrameCornersCommand?.NotifyCanExecuteChanged();
         RefreshDesignCommands();

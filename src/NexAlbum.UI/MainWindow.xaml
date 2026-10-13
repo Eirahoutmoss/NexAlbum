@@ -130,10 +130,14 @@
           <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" WindowChrome.IsHitTestVisibleInChrome="True">
             <!-- Paylaş ve diğer çıktılar: araç çubuğuna sığmayanlar -->
             <Button Style="{StaticResource IconButton}" ui:Ui.Icon="{StaticResource Icon.Download}" Margin="0,0,2,0" Click="OnChapterNamesClick"
-                    ToolTip="Paylaş ve diğer çıktılar: JPG/PNG önizleme, HTML prova" AutomationProperties.Name="Paylaş ve çıktılar">
+                    ToolTip="Paylaş ve diğer çıktılar: JPG/PNG önizleme, HTML prova ve geri bildirimi" AutomationProperties.Name="Paylaş ve çıktılar">
               <Button.ContextMenu>
                 <ContextMenu>
                   <MenuItem Header="Sayfaları JPG/PNG olarak kaydet (önizleme)…" Command="{Binding ExportImagesCommand}" />
+                  <Separator />
+                  <MenuItem Header="Çevrimdışı HTML prova oluştur…" Command="{Binding ExportProofCommand}"
+                            ToolTip="Tek dosya: müşteri sayfaları beğenir, not yazar ve küçük bir geri bildirim dosyası indirir." />
+                  <MenuItem Header="Prova geri bildirimini içe aktar…" Command="{Binding ImportProofCommand}" />
                 </ContextMenu>
               </Button.ContextMenu>
             </Button>
@@ -507,6 +511,13 @@
                   <TextBlock Text="SAYFA" Style="{StaticResource HeaderText}" />
                 </DockPanel>
                 <TextBlock Text="{Binding SelectedPageInfo}" Style="{StaticResource SectionText}" />
+                <Border Margin="16,8,16,0" Padding="12,10" CornerRadius="8" Background="{DynamicResource SelectionBrush}"
+                        Visibility="{Binding HasSelectedPageNotes, Converter={StaticResource BoolToVisibility}}">
+                  <StackPanel>
+                    <TextBlock Text="NOTLAR" FontSize="11" FontWeight="SemiBold" Foreground="{DynamicResource AccentTextBrush}" />
+                    <TextBlock Text="{Binding SelectedPageNotes}" TextWrapping="Wrap" FontSize="12.5" Margin="0,4,0,0" />
+                  </StackPanel>
+                </Border>
                 <StackPanel Visibility="{Binding IsCoverSelected, Converter={StaticResource BoolToVisibility}}">
                   <TextBlock Style="{StaticResource Caption}" Margin="16,6,16,0" TextWrapping="Wrap"
                              Text="Soldan sağa: arka kapak · sırt · ön kapak (mor kesikli çizgiler katlama yeri). Ölçüler profilden gelir; sırt genişliğini baskı evinizden teyit edin. PDF'te ayrı dosya (ad_kapak.pdf) olarak çıkar." />
@@ -1500,6 +1511,12 @@
                             <Ellipse Width="6" Height="6" Fill="{Binding ChapterColor}" Margin="0,0,4,0" VerticalAlignment="Center" />
                             <TextBlock Text="{Binding ChapterLabel}" FontSize="9.5" Foreground="#F2EDE4" TextTrimming="CharacterEllipsis" MaxWidth="90" />
                           </StackPanel>
+                        </Border>
+                        <!-- Not/prova geri bildirimi var -->
+                        <Border Width="16" Height="16" CornerRadius="8" Margin="0,4,4,0" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                Background="{DynamicResource AccentBrush}" ToolTip="{Binding Page.Notes}"
+                                Visibility="{Binding HasNotes, Converter={StaticResource BoolToVisibility}}">
+                          <TextBlock Text="✎" FontSize="10" Foreground="#1B160D" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <!-- Sürükle-bırak: buraya bırakılınca sayfa bu konuma gelir -->
                         <Border x:Name="DropMark" Width="3" CornerRadius="1.5" Margin="-6,0,0,0" HorizontalAlignment="Left"
