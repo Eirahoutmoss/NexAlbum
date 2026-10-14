@@ -48,7 +48,7 @@ Son güncelleme: 14 Ekim 2026 (pro efektler: film, sunum, HTML prova). Başka bi
 | **Pro efektler (Karar 23)** | Programa gömülü 33 geçiş (Aperture, diyafram, petek, mürekkep, ışık sızıntısı, sayfa çevirme…), 4 başlık animasyonu, odak galerisi/kolaj/albüm açılışı sahneleri, 11 yeni film stili; sunumda tıklanan noktadan açılış, mercek imleci, otomatik oynatma, «Göz at» odak şeridi (E/P/G); HTML provada odak şeridi + tam ekran «Gösteri» (efekt seçimi, Karışık); C# ve tarayıcı aynı hesap (Jint eşdeğerlik testi) |
 | **Eklenti paketleri (Karar 22)** | `.nexpaket` (yalnızca veri): film stilleri; `%LOCALAPPDATA%\NexAlbum\eklentiler`; «Paylaş» menüsünden yükle; biçim `docs/eklentiler.md`, örnek `samples/eklentiler/ornek-sinema` |
 
-Testler: Windows ~730, Ubuntu ~610 (Ubuntu CI'da FFmpeg kurulup uçtan uca MP4 üretimi de denenir) — hepsi geçiyor. Takılan test 5 dakikada kesilir (`--blame-hang-timeout`). CI: `build.yml`, `test.yml` ve `screenshots.yml`
+Testler: Windows 882, Ubuntu 774 (14 Ekim 2026) (Ubuntu CI'da FFmpeg kurulup uçtan uca MP4 üretimi de denenir) — hepsi geçiyor. Takılan test 5 dakikada kesilir (`--blame-hang-timeout`). CI: `build.yml`, `test.yml` ve `screenshots.yml`
 (her dalda iki temada ekran görüntüsü üretir ve `ekran/<dal>` dalına yazar; ör. `ekran/main`).
 
 ## Elle denenmesi gerekenler

@@ -1,0 +1,27 @@
+name: Özellik önerisi
+description: Yeni bir özellik ya da iyileştirme önerin
+labels: ["öneri"]
+body:
+  - type: textarea
+    id: sorun
+    attributes:
+      label: Hangi sorunu çözüyor?
+      description: Ne yapmaya çalışıyorsunuz, şu an neden zor?
+    validations:
+      required: true
+  - type: textarea
+    id: oneri
+    attributes:
+      label: Öneriniz
+    validations:
+      required: true
+  - type: textarea
+    id: alternatif
+    attributes:
+      label: Düşündüğünüz alternatifler
+  - type: checkboxes
+    id: ilkeler
+    attributes:
+      label: İlkeler
+      options:
+        - label: Öneri yerel çalışmayı, açık dosya biçimini ve "değer uydurmama" ilkesini koruyor
