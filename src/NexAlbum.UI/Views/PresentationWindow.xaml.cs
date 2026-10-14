@@ -280,7 +280,8 @@ public partial class PresentationWindow : Window
     {
         Strip.Children.Clear();
         cards.Clear();
-        var template = (DataTemplate)FindResource("SpreadView");
+        // Şablon kök ızgaranın kaynaklarında: pencereden aranırsa bulunamaz (kaynak araması yukarı doğrudur).
+        var template = (DataTemplate)Strip.FindResource("SpreadView");
         foreach (var view in ViewModel.Views)
         {
             var card = new ContentControl
