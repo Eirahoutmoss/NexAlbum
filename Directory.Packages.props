@@ -20,5 +20,7 @@
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <!-- 7.x'te kalınmalı: 8.0+ Apache 2.0 değil, ticari lisans (Karar 08 Rev. 1). -->
     <PackageVersion Include="FluentAssertions" Version="7.2.0" />
+    <!-- BSD-2-Clause (Karar 08, Karar 23): HTML provadaki efekt betiğinin C# hesabıyla eşdeğerlik testi; yalnızca testte. -->
+    <PackageVersion Include="Jint" Version="4.1.0" />
   </ItemGroup>
 </Project>

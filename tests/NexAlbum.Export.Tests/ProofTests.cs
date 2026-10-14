@@ -41,6 +41,18 @@ public class ProofTests
     }
 
     [Fact]
+    public void DocumentCarriesTheEffectsAndTheChosenOpening()
+    {
+        var html = ProofDocument.Build("Yaz", Id, [new ProofPage("page-001", "Sayfa 1", [0xFF, 0xD8, 0xFF], 10, 10)], Now, "honeycomb");
+
+        html.Should().Contain("root.NexEffects", "efekt betiği gömülü");
+        html.Should().Contain("\"effect\":\"honeycomb\"");
+        html.Should().Contain("id=\"track\"", "odak şeridi").And.Contain("id=\"show\"", "gösteri");
+        html.Should().NotContain("{{", "tüm yer tutucular dolduruldu");
+        ProofDocument.Build("Yaz", Id, [], Now).Should().Contain("\"effect\":\"aperture\"", "varsayılan Aperture");
+    }
+
+    [Fact]
     public void FeedbackIsWrittenToPageNotesAndKeepsDesignerNotes()
     {
         var feedback = ProofFeedback.Parse(Feedback(Id, """

@@ -66,6 +66,53 @@ public class VideoPlannerTests
     }
 
     [Fact]
+    public void ProStylesUseScenesTitlesAndTheBookOpening()
+    {
+        var project = Wedding();
+
+        var gallery = VideoPlanner.Plan(project, new VideoSettings { FormatId = "fullhd", StyleId = "odak-galerisi" });
+        gallery.Clips.OfType<GalleryClip>().Should().NotBeEmpty();
+        var shown = gallery.Clips.OfType<PhotoClip>().Count() + gallery.Clips.OfType<GalleryClip>().Sum(g => g.AssetIds.Count);
+        shown.Should().Be(20, "galeride de her fotoğraf bir kez görünür");
+        gallery.Clips.OfType<GalleryClip>().Should().OnlyContain(g => g.AssetIds.Count >= 3 && g.AssetIds.Count <= 5);
+        gallery.Clips.OfType<TitleClip>().Should().OnlyContain(t => t.Animation == TitleAnimation.Rise);
+
+        var collage = VideoPlanner.Plan(project, new VideoSettings { FormatId = "reels", StyleId = "kolaj", TargetSeconds = null });
+        collage.Clips.OfType<CollageClip>().Should().NotBeEmpty().And.OnlyContain(c => c.AssetIds.Count >= 3 && c.AssetIds.Count <= 4);
+
+        var album = VideoPlanner.Plan(project, new VideoSettings { FormatId = "fullhd", StyleId = "album" });
+        var book = album.Clips[0].Should().BeOfType<BookClip>().Subject;
+        book.Title.Should().Be(project.Name);
+        book.LeftAssetId.Should().NotBeNull();
+        book.RightAssetId.Should().NotBe(book.LeftAssetId);
+        album.Clips.Skip(1).Select(c => c.TransitionIn).Should().Contain(TransitionKind.PageTurn);
+
+        var calm = VideoPlanner.Plan(project, new VideoSettings { FormatId = "fullhd", StyleId = "odak-galerisi", ReduceMotion = true });
+        calm.Clips.OfType<GalleryClip>().Should().BeEmpty("hareket azaltmada sahne yok");
+        calm.Clips.Skip(1).Should().OnlyContain(c => c.TransitionIn == TransitionKind.Crossfade || c.TransitionIn == TransitionKind.DipToBlack
+            || c.TransitionIn == TransitionKind.DipToWhite || c.TransitionIn == TransitionKind.Cut);
+    }
+
+    [Fact]
+    public void EveryBuiltInStylePlansAValidFilm()
+    {
+        var project = Wedding();
+        foreach (var style in VideoStyle.BuiltIn)
+        {
+            var timeline = VideoPlanner.Plan(project, new VideoSettings { FormatId = "square", StyleId = style.Id, TargetSeconds = null });
+            timeline.Clips.Should().NotBeEmpty(style.Id);
+            for (var i = 1; i < timeline.Clips.Count; i++)
+            {
+                (timeline.Clips[i - 1].End - timeline.Clips[i].Start).Should().BeApproximately(timeline.Clips[i].TransitionSeconds, 1e-9, style.Id);
+                timeline.Clips[i].Duration.Should().BeGreaterThan(timeline.Clips[i].TransitionSeconds, style.Id);
+            }
+        }
+
+        VideoStyle.BuiltIn.Select(s => s.Id).Should().OnlyHaveUniqueItems();
+        VideoStyle.BuiltIn.Count.Should().BeGreaterThanOrEqualTo(15);
+    }
+
+    [Fact]
     public void SocialClipFitsTheTargetAndKeepsFavorites()
     {
         var timeline = VideoPlanner.Plan(Wedding(), new VideoSettings { FormatId = "reels", StyleId = "dynamic", TargetSeconds = 15 });

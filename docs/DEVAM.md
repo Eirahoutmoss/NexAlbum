@@ -1,6 +1,6 @@
 # Kaldığımız yer (devir notu)
 
-Son güncelleme: 13 Ekim 2026 (saat düzeltme, çerçeve düzenleme, kapak, HTML prova, eklenti paketleri). Başka bilgisayarda devam etmek için önce bunu okuyun.
+Son güncelleme: 14 Ekim 2026 (pro efektler: film, sunum, HTML prova). Başka bilgisayarda devam etmek için önce bunu okuyun.
 
 ## Yeni bilgisayarda kurulum
 1. Git ve .NET SDK 10 (10.0.1xx veya üstü) kurun: `dotnet --list-sdks`
@@ -45,6 +45,7 @@ Son güncelleme: 13 Ekim 2026 (saat düzeltme, çerçeve düzenleme, kapak, HTML
 | **Kapak (Karar 03 Rev. 1)** | Profilde kapak tipi, ön/arka ölçü, sırt; şeridin başındaki «Kapak» kutusu; arka+sırt+ön tek yaprak, katlama çizgileri, iç sayfa gibi düzenleme; PDF'te `ad_kapak.pdf` (katlama işaretli); şema v8 |
 | **Görüntü çıktısı (Karar 11 Rev. 1)** | Başlıktaki «Paylaş» menüsü: sayfalar ve kapak 150 DPI JPG/PNG önizleme (`ad_sayfa-001.jpg`), önizleme notu meta veride |
 | **HTML prova (Karar 11 Rev. 2)** | Tek dosya, çevrimdışı; müşteri ♥ ve not, JSON geri bildirim indirir; içe aktarınca notlar sayfalara yazılır, şeritte ✎ işareti |
+| **Pro efektler (Karar 23)** | Programa gömülü 33 geçiş (Aperture, diyafram, petek, mürekkep, ışık sızıntısı, sayfa çevirme…), 4 başlık animasyonu, odak galerisi/kolaj/albüm açılışı sahneleri, 11 yeni film stili; sunumda tıklanan noktadan açılış, mercek imleci, otomatik oynatma, «Göz at» odak şeridi (E/P/G); HTML provada odak şeridi + tam ekran «Gösteri» (efekt seçimi, Karışık); C# ve tarayıcı aynı hesap (Jint eşdeğerlik testi) |
 | **Eklenti paketleri (Karar 22)** | `.nexpaket` (yalnızca veri): film stilleri; `%LOCALAPPDATA%\NexAlbum\eklentiler`; «Paylaş» menüsünden yükle; biçim `docs/eklentiler.md`, örnek `samples/eklentiler/ornek-sinema` |
 
 Testler: Windows ~730, Ubuntu ~610 (Ubuntu CI'da FFmpeg kurulup uçtan uca MP4 üretimi de denenir) — hepsi geçiyor. Takılan test 5 dakikada kesilir (`--blame-hang-timeout`). CI: `build.yml`, `test.yml` ve `screenshots.yml`
@@ -68,6 +69,7 @@ Otomatik test edilemeyenler:
 - **Kapak:** baskı evinin verdiği ölçülerle `ad_kapak.pdf` katlama işaretleri doğru yerde mi (bir deneme baskısıyla).
 - **HTML prova:** dosya telefonda/başka bilgisayarda açılıyor mu; «Geri bildirimi kaydet» indiriyor mu; içe aktarınca notlar doğru sayfada mı.
 - **Eklenti:** örnek paketi ZIP'leyip `.nexpaket` yapın, yükleyin; «Noir» film penceresinde görünüyor mu.
+- **Pro efektler:** sunumda (F5) tıklayınca efekt tıklanan yerden açılıyor mu, E ile efekt değişiyor mu, G odak şeridi akıcı mı; HTML provayı Chrome, Edge, Safari ve telefonda açıp «Gösteri»yi deneyin (Safari'de bulanıklık eski sürümlerde görünmeyebilir); 4K film dışa aktarımında Petek/Mürekkep süresi.
 - **Konumlandırma:** yuvaya çift tık → sürükleyince fotoğraf kayıyor mu, soluk taşan kısım doğru mu; tekerlek imlecin altındaki noktaya mı yakınlaşıyor; yön tuşları panel kaydırıcısına değil fotoğrafa mı gidiyor (önce tuvale tıklayın).
 - **Yazı etkileri PDF'te:** hale/gölge ekrandaki kadar yumuşak mı; kontur ince harflerde (el yazısı) kalın durmuyor mu.
 - **Metinler:** el yazısı yazı tiplerinde Türkçe harfler (ğ, ş, İ, ı) PDF'te doğru mu; çift tıklayınca yazı kutusu odaklanıyor mu; sürüklerken kaymıyor mu.
@@ -75,11 +77,11 @@ Otomatik test edilemeyenler:
 - Photoshop CI'da yok: "Rötuş → Action'ları yükle", "Önce bir fotoğrafta dene", "Düzenleyicide aç → kaydet → albüm yenilendi mi".
 
 ## Sıradaki işler (öncelik sırasıyla)
-1. **Eklenti paketleri 2. aşama (Karar 22 §4):** yazı stilleri, çerçeve stilleri, fotoğraf görünümleri (LUT/.cube), şablon paketleri; paket listesi/kaldırma penceresi; imza (Karar 15).
-2. **Fotoğraf efektleri P1 (efekt belgesi):** yerel ve tahribatsız ek efektler (keskinlik, vinyet, film greni, ton eğrisi), otomatik kırpma önerisi.
-3. **Sırt yazısı:** dönen metin (TextElement'e açı) — kapak sırtında albüm adı.
-4. **Rötuş:** Photoshop UXP paneli, hazır action paketi önerileri, rötuşçuya iş listesi (Karar 20 §1).
-5. Ürün dili: başlangıç ekranı ve örnek metinlerde etkinlikten bağımsız ifadeler (Karar 00/17 revizyonu gerekiyorsa önce sor).
+1. **Efekt seçimi her yerde önizlemeli:** film penceresinde ve prova dışa aktarımında efektlerin küçük canlı önizleme ızgarası; provanın açılış efektini uygulamadan seçme.
+2. **Eklenti paketleri 2. aşama (Karar 22 §4):** yazı stilleri, çerçeve stilleri, fotoğraf görünümleri (LUT/.cube), şablon paketleri; paket listesi/kaldırma penceresi; imza (Karar 15).
+3. **Fotoğraf efektleri P1 (efekt belgesi):** keskinlik, vinyet, film greni, ton eğrisi; otomatik kırpma önerisi.
+4. **Sırt yazısı:** dönen metin (TextElement'e açı) — kapak sırtında albüm adı.
+5. **Rötuş:** Photoshop UXP paneli, hazır action paketi önerileri, rötuşçuya iş listesi (Karar 20 §1).
 
 ## Notlar
 - Commit kuralı: Conventional Commits + `git commit -s` (Karar 14).

@@ -1,6 +1,8 @@
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
+using NexAlbum.Core.Effects;
 using NexAlbum.Core.Projects;
+using NexAlbum.Core.Video;
 
 namespace NexAlbum.UI.ViewModels;
 
@@ -23,6 +25,9 @@ public sealed class PresentationViewModel : ObservableObject
     private readonly bool spreads;
     private readonly List<PresentationSpread> views;
     private int index;
+    private int effectIndex;
+    private bool autoplay;
+    private bool browsing;
 
     /// <param name="project">Gösterilecek proje (en az bir sayfa).</param>
     /// <param name="startPageIndex">Başlangıç sayfası; içinde bulunduğu çift sayfadan başlanır.</param>
@@ -50,6 +55,90 @@ public sealed class PresentationViewModel : ObservableObject
         var start = Math.Clamp(startPageIndex, 0, pages.Count - 1);
         index = spreads ? start / 2 : start;
         UpdateDetail(-1, index);
+        effectIndex = Math.Max(0, Effects.ToList().FindIndex(e => e.Kind == TransitionKind.Aperture));
+    }
+
+    /// <summary>Sunumda seçilebilen geçiş efektleri (kesme hariç; Karar 23).</summary>
+    public static IReadOnlyList<EffectInfo> Effects { get; } = [.. TransitionEffects.All.Where(e => e.Kind != TransitionKind.Cut)];
+
+    /// <summary>Otomatik oynatmada bir görünümün süresi.</summary>
+    public static TimeSpan AutoplayInterval { get; } = TimeSpan.FromSeconds(6);
+
+    /// <summary>Sayfa geçişinde kullanılan efekt.</summary>
+    public EffectInfo Effect => Effects[effectIndex];
+
+    /// <summary>Efektin süresi (efektin tadına göre).</summary>
+    public TimeSpan EffectDuration => TimeSpan.FromMilliseconds(1100 * TransitionEffects.DurationFactor(Effect.Kind));
+
+    /// <summary>"Efekt: Aperture · E ile değiştir"</summary>
+    public string EffectText => "Efekt: " + Effect.Name;
+
+    public IReadOnlyList<PresentationSpread> Views => views;
+
+    /// <summary>Otomatik oynatma (P): her görünüm <see cref="AutoplayInterval"/> kadar kalır; sonda durur.</summary>
+    public bool Autoplay
+    {
+        get => autoplay;
+        set
+        {
+            if (SetProperty(ref autoplay, value))
+            {
+                OnPropertyChanged(nameof(AutoplayText));
+            }
+        }
+    }
+
+    public string AutoplayText => autoplay ? "❚❚ Otomatik" : "▶ Otomatik (P)";
+
+    /// <summary>«Göz at» kipi (G): odak şeridinde tüm görünümler.</summary>
+    public bool Browsing
+    {
+        get => browsing;
+        set => SetProperty(ref browsing, value);
+    }
+
+    /// <summary>"03 — 12" (Aperture sayacı).</summary>
+    public string ShortCounter => string.Format(CultureInfo.InvariantCulture, "{0:00} — {1:00}", index + 1, views.Count);
+
+    /// <summary>Sonraki (ya da önceki) efekte geçer.</summary>
+    public void CycleEffect(int direction = 1)
+    {
+        effectIndex = (((effectIndex + direction) % Effects.Count) + Effects.Count) % Effects.Count;
+        OnPropertyChanged(nameof(Effect));
+        OnPropertyChanged(nameof(EffectText));
+        OnPropertyChanged(nameof(EffectDuration));
+    }
+
+    /// <summary>Efekti türüne göre seçer.</summary>
+    public void UseEffect(TransitionKind kind)
+    {
+        var found = Effects.ToList().FindIndex(e => e.Kind == kind);
+        if (found >= 0 && found != effectIndex)
+        {
+            effectIndex = found;
+            OnPropertyChanged(nameof(Effect));
+            OnPropertyChanged(nameof(EffectText));
+            OnPropertyChanged(nameof(EffectDuration));
+        }
+    }
+
+    /// <summary>Görünümün etiketi: "Sayfa 3–4" ya da "Sayfa 5".</summary>
+    public static string Label(PresentationSpread view)
+    {
+        ArgumentNullException.ThrowIfNull(view);
+        return view.Right is null
+            ? string.Format(CultureInfo.CurrentCulture, "Sayfa {0}", view.FirstNumber)
+            : string.Format(CultureInfo.CurrentCulture, "Sayfa {0}–{1}", view.FirstNumber, view.LastNumber);
+    }
+
+    /// <summary>Görünümün yüksek çözünürlüklü önizlemesini yükler (göz at şeridinde ortaya gelince).</summary>
+    public void Preload(int view)
+    {
+        if (view >= 0 && view < views.Count)
+        {
+            views[view].Left.SetDetail(true);
+            views[view].Right?.SetDetail(true);
+        }
     }
 
     public string Title { get; }
@@ -110,6 +199,7 @@ public sealed class PresentationViewModel : ObservableObject
         OnPropertyChanged(nameof(Index));
         OnPropertyChanged(nameof(Current));
         OnPropertyChanged(nameof(CounterText));
+        OnPropertyChanged(nameof(ShortCounter));
         OnPropertyChanged(nameof(CanGoNext));
         OnPropertyChanged(nameof(CanGoPrevious));
         return true;

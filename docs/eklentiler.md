@@ -44,7 +44,7 @@ Paketler `%LOCALAPPDATA%\NexAlbum\eklentiler` klasöründe durur (Komut paleti �
 | Alan | Değerler |
 |---|---|
 | `id` (paket ve stil) | küçük harf, rakam, tire; en fazla 64 karakter. Stilin tam kimliği `paket-id/stil-id` olur. |
-| `transitions` | Bölüm içinde sırayla kullanılan geçişler: `cut`, `crossfade`, `dipToBlack`, `dipToWhite`, `focusShift`, `iris`, `pushLeft`, `pushRight`, `pushUp`, `zoomThrough` |
+| `transitions` | Bölüm içinde sırayla kullanılan geçişler: `cut`, `crossfade`, `dipToBlack`, `dipToWhite`, `focusShift`, `iris`, `pushLeft`, `pushRight`, `pushUp`, `zoomThrough` ve pro efektler (Karar 23): `aperture`, `diaphragm`, `doubleIris`, `diamondReveal`, `rackFocus`, `tiltShift`, `depthFocus`, `lightLeak`, `filmBurn`, `flash`, `projector`, `curtain`, `blinds`, `diagonalWipe`, `mosaic`, `honeycomb`, `inkBlot`, `split`, `parallax`, `whipPan`, `cardStack`, `polaroidDevelop`, `pageTurn` |
 | `chapterTransition` | Bölüm başlarındaki geçiş (aynı değerler; varsayılan `dipToBlack`) |
 | `photoSeconds` | Fotoğraf başına süre, 0,8–15 sn (varsayılan 3,5) |
 | `transitionSeconds` | Geçiş süresi, 0–4 sn (varsayılan 1) |
