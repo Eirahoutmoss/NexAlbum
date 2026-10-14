@@ -54,6 +54,21 @@ jobs:
           choco install innosetup -y --no-progress | Out-Null
           ./tools/yayin/paketle.ps1 -Version "${{ steps.ver.outputs.version }}" -Kurulum
 
+      - name: Duman testi (paketlenmiş exe açılıyor mu)
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath out/NexAlbum/NexAlbum.exe -PassThru
+          $deadline = (Get-Date).AddSeconds(60)
+          while ((Get-Date) -lt $deadline) {
+            Start-Sleep -Seconds 2
+            $p.Refresh()
+            if ($p.HasExited) { throw "NexAlbum.exe açılışta kapandı (çıkış kodu $($p.ExitCode))." }
+            if ($p.MainWindowHandle -ne 0) { break }
+          }
+          if ($p.MainWindowHandle -eq 0) { Stop-Process $p -Force; throw "Ana pencere 60 sn içinde açılmadı." }
+          "Ana pencere açıldı: '$($p.MainWindowTitle)', bellek $([math]::Round($p.WorkingSet64 / 1MB)) MB"
+          Stop-Process $p -Force
+
       - name: Sürüm notları
         shell: pwsh
         run: |
