@@ -116,7 +116,7 @@ pwsh tools/yayin/paketle.ps1 -Kurulum      # + out/NexAlbum-<sürüm>-kurulum.ex
 ```
 
 Betik `dotnet publish -r win-x64 --self-contained -p:PublishSingleFile=true` çalıştırır: .NET çalışma zamanı, SkiaSharp ve tüm
-kütüphaneler tek `NexAlbum.exe`'nin içindedir. Yayın: `git tag v0.2.0 && git push origin v0.2.0` → GitHub Actions paketleri
+kütüphaneler tek `NexAlbum.exe`'nin içindedir. Yayın: `git tag v1.0.0 && git push origin v1.0.0` → GitHub Actions paketleri
 üretip **Sürümler** sayfasına ekler (`.github/workflows/release.yml`).
 
 ### İlk albüm, beş adımda

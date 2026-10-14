@@ -5,7 +5,7 @@ Ayrıntılı gerekçeler: [`docs/kararlar/`](docs/kararlar/INDEKS.md).
 
 ## [Yayımlanmadı]
 
-## [0.2.0] — 2026-10-14
+## [1.0.0] — 2026-10-14
 
 ### Eklendi
 - **Kurulum paketi**: .NET gerektirmeyen tek dosyalık `NexAlbum.exe`, Türkçe kurulum programı (yönetici izni yok,
