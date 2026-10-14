@@ -33,6 +33,8 @@ jobs:
           NEXALBUM_EKRAN_KLASORU: ${{ github.workspace }}\ekran
         run: dotnet test tests/NexAlbum.UI.Tests -c Release --filter "FullyQualifiedName~ScreenshotTests" --blame-hang-timeout 5m
       - name: ekran/<dal> dalına yaz
+        # Test takılsa ya da düşse de o ana kadarki görüntüler yazılır (hangi ekranda kaldığı görülür).
+        if: always() && hashFiles('ekran/*.png') != ''
         shell: bash
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
