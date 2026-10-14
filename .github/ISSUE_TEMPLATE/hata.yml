@@ -1,0 +1,40 @@
+name: Hata bildirimi
+description: Beklenmedik bir davranış, çökme ya da yanlış çıktı
+labels: ["hata"]
+body:
+  - type: markdown
+    attributes:
+      value: Teşekkürler! Lütfen önce benzer bir bildirim olup olmadığına bakın.
+  - type: textarea
+    id: ne-oldu
+    attributes:
+      label: Ne oldu?
+      description: Gördüğünüz davranış; varsa hata metni.
+    validations:
+      required: true
+  - type: textarea
+    id: adimlar
+    attributes:
+      label: Yeniden üretme adımları
+      placeholder: "1. Yeni proje…\n2. …\n3. …"
+    validations:
+      required: true
+  - type: textarea
+    id: beklenen
+    attributes:
+      label: Beklenen
+  - type: input
+    id: surum
+    attributes:
+      label: Sürüm / commit
+      description: Hakkında penceresindeki sürüm ya da `git rev-parse --short HEAD`
+  - type: dropdown
+    id: alan
+    attributes:
+      label: Alan
+      options: [Yerleşim ve şablonlar, Düzenleme, Hikâye, Film, Sunum, PDF ve ön kontrol, HTML prova, Kapak, Eklentiler, Arayüz, Diğer]
+  - type: textarea
+    id: ekler
+    attributes:
+      label: Ekran görüntüsü / örnek dosya
+      description: Kişisel fotoğraf paylaşmak zorunda değilsiniz; mümkünse küçük bir örnekle.
