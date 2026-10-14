@@ -35,7 +35,9 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: test-sonuclari-${{ matrix.os }}
-          path: TestResults/
+          path: |
+            TestResults/**/*.trx
+            TestResults/**/*.xml
           retention-days: 14
       - name: Test özeti (0 test = hata)
         if: always()
@@ -63,6 +65,14 @@ jobs:
             }
           }
           Write-Output "::notice title=Testler (${{ matrix.os }})::Toplam $t, gecen $p, basarisiz $f"
+          # Takılan/çöken test: --blame dizisi son çalışan testleri yazar (dökümler büyük olduğundan yalnızca adlar).
+          foreach ($seq in Get-ChildItem TestResults -Recurse -Filter 'Sequence_*.xml') {
+            $q = New-Object System.Xml.XmlDocument
+            $q.Load($seq.FullName)
+            $names = @($q.TestSequence.Test | ForEach-Object { $_.Name })
+            $last = ($names | Select-Object -Last 3) -join ' | '
+            Write-Output "::error title=Takilan ya da coken test::$last"
+          }
           # Her paket için en yüksek kapsam (birden çok test projesi aynı derlemeyi raporlayabilir).
           $best = @{}
           foreach ($cov in Get-ChildItem TestResults -Recurse -Filter coverage.cobertura.xml) {
