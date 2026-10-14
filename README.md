@@ -9,6 +9,7 @@
 Ücretsiz ve açık kaynak albüm tasarım stüdyosu: otomatik yerleşim, baskıya hazır PDF, kapak ve sırt,
 pro geçiş efektli hikâye filmi, müşteriye çevrimdışı HTML prova. Hesap yok, bulut yok, abonelik yok.
 
+[![Sürüm](https://img.shields.io/github/v/release/Eirahoutmoss/NexAlbum?include_prereleases&label=s%C3%BCr%C3%BCm&color=c9a85e)](https://github.com/Eirahoutmoss/NexAlbum/releases/latest)
 [![Test](https://github.com/Eirahoutmoss/NexAlbum/actions/workflows/test.yml/badge.svg)](https://github.com/Eirahoutmoss/NexAlbum/actions/workflows/test.yml)
 [![Derleme](https://github.com/Eirahoutmoss/NexAlbum/actions/workflows/build.yml/badge.svg)](https://github.com/Eirahoutmoss/NexAlbum/actions/workflows/build.yml)
 [![Ekran görüntüleri](https://github.com/Eirahoutmoss/NexAlbum/actions/workflows/screenshots.yml/badge.svg)](https://github.com/Eirahoutmoss/NexAlbum/tree/ekran/main)
@@ -84,9 +85,21 @@ Görüntüler her değişiklikte CI tarafından gerçek uygulamadan üretilir ([
 
 ## Kurulum
 
-Henüz hazır kurulum paketi yok; kaynaktan birkaç dakikada çalışır.
+### Hazır paket (önerilen)
 
-**Gereksinim:** Windows 10/11 ve [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (`dotnet --list-sdks` ile 10.0.1xx görünmeli).
+[**Sürümler**](https://github.com/Eirahoutmoss/NexAlbum/releases/latest) sayfasından indirin — .NET ya da başka bir şey kurmanız gerekmez:
+
+| Dosya | Ne için |
+|---|---|
+| `NexAlbum-<sürüm>-kurulum.exe` | Çift tıklayın. Yönetici izni istemez; Başlat menüsüne ekler, `.albumproj` dosyalarını açar, Uygulamalar listesinden kaldırılır. |
+| `NexAlbum-<sürüm>-win-x64.zip` | Taşınabilir: bir klasöre açın, `NexAlbum.exe`'yi çalıştırın. |
+
+Windows 10 (1809+) / 11, 64 bit. Paket imzasız olduğundan SmartScreen uyarı verebilir: **Ek bilgi → Yine de çalıştır**.
+Hikâye filmi için FFmpeg gerekir; lisans ve boyut nedeniyle pakete konmaz, uygulama ilk kullanımda izin isteyip indirir.
+
+### Kaynaktan çalıştırma
+
+**Gereksinim:** [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (`dotnet --list-sdks` ile 10.0.1xx görünmeli).
 
 ```powershell
 git clone https://github.com/Eirahoutmoss/NexAlbum.git
@@ -94,7 +107,17 @@ cd NexAlbum
 dotnet run --project src/NexAlbum.UI
 ```
 
-Güncellemek için: `git pull` ve aynı komut. Hikâye filmi için FFmpeg gerekir; yoksa uygulama ilk kullanımda izin isteyip indirir.
+### Kendi paketinizi üretmek
+
+```powershell
+pwsh tools/yayin/paketle.ps1               # out/NexAlbum/NexAlbum.exe + taşınabilir ZIP
+winget install JRSoftware.InnoSetup        # yalnızca kurulum programı için, bir kez
+pwsh tools/yayin/paketle.ps1 -Kurulum      # + out/NexAlbum-<sürüm>-kurulum.exe
+```
+
+Betik `dotnet publish -r win-x64 --self-contained -p:PublishSingleFile=true` çalıştırır: .NET çalışma zamanı, SkiaSharp ve tüm
+kütüphaneler tek `NexAlbum.exe`'nin içindedir. Yayın: `git tag v0.2.0 && git push origin v0.2.0` → GitHub Actions paketleri
+üretip **Sürümler** sayfasına ekler (`.github/workflows/release.yml`).
 
 ### İlk albüm, beş adımda
 

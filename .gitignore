@@ -19,3 +19,6 @@ CLAUDE.local.md
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Yayın paketleri (tools/yayin/paketle.ps1)
+/out/
