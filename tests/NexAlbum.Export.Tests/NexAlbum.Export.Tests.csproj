@@ -9,6 +9,7 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Jint" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\NexAlbum.Core\NexAlbum.Core.csproj" />

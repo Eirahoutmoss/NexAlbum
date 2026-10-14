@@ -30,6 +30,7 @@ public partial class PresentationWindow : Window
     private double stripPosition;
     private double stripTarget;
     private Point? dragStart;
+    private bool stripAnimating;
     private double dragFrom;
     private bool dragged;
 
@@ -49,7 +50,7 @@ public partial class PresentationWindow : Window
             idle.Stop();
             auto.Stop();
             player.Dispose();
-            CompositionTarget.Rendering -= OnStripFrame;
+            StopStrip();
             viewModel.Close();
         };
     }
@@ -129,7 +130,6 @@ public partial class PresentationWindow : Window
         stripPosition = stripTarget = ViewModel.Index;
         Browse.Visibility = Visibility.Visible;
         LayoutStrip();
-        CompositionTarget.Rendering += OnStripFrame;
     }
 
     /// <summary>Şeridi verilen konuma getirip çizer (ekran görüntüsü ve testler için).</summary>
@@ -330,26 +330,53 @@ public partial class PresentationWindow : Window
         ViewModel.Preload(nearest);
     }
 
+    /// <summary>
+    /// Şerit hedefe kayarken her karede bir adım. Hedefe varınca kare olayından çıkılır: sürekli abonelik yazılım çiziminde
+    /// (bulanık kartlar) ileti kuyruğunu doldurup boşta işleri (ve testleri) bekletiyordu.
+    /// </summary>
     private void OnStripFrame(object? sender, EventArgs e)
     {
-        if (!ViewModel.Browsing)
+        if (!ViewModel.Browsing || dragStart is not null || Math.Abs(stripTarget - stripPosition) <= 0.0005)
         {
-            CompositionTarget.Rendering -= OnStripFrame;
+            if (ViewModel.Browsing && dragStart is null && stripPosition != stripTarget)
+            {
+                stripPosition = stripTarget;
+                LayoutStrip();
+            }
+
+            StopStrip();
             return;
         }
 
-        if (dragStart is null && Math.Abs(stripTarget - stripPosition) > 0.0005)
+        stripPosition += (stripTarget - stripPosition) * 0.18;
+        LayoutStrip();
+    }
+
+    /// <summary>Şeridi hedefe doğru kaydırmaya başlar (zaten kayıyorsa bir şey yapmaz).</summary>
+    private void AnimateStrip()
+    {
+        if (!stripAnimating)
         {
-            stripPosition += (stripTarget - stripPosition) * 0.18;
-            LayoutStrip();
+            stripAnimating = true;
+            CompositionTarget.Rendering += OnStripFrame;
         }
     }
 
-    private void MoveStrip(int step) => stripTarget = Math.Clamp(Math.Round(stripTarget) + step, 0, cards.Count - 1);
+    private void StopStrip()
+    {
+        stripAnimating = false;
+        CompositionTarget.Rendering -= OnStripFrame;
+    }
+
+    private void MoveStrip(int step)
+    {
+        stripTarget = Math.Clamp(Math.Round(stripTarget) + step, 0, cards.Count - 1);
+        AnimateStrip();
+    }
 
     private void CloseBrowse(bool open)
     {
-        CompositionTarget.Rendering -= OnStripFrame;
+        StopStrip();
         var target = FocusPull.Nearest(stripTarget, cards.Count);
         ViewModel.Browsing = false;
         Browse.Visibility = Visibility.Collapsed;
@@ -404,6 +431,7 @@ public partial class PresentationWindow : Window
         if (dragged)
         {
             stripTarget = FocusPull.Nearest(stripPosition, cards.Count);
+            AnimateStrip();
             return;
         }
 
@@ -422,6 +450,7 @@ public partial class PresentationWindow : Window
             else
             {
                 stripTarget = clicked;
+                AnimateStrip();
             }
         }
     }

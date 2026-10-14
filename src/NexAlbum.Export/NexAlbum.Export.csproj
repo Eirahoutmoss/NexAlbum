@@ -6,4 +6,9 @@
   <ItemGroup>
     <PackageReference Include="PDFsharp" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- HTML provaya gömülen efekt betiği (Karar 23). -->
+    <EmbeddedResource Include="Proof\Assets\effects.js" LogicalName="NexAlbum.Export.Proof.effects.js" />
+    <EmbeddedResource Include="Proof\Assets\proof.html" LogicalName="NexAlbum.Export.Proof.proof.html" />
+  </ItemGroup>
 </Project>

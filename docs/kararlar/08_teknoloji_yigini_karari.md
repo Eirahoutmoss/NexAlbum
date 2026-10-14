@@ -468,6 +468,7 @@ Araç	Amaç	Lisans
 xUnit	Test framework	Apache 2.0
 Moq	Mock	MIT
 FluentAssertions	Okunabilir assertion	Apache 2.0
+Jint	HTML prova efekt betiğinin eşdeğerlik testi (yalnızca test)	BSD-2-Clause
 Coverlet	Kod kapsamı	MIT
 BenchmarkDotNet	Performans testi	MIT
 12.2 Test piramidi
@@ -615,6 +616,7 @@ Serilog	Apache 2.0	✅	Onaylı
 xUnit	Apache 2.0	✅	Onaylı
 Moq	MIT	✅	Onaylı
 FluentAssertions	Apache 2.0	✅	Onaylı
+Jint (yalnızca test)	BSD-2-Clause	✅	Onaylı (Karar 23)
 CommunityToolkit.Mvvm	MIT	✅	Onaylı
 Inter (yazı tipi, gömülü)	SIL OFL 1.1	✅	Onaylı (Revizyon 3)
 Lucide (ikonlar, gömülü)	ISC	✅	Onaylı (Revizyon 3)
