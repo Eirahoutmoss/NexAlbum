@@ -270,6 +270,12 @@ public partial class PresentationWindow : Window
 
     // ── Göz at: odak şeridi ──────────────────────────────────────────────
 
+    /// <summary>
+    /// Kartlarda bulanıklık yalnızca ekran kartı hızlandırmasında (WPF katman 2). Yazılım çiziminde (sanal makine, uzak masaüstü,
+    /// CI) tam sayfa bulanıklığı her karede saniyeler sürüp arayüzü kilitliyordu; orada odak ölçek, solukluk ve sırayla verilir.
+    /// </summary>
+    private static bool HardwareBlur => (RenderCapability.Tier >> 16) >= 2;
+
     private void BuildStrip()
     {
         Strip.Children.Clear();
@@ -284,7 +290,7 @@ public partial class PresentationWindow : Window
                 Focusable = false,
                 RenderTransformOrigin = new Point(0.5, 0.5),
                 RenderTransform = new ScaleTransform(),
-                Effect = new BlurEffect { Radius = 0, KernelType = KernelType.Gaussian },
+                Effect = HardwareBlur ? new BlurEffect { Radius = 0, KernelType = KernelType.Gaussian } : null,
                 Cursor = Cursors.Hand,
             };
             cards.Add(card);
@@ -319,7 +325,10 @@ public partial class PresentationWindow : Window
             var scale = (ScaleTransform)card.RenderTransform;
             scale.ScaleX = scale.ScaleY = focus.Scale;
             card.Opacity = focus.Opacity;
-            ((BlurEffect)card.Effect).Radius = focus.Blur;
+            if (card.Effect is BlurEffect blurEffect)
+            {
+                blurEffect.Radius = focus.Blur;
+            }
             Panel.SetZIndex(card, 1000 - (int)Math.Round(Math.Abs(d) * 10));
         }
 
