@@ -1,0 +1,5 @@
+04:00:38.462 göz at: açılıyor
+04:00:38.465 göz at: açıldı
+04:00:38.466 göz at: konum verildi
+04:00:38.517 göz at: düzen tamam
+04:00:38.826 göz at: ileti kuyruğu boşaldı
