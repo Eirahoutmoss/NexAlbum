@@ -3,9 +3,14 @@
 Biçim [Keep a Changelog](https://keepachangelog.com/tr-TR/1.1.0/), sürümleme [SemVer](https://semver.org/lang/tr/).
 Ayrıntılı gerekçeler: [`docs/kararlar/`](docs/kararlar/INDEKS.md).
 
-## [Yayımlanmadı] — 0.2.0 adayı
+## [Yayımlanmadı]
+
+## [1.0.0] — 2026-10-14
 
 ### Eklendi
+- **Kurulum paketi**: .NET gerektirmeyen tek dosyalık `NexAlbum.exe`, Türkçe kurulum programı (yönetici izni yok,
+  `.albumproj` ilişkilendirmesi), taşınabilir ZIP ve SHA-256 özetleri; `v*` etiketinden otomatik GitHub sürümü,
+  yerelde `tools/yayin/paketle.ps1`.
 - **Pro efektler** (Karar 23): 33 geçiş (Aperture, diyafram kanatları, çift iris, elmas, netlik kaydırma, tilt-shift, derinlikten,
   ışık sızıntısı, film yanığı, flaş, projektör, Polaroid banyosu, perde, yarık, panjur, çapraz silme, mozaik, petek, mürekkep lekesi,
   paralaks, hızlı kaydırma, kart yığını, sayfa çevirme…), 4 başlık animasyonu, odak galerisi / kolaj akışı / albüm açılışı sahneleri,

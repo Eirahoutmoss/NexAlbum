@@ -28,6 +28,10 @@ Revizyon 4 — 13/10/2026
 Değişiklik: Albüm sayfa metinleri için yedi gömülü yazı tipi eklendi (kaynak dosya, NuGet değil): Great Vibes, Pinyon Script, Parisienne, Allura, Cormorant Garamond, Playfair Display, Montserrat — hepsi SIL OFL 1.1. Ayrıntı: Karar 17 §11.
 Gerekçe: Ekran ve PDF aynı dosyayı kullansın; albüm, yazı tipi kurulu olmayan bilgisayarda da aynı çıksın. OFL yazı tipleri GPL yazılımla birlikte dağıtılabilir.
 
+Revizyon 6 — 14/10/2026
+Değişiklik: §14 uygulandı. Yayın `.github/workflows/release.yml` ile `v*` etiketinden üretilir: `dotnet publish -r win-x64 --self-contained` + tek dosya (.NET çalışma zamanı, SkiaSharp yerel kütüphanesi ve tüm NuGet bağımlılıkları NexAlbum.exe içinde), taşınabilir ZIP ve kullanıcı başına Inno Setup kurulumu (`installer/NexAlbum.iss`; yönetici izni yok, Türkçe sihirbaz, `.albumproj` ilişkilendirmesi HKCU'da). Yerelde aynı adımlar: `tools/yayin/paketle.ps1`. FFmpeg pakete girmez (Rev. 5). Kod imzalama ve MSIX hâlâ ertelendi (Karar 06); §14.4'teki taşınabilir `./data/` ayar klasörü henüz uygulanmadı (ayarlar %LOCALAPPDATA%'da kalır).
+Gerekçe: Kullanıcı .NET kurmadan çift tıklayıp çalıştırabilsin; yayın her seferinde aynı, denetlenebilir CI adımlarıyla üretilsin (SHA-256 özetleri yayına eklenir). Inno Setup ücretsizdir ve yalnızca derleme aracıdır, pakete girmez.
+
 1. Karar Özeti
 NexAlbum'in teknoloji yığını, Windows öncelikli, ücretsiz, açık kaynak (GPL uyumlu), tek geliştirici tarafından sürdürülebilir ve yüksek performanslı olacak şekilde seçilmiştir.
 

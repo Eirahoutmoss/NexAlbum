@@ -1,0 +1,116 @@
+name: release
+
+# Kurulum paketi (Karar 08 §16): "v*" etiketi itildiğinde Windows için kendi kendine yeten (self-contained) yayın üretir.
+# Çıktılar: taşınabilir ZIP ve tek dosyalık kurulum programı (Inno Setup). .NET kurulu olmasa da çalışır.
+# FFmpeg bilerek pakete konmaz; uygulama gerektiğinde izin isteyip indirir.
+on:
+  push:
+    tags: ["v*"]
+  # Paketleme adımları değişince PR'da da denenir (sürüm yayımlanmaz, çıktılar artifact olarak saklanır).
+  pull_request:
+    paths:
+      - ".github/workflows/release.yml"
+      - "installer/**"
+      - "tools/yayin/**"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Sürüm (ör. 0.2.0). Boşsa Directory.Build.props'taki sürüm."
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Sürümü belirle
+        id: ver
+        shell: pwsh
+        run: |
+          $v = "${{ github.event.inputs.version }}"
+          if (-not $v -and "${{ github.ref_type }}" -eq "tag") { $v = "${{ github.ref_name }}".TrimStart("v") }
+          if (-not $v) { $v = ([xml](Get-Content Directory.Build.props)).Project.PropertyGroup.VersionPrefix | Where-Object { $_ } | Select-Object -First 1 }
+          if ($v -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') { throw "Geçersiz sürüm: $v" }
+          "version=$v" >> $env:GITHUB_OUTPUT
+          "Sürüm: $v"
+
+      - name: Testler (yayın öncesi)
+        run: dotnet test NexAlbum.slnx -c Release --blame-hang-timeout 5m --filter "FullyQualifiedName!~ScreenshotTests"
+
+      - name: Paketle (self-contained + kurulum)
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress | Out-Null
+          ./tools/yayin/paketle.ps1 -Version "${{ steps.ver.outputs.version }}" -Kurulum
+
+      - name: Duman testi (paketlenmiş exe açılıyor mu)
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath out/NexAlbum/NexAlbum.exe -PassThru
+          $deadline = (Get-Date).AddSeconds(60)
+          while ((Get-Date) -lt $deadline) {
+            Start-Sleep -Seconds 2
+            $p.Refresh()
+            if ($p.HasExited) { throw "NexAlbum.exe açılışta kapandı (çıkış kodu $($p.ExitCode))." }
+            if ($p.MainWindowHandle -ne 0) { break }
+          }
+          if ($p.MainWindowHandle -eq 0) { Stop-Process $p -Force; throw "Ana pencere 60 sn içinde açılmadı." }
+          "Ana pencere açıldı: '$($p.MainWindowTitle)', bellek $([math]::Round($p.WorkingSet64 / 1MB)) MB"
+          Stop-Process $p -Force
+
+      - name: Sürüm notları
+        shell: pwsh
+        run: |
+          $v = "${{ steps.ver.outputs.version }}"
+          $lines = Get-Content CHANGELOG.md -Encoding utf8
+          $start = ($lines | Select-String -Pattern "^## \[$([regex]::Escape($v))\]" | Select-Object -First 1).LineNumber
+          $notes = @()
+          if ($start) {
+            foreach ($l in $lines[$start..($lines.Length - 1)]) { if ($l -match '^## \[') { break }; $notes += $l }
+          }
+          $body = @(
+            "## İndir",
+            "",
+            "- **NexAlbum-$v-kurulum.exe** — çift tıklayın; yönetici izni istemez, .NET gerektirmez. Başlat menüsüne ekler, ``.albumproj`` dosyalarını açar.",
+            "- **NexAlbum-$v-win-x64.zip** — taşınabilir: klasöre açın, ``NexAlbum.exe``yi çalıştırın.",
+            "",
+            "Windows 10/11 (64 bit). Hikâye filmi için FFmpeg gerekirse uygulama izin isteyip indirir.",
+            "İmzasız olduğu için SmartScreen uyarısı çıkabilir: **Ek bilgi → Yine de çalıştır**.",
+            "",
+            "SHA-256 özetleri: ``SHA256SUMS.txt``.",
+            ""
+          ) + $notes
+          $body -join "`n" | Set-Content -Path out/notlar.md -Encoding utf8
+
+      - name: GitHub sürümünü yayımla
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          name: NexAlbum ${{ steps.ver.outputs.version }}
+          body_path: out/notlar.md
+          prerelease: ${{ contains(steps.ver.outputs.version, '-') }}
+          files: |
+            out/NexAlbum-${{ steps.ver.outputs.version }}-kurulum.exe
+            out/NexAlbum-${{ steps.ver.outputs.version }}-win-x64.zip
+            out/SHA256SUMS.txt
+
+      - name: Elle çalıştırmada çıktıları sakla
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: NexAlbum-${{ steps.ver.outputs.version }}
+          path: |
+            out/*.exe
+            out/*.zip
+            out/SHA256SUMS.txt
