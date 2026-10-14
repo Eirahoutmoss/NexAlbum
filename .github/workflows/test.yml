@@ -32,7 +32,7 @@ jobs:
         run: dotnet test NexAlbum.slnx -c Release --collect:"XPlat Code Coverage" --results-directory TestResults --logger "trx" --blame-hang-timeout 5m
       - name: Sonuçları yükle
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: test-sonuclari-${{ matrix.os }}
           path: |
