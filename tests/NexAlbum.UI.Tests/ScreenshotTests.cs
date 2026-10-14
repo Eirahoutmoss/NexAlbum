@@ -232,8 +232,15 @@ public sealed class ScreenshotTests : IDisposable
                 Capture(show, "23-sunum-petek").Should().BeTrue();
 
                 // Göz at: odak şeridi; ortadaki görünüm net, yanlar bulanık.
+                Mark("göz at: açılıyor");
                 show.ToggleBrowse();
+                Mark("göz at: açıldı");
                 show.SetStripPosition(1.35);
+                Mark("göz at: konum verildi");
+                show.UpdateLayout();
+                Mark("göz at: düzen tamam");
+                WpfApp.Pump(TimeSpan.FromMilliseconds(300));
+                Mark("göz at: ileti kuyruğu boşaldı");
                 Settle(show);
                 Capture(show, "24-sunum-goz-at").Should().BeTrue();
                 show.ToggleBrowse();
@@ -261,6 +268,16 @@ public sealed class ScreenshotTests : IDisposable
     /// Fotoğrafı en çok olan sayfaya "Karşılıklı Üçgenler + Üçlü" uygulanır: hipotenüsleri karşılıklı iki üçgen ve
     /// yanında üç dikdörtgen (geometrik şablonların tipik örneği).
     /// </summary>
+    /// <summary>Ekran klasörüne adım notu yazar (takılan adımı bulmak için; görüntülerle birlikte yayımlanır).</summary>
+    private void Mark(string step)
+    {
+        if (output is not null)
+        {
+            Directory.CreateDirectory(output);
+            File.AppendAllText(Path.Combine(output, "adimlar.txt"), DateTime.UtcNow.ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture) + " " + step + Environment.NewLine);
+        }
+    }
+
     /// <summary>Depo kökü (NexAlbum.slnx'in bulunduğu klasör).</summary>
     private static string RepositoryRoot()
     {
