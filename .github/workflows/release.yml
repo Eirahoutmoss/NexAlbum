@@ -95,7 +95,7 @@ jobs:
 
       - name: GitHub sürümünü yayımla
         if: github.ref_type == 'tag'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: NexAlbum ${{ steps.ver.outputs.version }}
           body_path: out/notlar.md
